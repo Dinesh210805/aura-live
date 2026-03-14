@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURA — Agent Flow & Memory Map</title>
+<style>
+  :root {
+    --bg:       #080c10;
+    --surface:  #0d1117;
+    --surface2: #131920;
+    --border:   #1e2733;
+    --text:     #cdd9e5;
+    --muted:    #636e7b;
+    --blue:     #4493f8;
+    --green:    #3fb950;
+    --orange:   #d29922;
+    --red:      #f85149;
+    --purple:   #bc8cff;
+    --teal:     #39d353;
+    --yellow:   #e3b341;
+    --pink:     #f778ba;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; padding: 32px; }
+  h1 { font-size: 24px; color: var(--blue); margin-bottom: 6px; }
+  .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 13px; }
+
+  /* ── Section headers ── */
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 32px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+
+  /* ── Pipeline row ── */
+  .pipeline { display: flex; align-items: stretch; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  .pipe-step { flex: 1; min-width: 130px; background: var(--surface); border: 1px solid var(--border); padding: 14px 12px; position: relative; }
+  .pipe-step + .pipe-step { border-left: none; }
+  .pipe-step:first-child { border-radius: 8px 0 0 8px; }
+  .pipe-step:last-child  { border-radius: 0 8px 8px 0; }
+  .pipe-step .agent-name { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .pipe-step .desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
+  .pipe-arrow { display: flex; align-items: center; padding: 0 6px; color: var(--muted); font-size: 18px; flex-shrink: 0; }
+  .c-llm    { color: var(--blue); }
+  .c-vlm    { color: var(--purple); }
+  .c-exec   { color: var(--orange); }
+  .c-plan   { color: var(--teal); }
+  .c-intent { color: var(--yellow); }
+  .c-verify { color: var(--pink); }
+  .c-speak  { color: var(--green); }
+
+  /* ── Memory blocks ── */
+  .mem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .mem-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .mem-card-header { padding: 10px 14px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .mem-card-body { padding: 12px 14px; }
+  .mem-key { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .mem-val { font-size: 12px; font-family: 'Cascadia Code', 'Consolas', monospace; color: var(--text); background: var(--surface2); border-radius: 4px; padding: 6px 10px; margin-bottom: 10px; white-space: pre-wrap; line-height: 1.5; }
+  .mem-val.ok  { border-left: 3px solid var(--green); }
+  .mem-val.warn { border-left: 3px solid var(--orange); }
+  .mem-val.info { border-left: 3px solid var(--blue); }
+  .bg-llm    { background: #0f1a2e; border-bottom: 2px solid var(--blue);   }
+  .bg-vlm    { background: #17102e; border-bottom: 2px solid var(--purple); }
+  .bg-plan   { background: #0d1f14; border-bottom: 2px solid var(--teal);   }
+  .bg-exec   { background: #1e1200; border-bottom: 2px solid var(--orange); }
+  .bg-state  { background: #1a0d1a; border-bottom: 2px solid var(--pink);   }
+  .bg-step   { background: #0e1a0e; border-bottom: 2px solid var(--green);  }
+
+  /* ── Timeline ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 9px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 0; }
+  .tl-dot  { position: absolute; left: -28px; top: 14px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg); }
+  .tl-box  { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; background: var(--surface); }
+  .tl-ts   { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+  .tl-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .tl-body { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .tl-memory { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .tl-mem-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; display: inline-block; margin-right: 6px; }
+  .b-llm    { background: #0f3060; color: var(--blue);   }
+  .b-vlm    { background: #2e1060; color: var(--purple); }
+  .b-gesture{ background: #3d2000; color: var(--orange); }
+  .b-agent  { background: #1a2a1a; color: var(--green);  }
+  .b-replan { background: #3d2020; color: var(--red);    }
+  .fail { color: var(--red); }
+  .ok   { color: var(--green); }
+
+  /* ── Highlight boxes ── */
+  .callout { border-radius: 8px; padding: 14px 16px; margin: 16px 0; font-size: 12px; line-height: 1.6; }
+  .callout.blue   { background: #0f1a2e; border: 1px solid #1e3a6e; }
+  .callout.orange { background: #1e1200; border: 1px solid #4a3000; }
+  .callout.green  { background: #0d1f14; border: 1px solid #1a4a28; }
+  .callout-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+  .callout.blue .callout-title   { color: var(--blue);   }
+  .callout.orange .callout-title { color: var(--orange); }
+  .callout.green .callout-title  { color: var(--green);  }
+  code { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; }
+
+  /* ── Pass-through table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: var(--surface2); color: var(--muted); font-weight: 600; text-align: left; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  td { border-top: 1px solid var(--border); padding: 8px 12px; vertical-align: top; }
+  tr:hover td { background: var(--surface2); }
+  .td-owner { color: var(--yellow); font-family: monospace; white-space: nowrap; }
+  .td-field  { font-family: monospace; color: var(--blue); }
+  .td-desc   { color: var(--muted); line-height: 1.5; }
+  .td-flow   { color: var(--teal); font-size: 11px; }
+
+  /* ── Gap severity chips ── */
+  .sev { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .sev-crit   { background: #3d0f0f; color: var(--red);    border: 1px solid #7a1f1f; }
+  .sev-high   { background: #3d2000; color: var(--orange); border: 1px solid #7a4d00; }
+  .sev-med    { background: #1e2a00; color: var(--yellow);  border: 1px solid #4a5a00; }
+  .sev-low    { background: #0d1f14; color: var(--green);  border: 1px solid #1a4a28; }
+  .td-where   { color: var(--purple); font-family: monospace; font-size: 11px; }
+  .td-fix     { color: var(--teal); font-size: 11px; line-height: 1.5; }
+
+  /* ── Multimodal opportunity cards ── */
+  .opp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
+  .opp-card { border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+  .opp-header { padding: 10px 14px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .opp-body   { background: var(--surface); padding: 12px 14px; font-size: 12px; line-height: 1.6; }
+  .opp-body ul { padding-left: 16px; color: var(--muted); }
+  .opp-body li { margin-bottom: 4px; }
+  .opp-body strong { color: var(--text); }
+  .opp-gain { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .gain-win  { background: #0d3320; color: var(--green);  border: 1px solid #1a5530; }
+  .gain-risk { background: #3d2000; color: var(--orange); border: 1px solid #7a4d00; }
+  .opp-blue   { background: #0f1a2e; border-bottom: 2px solid var(--blue);   }
+  .opp-purple { background: #17102e; border-bottom: 2px solid var(--purple); }
+  .opp-orange { background: #1e1200; border-bottom: 2px solid var(--orange); }
+  .opp-green  { background: #0d1f14; border-bottom: 2px solid var(--green);  }
+</style>
+</head>
+<body>
+
+<h1>🤖 AURA — Agent Flow & Memory Map</h1>
+<p class="subtitle">Complete walk-through of a single command: <strong>"open Amazon, search for iPhone 17 Pro and add it to my cart"</strong><br>
+Shows every memory structure created, who writes it, and who reads it.</p>
+
+<!-- ═══════════════════════════════════════════════ PIPELINE ═══ -->
+<div class="section-title">1 · Agent Pipeline Overview</div>
+<div class="pipeline">
+  <div class="pipe-step">
+    <div class="agent-name c-intent">① Commander</div>
+    <div class="desc">Parses user text → structured <code>intent</code> dict</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-plan">② Planner</div>
+    <div class="desc">Creates <code>Goal</code> + <code>phases[]</code> skeleton</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-plan">③ Coordinator loop</div>
+    <div class="desc">Drives execution. Picks next subgoal via ReactiveStep LLM</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-vlm">④ PerceiverAgent</div>
+    <div class="desc">Takes screenshot, reads UI tree, calls ScreenReader VLM</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-vlm">⑤ VisualLocator</div>
+    <div class="desc">Finds pixel coordinates for a tap/swipe target</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-exec">⑥ ActorAgent</div>
+    <div class="desc">Dispatches gesture to device via ADB/adapter</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-verify">⑦ VerifierAgent</div>
+    <div class="desc">Checks screen changed, success criteria passed</div>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-step">
+    <div class="agent-name c-speak">⑧ Responder</div>
+    <div class="desc">Speaks final result to user</div>
+  </div>
+</div>
+
+<div class="callout blue">
+  <div class="callout-title">How phases and subgoals relate</div>
+  <strong>Phases</strong> = high-level skeleton created once: <code>["Open Amazon", "Search for iPhone 17 Pro", "Add first result to cart"]</code><br>
+  <strong>Subgoals</strong> = concrete one-action steps generated reactively <em>per-screen</em> as each phase executes.<br>
+  The Coordinator loop: <em>observe screen → ask LLM "what single action next?" → execute → verify → repeat</em>.
+</div>
+
+<!-- ═══════════════════════════════════════════════ MEMORY STRUCTURES ═══ -->
+<div class="section-title">2 · Memory Structures in Detail</div>
+<div class="mem-grid">
+
+  <!-- TaskState -->
+  <div class="mem-card">
+    <div class="mem-card-header bg-state">🗂 TaskState <span style="color:var(--muted);font-weight:400;font-size:10px">(LangGraph shared graph state)</span></div>
+    <div class="mem-card-body">
+      <div class="mem-key">transcript</div>
+      <div class="mem-val info">"open amazon search for iphone 17 pro and add it to my cart"</div>
+      <div class="mem-key">intent (written by Commander)</div>
+      <div class="mem-val info">{ "action": "open_app", "recipient": "amazon",
+  "confidence": 0.95,
+  "parameters": ["search_query", "visual_reference"] }</div>
+      <div class="mem-key">session_id</div>
+      <div class="mem-val info">"7c0f2ba5-bbbe-4e7d-a56b-ab08a446a050"</div>
+      <div class="mem-key">status</div>
+      <div class="mem-val info">"executing"  →  "completed"  (last-writer-wins)</div>
+      <div class="mem-key">spoken_response (written by Responder)</div>
+      <div class="mem-val ok">"Done! iPhone 17 Pro has been added to your Amazon cart."</div>
+    </div>
+  </div>
+
+  <!-- Goal -->
+  <div class="mem-card">
+    <div class="mem-card-header bg-plan">📋 Goal <span style="color:var(--muted);font-weight:400;font-size:10px">(written by Planner, mutated by Coordinator)</span></div>
+    <div class="mem-card-body">
+      <div class="mem-key">original_utterance</div>
+      <div class="mem-val info">"open amazon search for iphone 17 pro and add it to my cart"</div>
+      <div class="mem-key">description</div>
+      <div class="mem-val info">"Search for iPhone 17 Pro on Amazon and add it to the cart"</div>
+      <div class="mem-key">phases[]  <span style="color:var(--muted)">(skeleton, created once)</span></div>
+      <div class="mem-val info">Phase(0) "Open Amazon"              completed=True
+Phase(1) "Search for iPhone 17 Pro"   completed=True
+Phase(2) "Add first result to cart"   completed=False ← current</div>
+      <div class="mem-key">current_phase_index</div>
+      <div class="mem-val warn">2  (advances when step sets phase_complete=true)</div>
+      <div class="mem-key">pending_commits[]  <span style="color:var(--muted)">(irreversible actions)</span></div>
+      <div class="mem-val warn">["add to cart"]  ← must fire before goal_complete</div>
+      <div class="mem-key">subgoals[]  <span style="color:var(--muted)">(grown reactively)</span></div>
+      <div class="mem-val info">Subgoal("Open Amazon app", open_app)        ✓
+Subgoal("Tap search bar", tap)               ✓
+Subgoal("Type iPhone 17 Pro", type)          ✓
+Subgoal("Press enter", press_enter)          ✓
+Subgoal("Tap first result", tap)             ✓
+Subgoal("Scroll down", scroll_down)          ✓ ← NEW after fix
+Subgoal("Tap Add to Cart", tap)              ← current</div>
+    </div>
+  </div>
+
+  <!-- StepMemory -->
+  <div class="mem-card">
+    <div class="mem-card-header bg-step">🧠 StepMemory[]  <span style="color:var(--muted);font-weight:400;font-size:10px">(short-term, grows per completed step)</span></div>
+    <div class="mem-card-body">
+      <div class="mem-key">Entry after "Tap search bar"</div>
+      <div class="mem-val ok">{ subgoal_description: "Tap the search bar to focus for typing",
+  action_type: "tap",
+  target: "Search bar",
+  result: "success",
+  screen_type: "native",
+  screen_before: "243c97976b8f2e64",
+  screen_after:  "1f79524bc5a42e84",
+  coordinates: (620, 496),
+  screen_description: null }</div>
+      <div class="mem-key">Entry after "Scroll down"  <span style="color:var(--muted)">(new with fix)</span></div>
+      <div class="mem-val ok">{ subgoal_description: "Scroll down to reveal Add to Cart button",
+  action_type: "scroll_down",
+  target: null,
+  result: "success",
+  screen_before: "a9f3...",
+  screen_after:  "b72c..." }</div>
+      <div style="color:var(--muted);font-size:11px;margin-top:8px">
+        📌 Last 3 entries are serialised as <code>recent_steps</code> and injected into the VLM screen reader prompt so it knows history.
+      </div>
+    </div>
+  </div>
+
+  <!-- PerceptionBundle -->
+  <div class="mem-card">
+    <div class="mem-card-header bg-vlm">👁 PerceptionBundle  <span style="color:var(--muted);font-weight:400;font-size:10px">(built fresh each loop by PerceiverAgent)</span></div>
+    <div class="mem-card-body">
+      <div class="mem-key">screenshot.screenshot_base64</div>
+      <div class="mem-val info">"&lt;base64 JPEG ~80KB&gt;"</div>
+      <div class="mem-key">ui_tree.elements[]  (113 elements on Amazon home)</div>
+      <div class="mem-val info">[{ className:"ImageButton", contentDescription:"Search",
+   bounds:"[0,391→1240,601]", center:"620,496",
+   clickable:true },
+ { className:"TextView", text:"Search or ask a question",
+   bounds:"[189,426→778,580]", clickable:true },
+ ... 111 more ]</div>
+      <div class="mem-key">visual_description  (written by ScreenReader VLM)</div>
+      <div class="mem-val info">"APP & SCREEN: Amazon | Product details for iPhone 17 Pro
+NAVIGATION: Back icon | Search icon | Bottom tabs
+CONTENT: iPhone 17 Pro 512GB ₹1,54,900 | Rating 4.4★ (306) | Color selector | Delivery info
+BLOCKER: TARGET NOT VISIBLE: 'Add to Cart' is not in current
+viewport — scroll down to reveal it"</div>
+      <div class="mem-key">target_match  (written by VisualLocator)</div>
+      <div class="mem-val ok">{ x: 620, y: 496, method: "vlm_annotated_ui_tree", element_id: "44" }</div>
+    </div>
+  </div>
+
+  <!-- ReactiveStep LLM input -->
+  <div class="mem-card">
+    <div class="mem-card-header bg-llm">🤖 Reactive Step LLM — Full Input  <span style="color:var(--muted);font-weight:400;font-size:10px">(assembled by Coordinator)</span></div>
+    <div class="mem-card-body">
+      <div class="mem-key">OVERALL GOAL  ← from Goal.description</div>
+      <div class="mem-val info">"Search for iPhone 17 Pro on Amazon and add it to the cart"</div>
+      <div class="mem-key">CURRENT PHASE  ← from Goal.current_phase.description</div>
+      <div class="mem-val info">"Add the first product result to the cart"</div>
+      <div class="mem-key">CURRENT SCREEN  ← from PerceptionBundle.visual_description [:800]</div>
+      <div class="mem-val warn">"APP & SCREEN: Amazon | Product details for iPhone 17 Pro
+...
+BLOCKER: TARGET NOT VISIBLE: 'Add to Cart' is not in current
+viewport — scroll down to reveal it"</div>
+      <div class="mem-key">STEPS DONE SO FAR  ← from StepMemory[-5:]</div>
+      <div class="mem-val info">"[open_app] Open Amazon | [tap] Tap search bar |
+[type] iPhone 17 Pro | [press_enter] Submit search |
+[tap] Tap first product result"</div>
+      <div class="mem-key">COMMIT ACTIONS NEEDED  ← from Goal.pending_commits</div>
+      <div class="mem-val warn">["add to cart"]</div>
+      <div class="mem-key">→ LLM OUTPUT (after fix, BLOCKER triggers rule 12)</div>
+      <div class="mem-val ok">{ "action_type": "scroll_down",
+  "target": "",
+  "description": "Scroll down to reveal Add to Cart button",
+  "phase_complete": false,
+  "goal_complete": false }</div>
+    </div>
+  </div>
+
+  <!-- VLM Screen Reader input -->
+  <div class="mem-card">
+    <div class="mem-card-header bg-vlm">🔍 Screen Reader VLM — Full Input  <span style="color:var(--muted);font-weight:400;font-size:10px">(assembled by ScreenReader.describe_screen)</span></div>
+    <div class="mem-card-body">
+      <div class="mem-key">Image input</div>
+      <div class="mem-val info">screenshot_base64  (JPEG, Groq vision)</div>
+      <div class="mem-key">=== AGENT MISSION ===  ← 3 new fields wired in Phase 9</div>
+      <div class="mem-val info">OVERALL GOAL:  "Search for iPhone 17 Pro on Amazon and add it to cart"
+CURRENT STEP:  "[tap] Add the product to the cart (target: Add to Cart button)"
+STEPS DONE:    "[open_app] Open Amazon → [tap] Tap search bar →
+                [type] iPhone 17 Pro"</div>
+      <div class="mem-key">=== ACCESSIBILITY HINTS ===  ← first 50 UI elements from ui_tree</div>
+      <div class="mem-val info">1. ImageButton: 'Search' [tap]
+2. TextView: 'iPhone 17 Pro 512 GB'
+3. TextView: '₹1,54,900'
+4. TextView: '4.4 out of 5 stars'
+... (up to 50, 2500 chars max)</div>
+      <div class="mem-key">→ VLM writes BLOCKER using mission context</div>
+      <div class="mem-val warn">BLOCKER: TARGET NOT VISIBLE: 'Add to Cart' is not in the current
+viewport — scroll down to reveal it</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ TIMELINE ═══ -->
+<div class="section-title">3 · Step-by-Step Timeline with Memory Snapshots</div>
+<div class="timeline">
+
+  <!-- Step 1 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--yellow)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:24:47</div>
+      <div class="tl-title"><span class="badge b-agent">COMMAND</span> User sends text request</div>
+      <div class="tl-body">Input: <em>"open amazon search for iphone 17 pro and add it to my cart"</em></div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        <code>TaskState.transcript</code> = raw string<br>
+        <code>TaskState.session_id</code> = new UUID<br>
+        <code>TaskState.input_type</code> = "streaming"
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--blue)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:24:48  <span class="badge b-llm">LLM #1</span> groq / llama-3.1-8b-instant  |  597 tokens</div>
+      <div class="tl-title">Commander — Intent Parsing</div>
+      <div class="tl-body">Reads: <code>TaskState.transcript</code><br>
+      Writes structured intent back to TaskState</div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        <code>TaskState.intent</code> = <code>{ action:"open_app", recipient:"amazon", confidence:0.95 }</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--teal)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:24:56  <span class="badge b-llm">LLM #2</span> groq / gpt-oss-120b  |  1095 tokens</div>
+      <div class="tl-title">Planner — Goal Decomposition</div>
+      <div class="tl-body">Reads: <code>TaskState.intent</code> + app context<br>
+      Creates skeleton phases and identifies commit actions</div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        <code>Goal.description</code> = "Search for iPhone 17 Pro on Amazon and add it to the cart"<br>
+        <code>Goal.phases</code> = [ "Open Amazon", "Search for iPhone 17 Pro", "Add first result to cart" ]<br>
+        <code>Goal.pending_commits</code> = [ "add to cart" ]<br>
+        <code>Goal.current_phase_index</code> = 0
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--blue)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:24:57  <span class="badge b-llm">LLM #3</span> groq / gpt-oss-120b  |  1147 tokens</div>
+      <div class="tl-title">Coordinator → Reactive Step #1: open_app Amazon</div>
+      <div class="tl-body">
+        <strong>Reads:</strong><br>
+        • <code>Goal.description</code>  (overall goal)<br>
+        • <code>Goal.current_phase.description</code>  = "Open Amazon"<br>
+        • <code>running_screen_context[:800]</code>  = "Screen not yet observed"<br>
+        • <code>step_history</code>  = [] (empty — first step)<br>
+        • <code>Goal.pending_commits</code>  = ["add to cart"]<br><br>
+        <strong>LLM decides:</strong> <code>open_app "Amazon"</code>
+      </div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        New <code>Subgoal</code> appended to <code>Goal.subgoals[]</code>:<br>
+        <code>{ description:"Open Amazon", action_type:"open_app", target:"Amazon", attempts:0 }</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--orange)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:24:57  <span class="badge b-gesture">GESTURE #1</span> OPEN_APP  |  2016ms  ✅ SUCCESS</div>
+      <div class="tl-title">ActorAgent — Launches Amazon via package name</div>
+      <div class="tl-body">No perception needed — open_app fast path.<br>Verifier confirms activity launched.</div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        <code>StepMemory</code> appended:<br>
+        <code>{ subgoal:"Open Amazon", action:"open_app", result:"success",
+  screen_before:"...", screen_after:"...", verified_by:"launch_confirmed" }</code><br>
+        <code>Goal.subgoals[0].completed</code> = True
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--purple)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:25:07  <span class="badge b-vlm">VLM #1</span> llama-4-scout  |  3786 tokens</div>
+      <div class="tl-title">PerceiverAgent → ScreenReader — Reads Amazon Home</div>
+      <div class="tl-body">
+        <strong>VLM receives:</strong><br>
+        • Screenshot (base64 JPEG)<br>
+        • <code>=== AGENT MISSION ===</code>  GOAL: "...add to cart" | STEP: "[open_app] Open Amazon (target: Amazon)"<br>
+        • 50 UI elements from accessibility tree<br><br>
+        <strong>VLM writes:</strong><br>
+        <em>"APP & SCREEN: Amazon | Home<br>
+        NAVIGATION: Bottom tabs: Home (ACTIVE)...<br>
+        CONTENT: Pay | Groceries Fresh | CRAZY PRICES Bazaar...<br>
+        INPUT FIELDS: Search bar: empty<br>
+        BLOCKER: None"</em>
+      </div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        <code>PerceptionBundle.visual_description</code> = 7-section screen report (148 tokens)<br>
+        <code>Coordinator.running_screen_context</code> = same, used in next reactive step prompt
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--red)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:25:08–13:25:19  <span class="badge b-gesture">GESTURES #2-4</span> TYPE × 3  ❌ FAILED</div>
+      <div class="tl-title" class="fail">Bug: TYPE before search bar was focused</div>
+      <div class="tl-body">
+        Reactive LLM generated <code>type "iPhone 17 Pro"</code> directly.<br>
+        BLOCKER said "None" — VLM didn't know the step required a focused input.<br>
+        Amazon search bar is a composite widget, not a focusable EditText.<br>
+        <span class="fail">→ "Gesture dispatch failed" × 3</span>
+      </div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Effect</div>
+        <code>Subgoal.attempts</code>: 1 → 2 → 3 (retry ladder escalates)<br>
+        <code>StepMemory</code> entries written with <code>result:"failed"</code><br>
+        <span style="color:var(--green)">✅ FIXED: VLM now writes <code>BLOCKER: INPUT NOT FOCUSED</code> → reactive LLM taps first</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 8 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--purple)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:25:23  <span class="badge b-vlm">VLM #2+3</span>  Screen read + Visual locate</div>
+      <div class="tl-title">PerceiverAgent — Locates search bar coordinates</div>
+      <div class="tl-body">
+        VLM #2: Screen description (same home screen)<br>
+        VLM #3: Visual locator → <code>{"element": "44", "screen_ok": true}</code><br>
+        Element 44 = <code>LinearLayout [0,391→1240,601]</code> center (620, 496) = Search bar wrapper
+      </div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Created</div>
+        <code>PerceptionBundle.target_match</code> = <code>{ x:620, y:496, method:"vlm_annotated_ui_tree" }</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 9 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--orange)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:25:26  <span class="badge b-gesture">GESTURE #5</span> TAP (620,496)  ✅</div>
+      <div class="tl-title">Search bar tapped — keyboard opens</div>
+      <div class="tl-body"><code>screen_before</code> ≠ <code>screen_after</code> → VerifierAgent confirms screen changed</div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Updated</div>
+        <code>StepMemory[]</code> ← <code>{ subgoal:"Tap search bar", result:"success", screen_changed:True }</code><br>
+        <code>StepMemory</code> is now passed to next VLM call as <code>recent_steps</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 10 -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--orange)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:25:32  <span class="badge b-gesture">GESTURE #6</span> TYPE "iPhone 17 Pro"  ✅<br>
+      13:25:35  <span class="badge b-gesture">GESTURE #7</span> PRESS_ENTER  ✅</div>
+      <div class="tl-title">Search submitted — results page loads</div>
+      <div class="tl-body">Phase "Search for iPhone 17 Pro" → <code>phase_complete: true</code> from LLM #7<br>
+      <code>Goal.advance_phase()</code> called → <code>current_phase_index</code> = 2</div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Updated</div>
+        <code>Goal.phases[1].completed</code> = True<br>
+        <code>Goal.current_phase_index</code> = 2<br>
+        2 new <code>StepMemory</code> entries appended<br>
+        <code>running_screen_context</code> refreshed after search results page loads
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 11 – the bug that caused the loop -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--red)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">13:25:41 → 13:26:19  <span class="badge b-replan">REPLAN × 3</span>  "Add to Cart" not found</div>
+      <div class="tl-title" class="fail">Bug: Tapped wrong element instead of scrolling to Add to Cart</div>
+      <div class="tl-body">
+        Reactive LLM generated <code>tap "Add to Cart"</code> immediately.<br>
+        "Add to Cart" was below the fold — not in VLM's viewport description.<br>
+        BLOCKER said "None" → LLM had no signal to scroll first.<br>
+        Visual locator found no match → picked nearest element → navigated back to Home.<br>
+        VerifierAgent detected <code>screen_mismatch</code> (expected product page, got Home) → ADAPTIVE_REPLAN × 3<br>
+        Each replan restarted the entire search — 22 total VLM calls, 0 successful add-to-cart.
+      </div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Memory Effect</div>
+        <code>Goal.replan_count</code>: 1 → 2 → 3<br>
+        Each replan overwrites <code>Goal.subgoals[]</code> with a fresh 5-step list<br>
+        <code>StepMemory[]</code> grows with failed entries but is never reset → LLM sees history<br>
+        <span style="color:var(--green)">✅ FIXED: VLM now writes <code>BLOCKER: TARGET NOT VISIBLE: 'Add to Cart'</code><br>
+        LLM rule 12 fires → generates <code>scroll_down</code> step first</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 12 — after fix -->
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--green)"></div>
+    <div class="tl-box">
+      <div class="tl-ts">After fix — expected behaviour</div>
+      <div class="tl-title" class="ok">✅ scroll_down → Add to Cart visible → tap → SUCCESS</div>
+      <div class="tl-body">
+        VLM on product page receives CURRENT STEP: "[tap] Add to cart (target: Add to Cart button)"<br>
+        VLM checks viewport: Add to Cart not visible → writes BLOCKER<br>
+        Reactive LLM sees BLOCKER → rule 12 → generates <code>scroll_down</code><br>
+        Next screen read: Add to Cart now visible → BLOCKER: None<br>
+        VLM #N+1 locates Add to Cart button coordinates<br>
+        ActorAgent taps → Verifier confirms cart count +1 → <code>pending_commits</code> cleared<br>
+        Goal complete
+      </div>
+      <div class="tl-memory">
+        <div class="tl-mem-title">📝 Final Memory State</div>
+        <code>Goal.pending_commits</code> = [] (cleared)<br>
+        <code>Goal.completed</code> = True<br>
+        <code>TaskState.spoken_response</code> = "Done! iPhone 17 Pro added to your cart."<br>
+        <code>StepMemory[]</code> archived to command log HTML + .log file
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ PASS TABLE ═══ -->
+<div class="section-title">4 · Who Writes / Who Reads — Complete Pass-Through Table</div>
+<table>
+  <thead>
+    <tr><th>Memory Field</th><th>Written By</th><th>Read By</th><th>What It Carries</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="td-field">TaskState.transcript</td>
+      <td class="td-owner">Coordinator (on input)</td>
+      <td class="td-flow">Commander</td>
+      <td class="td-desc">Raw user utterance</td>
+    </tr>
+    <tr>
+      <td class="td-field">TaskState.intent</td>
+      <td class="td-owner">Commander</td>
+      <td class="td-flow">Planner (GoalDecomposer)</td>
+      <td class="td-desc">Structured action + recipient + confidence</td>
+    </tr>
+    <tr>
+      <td class="td-field">Goal.phases[]</td>
+      <td class="td-owner">Planner (LLM #2)</td>
+      <td class="td-flow">Coordinator loop — drives phase transitions</td>
+      <td class="td-desc">High-level skeleton, created once</td>
+    </tr>
+    <tr>
+      <td class="td-field">Goal.pending_commits[]</td>
+      <td class="td-owner">Planner (LLM #2)</td>
+      <td class="td-flow">ReactiveStep prompt as COMMIT ACTIONS NEEDED; Verifier checks on goal_complete</td>
+      <td class="td-desc">Irreversible actions that must fire before task ends</td>
+    </tr>
+    <tr>
+      <td class="td-field">Goal.current_phase_index</td>
+      <td class="td-owner">Coordinator (on phase_complete=true)</td>
+      <td class="td-flow">ReactiveStep prompt as CURRENT PHASE</td>
+      <td class="td-desc">Which phase the reactive LLM is working on now</td>
+    </tr>
+    <tr>
+      <td class="td-field">Goal.subgoals[]</td>
+      <td class="td-owner">ReactiveStepGenerator (each loop iteration)</td>
+      <td class="td-flow">Coordinator to dispatch next action; VerifierAgent to check completion</td>
+      <td class="td-desc">Concrete one-action steps grown reactively from screen observations</td>
+    </tr>
+    <tr>
+      <td class="td-field">StepMemory[]</td>
+      <td class="td-owner">Coordinator (after each verified step)</td>
+      <td class="td-flow">PlannerAgent (as step_history); PerceiverAgent (as recent_steps → VLM); ReactiveStep prompt (STEPS DONE)</td>
+      <td class="td-desc">Short-term history of completed actions — the agent's episodic memory</td>
+    </tr>
+    <tr>
+      <td class="td-field">PerceptionBundle.visual_description</td>
+      <td class="td-owner">ScreenReader VLM (llama-4-scout)</td>
+      <td class="td-flow">Coordinator as running_screen_context[:800] → ReactiveStep LLM input</td>
+      <td class="td-desc">7-section screen report including BLOCKER field</td>
+    </tr>
+    <tr>
+      <td class="td-field">PerceptionBundle.target_match</td>
+      <td class="td-owner">VisualLocator VLM</td>
+      <td class="td-flow">ActorAgent — pixel coordinates for gesture dispatch</td>
+      <td class="td-desc">{x, y} where to tap/swipe</td>
+    </tr>
+    <tr>
+      <td class="td-field">running_screen_context (Coordinator)</td>
+      <td class="td-owner">Coordinator (refreshed after each perception cycle)</td>
+      <td class="td-flow">ReactiveStep prompt as CURRENT SCREEN; also truncated to [:800] in 6 places</td>
+      <td class="td-desc">Latest VLM screen description — ground truth for next step decision</td>
+    </tr>
+    <tr>
+      <td class="td-field">_subgoal_hint (PerceiverAgent)</td>
+      <td class="td-owner">PerceiverAgent (built from current Subgoal before perception call)</td>
+      <td class="td-flow">PerceptionController → ScreenReader → VLM prompt as CURRENT STEP</td>
+      <td class="td-desc">Tells VLM what the agent is about to do so it can check BLOCKER intelligently</td>
+    </tr>
+    <tr>
+      <td class="td-field">_recent_steps (PerceiverAgent)</td>
+      <td class="td-owner">PerceiverAgent (from StepMemory[-3:])</td>
+      <td class="td-flow">ScreenReader → VLM prompt as STEPS DONE</td>
+      <td class="td-desc">Last 3 actions give VLM context to avoid reporting already-done things</td>
+    </tr>
+    <tr>
+      <td class="td-field">BLOCKER section (VLM output)</td>
+      <td class="td-owner">ScreenReader VLM — now checks CURRENT STEP target reachability</td>
+      <td class="td-flow">ReactiveStep LLM — rule 12: TARGET NOT VISIBLE → scroll, INPUT NOT FOCUSED → tap field first</td>
+      <td class="td-desc">The critical ground signal that closes the perception→action feedback loop</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout green" style="margin-top:24px">
+  <div class="callout-title">Key Design Insight</div>
+  The reactive LLM is <strong>stateless per call</strong> — it only knows what you give it. Every piece of context it needs (what's on screen, what's been done, what phase we're in, what still needs to happen) must be <strong>explicitly assembled from the memory structures above and injected into the prompt</strong>. The agent's "intelligence" is the sum of its memory plumbing.
+</div>
+
+<div class="callout orange" style="margin-top:12px">
+  <div class="callout-title">The loop bug explained in one line</div>
+  BLOCKER was only watching for <em>overlapping</em> UI blockers (popups). It was not watching whether the <em>current step's target was reachable</em> — so the reactive LLM acted into the void. The fix makes the VLM use its <code>CURRENT STEP</code> mission context to proactively test reachability before saying "BLOCKER: None".
+</div>
+
+<!-- ═══════════════════════════════════════════════ CONTEXT GAPS ═══ -->
+<div class="section-title">5 · Context Gaps — Where Needed Memory Is NOT Shared</div>
+
+<div class="callout orange">
+  <div class="callout-title">How to read this table</div>
+  These are real gaps found by tracing every <code>step_history</code>, <code>screen_description</code>, <code>plan_context</code>, and <code>pre_action_context</code> reference through all agent files. "Severity" = how much decision quality degrades when the field is absent.
+</div>
+
+<table style="margin-top:16px">
+  <thead>
+    <tr>
+      <th style="width:7%">Sev.</th>
+      <th style="width:22%">Gap</th>
+      <th style="width:18%">Where</th>
+      <th style="width:30%">What's Missing / Why It Matters</th>
+      <th style="width:23%">What Already Exists to Fill It</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="sev sev-crit">CRITICAL</span></td>
+      <td class="td-field">step_history silently discarded in verifier</td>
+      <td class="td-where">verifier_agent.py<br><code>verify()</code></td>
+      <td class="td-desc"><code>step_history</code> is accepted as a parameter but <strong>never read inside the function body</strong>. Not passed to <code>_check_success_criteria()</code>, <code>_vlm_verify_commit()</code>, or <code>_poll_for_change()</code>. The verifier is flying blind — it sees the post-action screen but has no context about what was attempted before.</td>
+      <td class="td-fix"><code>step_history</code> is already passed in by Coordinator. Just wire it through to <code>_vlm_verify_commit()</code>.</td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-crit">CRITICAL</span></td>
+      <td class="td-field">pre_action_context["cart_count"] never reaches the VLM verifier</td>
+      <td class="td-where">verifier_agent.py<br><code>_vlm_verify_commit()</code></td>
+      <td class="td-desc">Coordinator captures <code>subgoal.pre_action_context = {"cart_count": 2}</code> before each commit action. <code>_vlm_verify_commit()</code> receives the <code>subgoal</code> object but never reads <code>subgoal.pre_action_context</code>. The VLM confirms "add to cart succeeded" by looking at the post-action screenshot alone — it cannot compare cart count before vs after.</td>
+      <td class="td-fix"><code>subgoal.pre_action_context</code> is already set on the object passed in. Read it and include in the VLM's verify prompt: <em>"Cart count before action: 2. Confirm it changed."</em></td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-high">HIGH</span></td>
+      <td class="td-field">running_screen_context degrades to 8 element labels</td>
+      <td class="td-where">coordinator.py →<br>reactive_step_generator.py</td>
+      <td class="td-desc">When a loop iteration skips the VLM describe-screen call (e.g. fast-path actions), <code>running_screen_context</code> is set to 8 UI element labels joined by <code>;</code>: <code>"Search; Cart; Account; Home"</code>. The ReactiveStep LLM then receives this as its sole screen context. It cannot reason about current app state and may generate incorrect steps.</td>
+      <td class="td-fix"><code>StepMemory.screen_description</code> from the most recent entry that has a non-null value. Fall back to last VLM description rather than raw labels.</td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-high">HIGH</span></td>
+      <td class="td-field">_recent_steps strips result + screen_description per step</td>
+      <td class="td-where">perceiver_agent.py<br><code>_build_recent_steps()</code></td>
+      <td class="td-desc"><code>_recent_steps</code> is built as <code>"[tap] Tap search bar → [type] iPhone..."</code> — just action+description, truncated at 50 chars. Loses: <code>result</code> (✅/❌), <code>screen_type</code>, and <code>screen_description</code>. So the screen reader VLM sees "steps done" but not whether they worked or what the screen looked like after each one.</td>
+      <td class="td-fix">Include <code>result</code> emoji in the step string: <code>"[tap] ✅ Tap search bar → [type] ❌ Type failed"</code>. The screen reader can then tailor BLOCKER reasoning to repeated failures.</td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-high">HIGH</span></td>
+      <td class="td-field">OmniParser fallback missing user_command / plan_context / subgoal</td>
+      <td class="td-where">visual_locator.py<br><code>locate_from_bundle()</code></td>
+      <td class="td-desc">Primary path (<code>locate_with_annotated_ui_tree</code>) receives full context: user_command, plan_context, subgoal_description included in a <code>FULL PLAN:</code> block. OmniParser fallback receives only <code>element_description + screen_context</code>. When the primary path fails (element not in accessibility tree) and the fallback fires, the VLM picks from CV-detected candidates with much less grounding — exactly the scenario that causes wrong-element taps.</td>
+      <td class="td-fix">All three fields are in scope at the call site in <code>perceiver_agent.py line 218</code>. Pass them to <code>locate_from_bundle()</code> and thread to <code>_legacy_locate_from_bundle()</code>.</td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-med">MEDIUM</span></td>
+      <td class="td-field">_format_history() drops screen_description per step</td>
+      <td class="td-where">reactive_step_generator.py<br><code>_format_history()</code></td>
+      <td class="td-desc">History passed to the reactive LLM shows: <code>"✅ tap(Library) → native → ✅ scroll_down(None)"</code>. It does NOT include what the screen looked like after each step. After a failed "Add to Cart" tap, the LLM sees <code>"❌ tap(Add to Cart) → webview"</code> but not "…and the screen showed the home page" — it cannot reason about what went wrong.</td>
+      <td class="td-fix"><code>StepMemory.screen_description</code> is stored. For <code>result=failed</code> entries, append a 1-line summary: <code>"→ screen: {description[:80]}"</code>.</td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-med">MEDIUM</span></td>
+      <td class="td-field">plan_context never reaches screen_reader.describe_screen()</td>
+      <td class="td-where">perceiver_agent.py →<br>screen_reader.py</td>
+      <td class="td-desc"><code>perceiver.perceive()</code> receives <code>plan_context</code> and passes it to <code>locate_with_annotated_ui_tree()</code> — but NOT to <code>perception_controller.request_perception()</code> which is the path to <code>describe_screen()</code>. Screen reader knows current step and last 3 steps but not what comes next in the plan. Knowing "next step will be Add to Cart" would let the VLM confirm whether it's visible sooner.</td>
+      <td class="td-fix">Add <code>plan_context</code> parameter to <code>request_perception()</code> → <code>describe_screen()</code> and inject into AGENT MISSION block as <code>UPCOMING STEPS</code>.</td>
+    </tr>
+    <tr>
+      <td><span class="sev sev-low">LOW</span></td>
+      <td class="td-field">No last_failure_reason in reactive step prompt</td>
+      <td class="td-where">prompts/reactive_step.py</td>
+      <td class="td-desc">The <code>steps_done</code> history shows <code>❌</code> markers but gives no reason (e.g. "element not found", "screen didn't change", "verifier returned False"). The LLM may retry the same failed approach without knowing the failure modality.</td>
+      <td class="td-fix">Add a <code>last_failure_reason</code> template field. Populate from <code>StepMemory.result</code> + <code>subgoal.last_error</code> if the most recent step failed.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════ MULTIMODAL ═══ -->
+<div class="section-title" style="margin-top:40px">6 · Multimodal LLM — What Changes (and What It Unlocks)</div>
+
+<div class="callout blue">
+  <div class="callout-title">What "multimodal" means here</div>
+  The VLMs used in AURA (e.g. <code>llama-4-scout</code>, <code>gemma3-27b-it</code>) are full multimodal LLMs — they accept images <em>and</em> text together, and can reason across both simultaneously, exactly like a normal text LLM but with vision added. This is distinct from a pure vision model. It means every place where AURA currently passes a <em>text description of a screen</em>, it could instead (or additionally) pass the <em>raw screenshot</em> and let the LLM see directly.
+</div>
+
+<div class="opp-grid" style="margin-top:16px">
+
+  <!-- Fuse screen-reader + visual-locator -->
+  <div class="opp-card">
+    <div class="opp-header opp-blue">
+      🔀 Collapse ScreenReader + VisualLocator into one call
+      <span class="opp-gain gain-win">−1 VLM CALL per action</span>
+    </div>
+    <div class="opp-body">
+      <strong>Current:</strong> 2 separate VLM calls per action cycle:
+      <ul>
+        <li>VLM call 1 → <code>describe_screen()</code> → returns 7-section text description</li>
+        <li>VLM call 2 → <code>locate_with_annotated_ui_tree()</code> → returns element ID + coordinates</li>
+      </ul>
+      <strong>With multimodal:</strong> One combined call that returns both in a single structured JSON response:
+      <ul>
+        <li><code>screen_description</code>: the 7-section report</li>
+        <li><code>target_element</code>: element ID from the annotated tree</li>
+        <li><code>blocker</code>: TARGET NOT VISIBLE / INPUT NOT FOCUSED</li>
+      </ul>
+      <strong>Why it works:</strong> The LLM sees the image + accessibility tree + subgoal in one prompt and can simultaneously describe the screen and identify the target. It already has all the context — the split is artificial.<br><br>
+      <span style="color:var(--orange)">⚠ Risk:</span> combined call failure = lose both description AND coordinates (currently separate fallback paths).
+    </div>
+  </div>
+
+  <!-- Image comparison in verifier -->
+  <div class="opp-card">
+    <div class="opp-header opp-purple">
+      📸 Before/After image comparison in VerifierAgent
+      <span class="opp-gain gain-win">MUCH STRONGER</span>
+    </div>
+    <div class="opp-body">
+      <strong>Current:</strong> Verifier calls <code>describe_screen()</code> on the post-action screenshot only. It is text-only guessing from one frame.<br><br>
+      <strong>With multimodal:</strong> Feed <em>both</em> screenshots to the VLM in one call:
+      <ul>
+        <li><em>"Here is the screen BEFORE the action [img1] and AFTER [img2]."</em></li>
+        <li><em>"The action was: tap Add to Cart. Did the cart count increase? Did an overlay appear confirming the add?"</em></li>
+        <li>Also: <em>"Cart count before: {pre_action_context['cart_count']}"</em></li>
+      </ul>
+      <strong>Why it works:</strong> Visual delta is far more reliable than reading a single screen. The VLM can detect subtle changes (badge +1, overlay appeared, button changed state) that would not be obvious from post-action description alone.<br><br>
+      This directly closes <strong>Gap #2</strong> (pre_action_context unused) and <strong>Gap #1</strong> (step_history for verifier).
+    </div>
+  </div>
+
+  <!-- Screenshot to ReactiveStep LLM on degraded context -->
+  <div class="opp-card">
+    <div class="opp-header opp-orange">
+      🆘 Direct screenshot fallback when screen_context degrades
+      <span class="opp-gain gain-win">RECOVERS GAP #3</span>
+    </div>
+    <div class="opp-body">
+      <strong>Current:</strong> When <code>running_screen_context</code> degrades to 8 element labels, the ReactiveStep LLM receives near-useless context like <code>"Search; Cart; Account; Home"</code>.<br><br>
+      <strong>With multimodal:</strong> Coordinator detects degraded context (length &lt; threshold OR no VLM description in last step), attaches the raw screenshot to the ReactiveStep LLM call, and lets it see the screen directly.<br><br>
+      <strong>Why it works:</strong> The ReactiveStep LLM IS a multimodal LLM — it just isn't being sent images currently. No architecture change needed, just pass the screenshot base64 when the text context is weak.<br><br>
+      <span style="color:var(--orange)">⚠ Cost:</span> Image tokens (~1200 tokens) added to an already ~1500-token prompt.
+    </div>
+  </div>
+
+  <!-- Multimodal replanner -->
+  <div class="opp-card">
+    <div class="opp-header opp-green">
+      🗺 Image-grounded replanning
+      <span class="opp-gain gain-win">SMARTER REPLAN</span>
+    </div>
+    <div class="opp-body">
+      <strong>Current:</strong> <code>planner.replan()</code> receives an <code>obstacle</code> string + text description of the current screen. It rebuilds phases from text alone.<br><br>
+      <strong>With multimodal:</strong> Pass the current screenshot to the replanner LLM:
+      <ul>
+        <li>Planner <em>sees</em> that we are on the Amazon Home page (not the product page) and can reason spatially about what went wrong</li>
+        <li>For navigation failures, the image shows exactly where the app ended up — no risk of text description being imprecise</li>
+      </ul>
+      <strong>Why it works:</strong> Replan decisions ("we're on Home, we need to get back to product page") are inherently visual. The planner currently trusts the text description of where things went wrong — an image would be unambiguous.
+    </div>
+  </div>
+
+  <!-- What changes nothing -->
+  <div class="opp-card" style="grid-column: 1 / -1">
+    <div class="opp-header" style="background:#0d1117; border-bottom: 2px solid var(--muted);">
+      ⛔ What Multimodal Does NOT Change <span class="opp-gain gain-risk">NO BENEFIT</span>
+    </div>
+    <div class="opp-body">
+      <strong>Commander (intent parsing):</strong> Pure text task. No image at this stage. Multimodal adds nothing.<br>
+      <strong>Planner (goal decomposition):</strong> Works from intent + app list. No screen to look at yet.<br>
+      <strong>Validator:</strong> Pure rule-based, no LLM at all. Not affected.<br>
+      <strong>ActorAgent:</strong> Executes gestures via ADB. No LLM in the hot path.<br>
+      <strong>Responder:</strong> Reads from <code>TaskState.spoken_response</code>. No visual reasoning needed.<br><br>
+      <span style="color:var(--muted)">The multimodal advantage is concentrated in the <strong>perception-to-action loop agents</strong>: ScreenReader, VisualLocator, VerifierAgent, and Coordinator's fallback logic.</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="callout green" style="margin-top:20px">
+  <div class="callout-title">Biggest single win available</div>
+  <strong>Verifier before/after image comparison</strong> — because it closes two critical gaps simultaneously (verifier ignores step_history, pre_action_context unused) and doesn't require changing any other agent. The VLM already accepts images. You just need to save the pre-action screenshot in Coordinator and pass both frames to <code>_vlm_verify_commit()</code>.
+</div>
+
+<div class="callout orange" style="margin-top:12px">
+  <div class="callout-title">Cheapest single fix available (code bug, not design gap)</div>
+  <strong><code>step_history</code> param in verifier_agent.py</strong> — it is <em>already accepted</em> as a parameter but never read. Plumbing it through to <code>_vlm_verify_commit()</code> is a 3-line change and turns the verifier from context-blind into context-aware.
+</div>
+
+<p style="color:var(--muted);font-size:11px;margin-top:32px">Generated for AURA Phase 2 — 2026-02-27 · Updated with gap analysis and multimodal implications</p>
+
+</body>
+</html>

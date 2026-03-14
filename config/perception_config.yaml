@@ -1,0 +1,53 @@
+# OmniParser Hybrid Perception Configuration
+# Three-layer perception: UI Tree → CV Detection → VLM Selection
+#
+# Core principle: VLM NEVER generates coordinates.
+# VLM only selects from geometrically valid CV-detected candidates.
+
+perception:
+  # Layer priority and enabling
+  ui_tree_enabled: true      # Layer 1: Always try first (fastest)
+  cv_vlm_enabled: true       # Layer 2+3: Fallback when UI tree fails
+
+  # UI Tree matching settings (Layer 1)
+  ui_tree:
+    min_match_score: 0.5     # Minimum semantic match score (0.0-1.0)
+    prefer_clickable: true   # Boost score for clickable elements
+    fuzzy_matching: true     # Enable semantic alias matching
+
+  # CV Detector settings (Layer 2 - OmniParser YOLOv8)
+  detector:
+    model_path: "models/omniparser/icon_detect/best.pt"
+    huggingface_repo: "microsoft/OmniParser-v2.0"
+    confidence_threshold: 0.25   # Lower = more detections, less precise
+    device: "auto"               # auto, cuda, cpu, mps
+    image_size: 640              # YOLOv8 input size
+    max_detections: 50           # Max elements to return
+    nms_threshold: 0.45          # Non-max suppression threshold
+
+  # VLM Selector settings (Layer 3 - Semantic Selection)
+  vlm:
+    max_tokens: 10           # Only need single letter response
+    temperature: 0.0         # Deterministic selection
+    timeout_seconds: 10      # API timeout
+    retry_count: 1           # Retries on VLM failure
+
+  # Policy Gate (validation before execution)
+  policy:
+    min_confidence: 0.70     # Minimum confidence to execute action
+    validate_bounds: true    # Check coordinates within screen
+    min_box_size: [10, 10]   # Minimum detection box size (pixels)
+    max_retries: 2           # Max retry attempts per layer
+
+  # Performance optimization
+  optimization:
+    cache_detections: true   # Cache CV detections for same screenshot
+    cache_ttl_seconds: 5     # Detection cache time-to-live
+    resize_for_vlm: true     # Resize images before VLM API
+    max_vlm_dimension: 1024  # Max image dimension for VLM
+
+  # Metrics and logging
+  metrics:
+    enabled: true            # Track success rates per layer
+    log_latency: true        # Log timing information
+    log_fallbacks: true      # Log when fallback layers are used

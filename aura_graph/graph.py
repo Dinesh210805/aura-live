@@ -1,0 +1,953 @@
+"""
+LangGraph state machine assembly for the AURA backend.
+
+This module creates the complete task execution graph by connecting
+all nodes and edges into a runnable state machine.
+
+TRI-PROVIDER PARALLEL ARCHITECTURE:
+- Fan-out after intent parsing: UI capture + validation run in parallel
+- Fan-in before planning: merge parallel results
+- Model routing: Groq for speed, vision/reasoning, Gemini as fallback
+"""
+
+import time
+from typing import Any, Dict
+
+from langgraph.graph import END, StateGraph
+
+from utils.logger import get_logger
+from services.command_logger import create_new_execution_logger, clear_execution_logger
+
+from .edges import (
+    route_after_parallel_processing,
+    route_from_start,
+    should_continue_after_error_handling,
+    should_continue_after_execution,
+    should_continue_after_intent_parsing,
+    should_continue_after_perception,
+    should_continue_after_planning,
+    should_continue_after_speak,
+    should_continue_after_stt,
+    should_continue_after_ui_analysis,
+    should_continue_after_validation,
+    should_continue_after_retry_router,
+)
+from .core_nodes import (
+    analyze_ui_node,  # Legacy - kept for backward compatibility
+    error_handler_node,
+    execute_node,
+    initialize_nodes,
+    parallel_ui_and_validation_node,
+    parse_intent_node,
+    plan_node,
+    speak_node,
+    stt_node,
+    validate_intent_node,
+)
+
+# Import from nodes package (specialized goal-driven nodes)
+from .nodes import perception_node
+
+# Import new goal-driven nodes
+from aura_graph.nodes.validate_outcome_node import validate_outcome_node
+from aura_graph.nodes.retry_router_node import retry_router_node
+from aura_graph.nodes.decompose_goal_node import decompose_goal_node
+from aura_graph.nodes.next_subgoal_node import next_subgoal_node
+from aura_graph.nodes.coordinator_node import (
+    coordinator_node,
+    initialize_coordinator,
+)
+
+from .state import TaskState
+
+logger = get_logger(__name__)
+
+
+def _create_initial_state(
+    input_type: str,
+    raw_audio: bytes = None,
+    transcript: str = "",
+    streaming_transcript: str = "",
+    config: Dict[str, Any] = None,
+) -> Dict[str, Any]:
+    """Create initial task state with only essential fields."""
+    import uuid
+    session_id = str(uuid.uuid4())[:8]
+    
+    return {
+        "session_id": session_id,
+        "raw_audio": raw_audio,
+        "transcript": transcript,
+        "streaming_transcript": streaming_transcript,
+        "input_type": input_type,
+        "intent": None,
+        "ui_screenshot": None,
+        "ui_elements": [],
+        "plan": [],
+        "executed_steps": [],
+        "current_step": 0,
+        "status": "starting",
+        "feedback_message": "",
+        "error_message": None,
+        "retry_count": 0,
+        "max_retries": 3,
+        "start_time": time.time(),
+        "end_time": None,
+        "execution_time": 0.0,
+        "execution_mode": config.get("execution_mode", "live") if config else "live",
+        "task_id": f"{input_type}_{int(time.time() * 1000)}",
+        "workflow_steps": [] if config and config.get("track_workflow") else None,
+        "track_workflow": config.get("track_workflow", False) if config else False,
+    }
+
+
+def create_aura_graph() -> StateGraph:
+    """
+    Create and configure the complete AURA task execution graph.
+
+    PARALLEL ARCHITECTURE:
+    ```
+    STT → Parse Intent → [Fan-Out] → UI Analysis  → [Fan-In] → Plan → Execute → Speak
+                              ↘                   ↗
+                               → Validation     →
+    ```
+
+    The fan-out allows UI analysis and validation to run concurrently,
+    reducing total latency when both operations are needed.
+
+    Returns:
+        Compiled StateGraph ready for execution.
+    """
+    try:
+        logger.info("Creating AURA task execution graph (parallel architecture)")
+
+        # Initialize the state graph with TaskState schema
+        graph = StateGraph(TaskState)
+
+        # Add all nodes to the graph
+        logger.info("Adding nodes to graph")
+        graph.add_node("stt", stt_node)
+        graph.add_node("parse_intent", parse_intent_node)
+        graph.add_node("validate_intent", validate_intent_node)  # New validation node
+        graph.add_node("perception", perception_node)  # New Perception Controller node
+        graph.add_node("analyze_ui", analyze_ui_node)  # Legacy - kept for backward compatibility
+        graph.add_node(
+            "parallel_processing", parallel_ui_and_validation_node
+        )  # Parallel fan-out/fan-in
+        graph.add_node("create_plan", plan_node)
+        graph.add_node("execute", execute_node)
+        graph.add_node("speak", speak_node)
+        graph.add_node("error_handler", error_handler_node)
+        
+        # Goal-driven execution nodes (NEW)
+        graph.add_node("decompose_goal", decompose_goal_node)
+        graph.add_node("validate_outcome", validate_outcome_node)
+        graph.add_node("retry_router", retry_router_node)
+        graph.add_node("next_subgoal", next_subgoal_node)
+        
+        # Coordinator node - multi-agent execution (PHASE 3)
+        graph.add_node("coordinator", coordinator_node)
+
+        # Set conditional entry point that routes based on input type
+        # Note: We use only add_conditional_edges from __start__, not set_entry_point
+        # Using both causes duplicate execution issues
+        logger.info("Setting conditional entry point")
+        graph.add_conditional_edges(
+            "__start__",
+            route_from_start,
+            {
+                "stt": "stt",
+                "parse_intent": "parse_intent",
+                "error_handler": "error_handler",
+            },
+        )
+
+        # Add conditional edges from STT
+        graph.add_conditional_edges(
+            "stt",
+            should_continue_after_stt,
+            {"parse_intent": "parse_intent", "error_handler": "error_handler"},
+        )
+
+        # Add conditional edges from intent parsing
+        # All actions now route through UniversalAgent
+        graph.add_conditional_edges(
+            "parse_intent",
+            should_continue_after_intent_parsing,
+            {
+                "perception": "perception",  # UI actions get perception first
+                "parallel_processing": "parallel_processing",  # Legacy: Fan-out to parallel UI + validation
+                "analyze_ui": "analyze_ui",  # Legacy: Direct UI analysis for simple cases
+                "execute": "execute",
+                "speak": "speak",
+                "error_handler": "error_handler",
+                "coordinator": "coordinator",  # Multi-agent execution path
+            },
+        )
+
+        # Add conditional edges from perception
+        graph.add_conditional_edges(
+            "perception",
+            should_continue_after_perception,
+            {
+                "speak": "speak",
+                "error_handler": "error_handler",
+                "coordinator": "coordinator",  # Multi-agent execution path
+            },
+        )
+
+        # Add conditional edges from parallel processing (fan-in)
+        graph.add_conditional_edges(
+            "parallel_processing",
+            route_after_parallel_processing,
+            {
+                "coordinator": "coordinator",
+                "speak": "speak",
+                "error_handler": "error_handler",
+            },
+        )
+
+        # Add conditional edges from validation (for non-parallel path)
+        graph.add_edge("validate_intent", "analyze_ui")
+
+        # Add conditional edges from UI analysis
+        graph.add_conditional_edges(
+            "analyze_ui",
+            should_continue_after_ui_analysis,
+            {
+                "coordinator": "coordinator",
+                "speak": "speak",
+                "error_handler": "error_handler",
+            },
+        )
+
+        # Add conditional edges from planning
+        graph.add_conditional_edges(
+            "create_plan",
+            should_continue_after_planning,
+            {"execute": "execute", "error_handler": "error_handler"},
+        )
+
+        # Add conditional edges from execution
+        # UPDATED: Routes to validate_outcome for goal-driven validation loop
+        graph.add_conditional_edges(
+            "execute",
+            should_continue_after_execution,
+            {
+                "speak": "speak",
+                "error_handler": "error_handler",
+                "perception": "perception",  # For retries with fresh perception
+                "analyze_ui": "analyze_ui",  # Legacy: For retries
+                "validate_outcome": "validate_outcome",  # NEW: Post-action validation
+            },
+        )
+        
+        # NEW: Conditional edges from validate_outcome node
+        graph.add_conditional_edges(
+            "validate_outcome",
+            should_continue_after_validation,
+            {
+                "next_subgoal": "next_subgoal",  # Success - advance to next subgoal
+                "retry_router": "retry_router",  # Failure - determine retry strategy
+                "speak": "speak",  # Abort - report to user
+            },
+        )
+        
+        # NEW: Conditional edges from retry_router node
+        graph.add_conditional_edges(
+            "retry_router",
+            should_continue_after_retry_router,
+            {
+                "perception": "perception",  # Retry with fresh perception
+                "execute": "execute",  # Retry same action immediately
+                "speak": "speak",  # Abort - all strategies exhausted
+            },
+        )
+        
+        # NEW: Edge from next_subgoal back to perception for next action
+        graph.add_edge("next_subgoal", "perception")
+        
+        # NEW: Edge from decompose_goal to perception
+        graph.add_edge("decompose_goal", "perception")
+        
+        # Coordinator edges (multi-agent execution path)
+        graph.add_edge("coordinator", "speak")
+
+        # Add conditional edges from error handler
+        graph.add_conditional_edges(
+            "error_handler",
+            should_continue_after_error_handling,
+            {
+                "perception": "perception",  # For retries with fresh perception
+                "analyze_ui": "analyze_ui",  # Legacy: For retries
+                "speak": "speak",
+                END: END
+            },
+        )
+
+        # Add edge from speak to end
+        graph.add_conditional_edges("speak", should_continue_after_speak, {END: END})
+
+        logger.info(
+            "Graph structure created successfully (parallel architecture enabled)"
+        )
+        return graph
+
+    except Exception as e:
+        logger.error(f"Failed to create graph: {e}")
+        raise
+
+
+def compile_aura_graph(checkpointer: Any = None) -> Any:
+    """
+    Compile the AURA graph into a runnable application.
+    Initializes all services and agents before compilation.
+
+    HYBRID ARCHITECTURE INITIALIZATION:
+    - Groq services: LLM (fast intent), STT (Whisper Turbo), TTS
+    - Gemini services: VLM (vision), Planning (reasoning)
+    - Agents: Commander, Navigator, Responder, Screen Reader, Validator
+
+    Args:
+        checkpointer: Optional checkpointer for state persistence.
+
+    Returns:
+        Compiled graph ready for execution.
+    """
+    try:
+        logger.info("Compiling AURA graph (hybrid parallel architecture)")
+
+        # Initialize services and agents before compilation
+        from agents.commander import CommanderAgent
+        from agents.responder import ResponderAgent
+        from agents.validator import ValidatorAgent
+        from config.settings import get_settings
+        from services.llm import LLMService
+        from services.real_accessibility import real_accessibility_service
+        from services.stt import STTService
+        from services.tts import TTSService
+        from services.vlm import VLMService
+
+        settings = get_settings()
+
+        # Initialize services
+        stt_service = STTService(settings)
+        llm_service = LLMService(settings)
+        vlm_service = VLMService(settings)
+        tts_service = TTSService(settings)
+
+        # Initialize device executor (no settings parameter needed)
+        from services.real_device_executor import real_device_executor
+
+        device_executor_service = real_device_executor
+
+        # Initialize agents (Tri-Provider Architecture)
+        # Commander: Fast intent parsing (Groq - llama-3.1-8b-instant)
+        commander_agent = CommanderAgent(llm_service=llm_service)
+
+        # Navigator: DEPRECATED - UniversalAgent now handles all actions
+        # Kept as None for backward compatibility with initialize_nodes
+
+        # Responder: Feedback generation (Groq - fast for TTS)
+        responder_agent = ResponderAgent(
+            llm_service=llm_service, tts_service=tts_service
+        )
+
+        # Screen Reader: Visual understanding (Groq Llama 4 Scout VLM - 750 tps)
+        # NOTE: ScreenVLM is created after perception_pipeline below
+
+        # Validator: Intent pre-validation (fast, minimal model use)
+        validator_agent = ValidatorAgent()
+
+        # Initialize Coordinator (Phase 3 - Multi-agent architecture)
+        from agents.coordinator import Coordinator
+        from agents.planner_agent import PlannerAgent
+        from agents.perceiver_agent import PerceiverAgent
+        from agents.actor_agent import ActorAgent
+        from agents.verifier_agent import VerifierAgent
+        from services.goal_decomposer import GoalDecomposer
+        from services.gesture_executor import GestureExecutor
+        from services.perception_controller import get_perception_controller
+        from perception.perception_pipeline import PerceptionPipeline
+        from services.task_progress import get_task_progress_service
+
+        goal_decomposer = GoalDecomposer(llm_service)
+        gesture_executor = GestureExecutor()
+
+        planner_agent = PlannerAgent(goal_decomposer)
+        perception_pipeline = PerceptionPipeline(vlm_service=vlm_service)
+
+        # Warm up OmniParser in the background so the first real VLM call
+        # bears no model-load latency.
+        import threading
+        threading.Thread(
+            target=perception_pipeline.warmup,
+            name="omniparser-warmup",
+            daemon=True,
+        ).start()
+
+        # ScreenVLM is now merged into PerceiverAgent — no separate instance needed.
+        # Construction order: PerceiverAgent first (no controller yet) →
+        #   PerceptionController (receives perceiver as screen_vlm) →
+        #   wire perceiver_agent.perception_controller back.
+        perceiver_agent = PerceiverAgent(
+            vlm_service=vlm_service,
+            perception_pipeline=perception_pipeline,
+        )
+        perception_controller = get_perception_controller(screen_vlm=perceiver_agent)
+        perceiver_agent.perception_controller = perception_controller
+        actor_agent = ActorAgent(gesture_executor)
+        verifier_agent = VerifierAgent(perception_controller)
+        task_progress_service = get_task_progress_service()
+
+        from services.reactive_step_generator import ReactiveStepGenerator
+        reactive_step_gen = ReactiveStepGenerator(llm_service=llm_service, vlm_service=vlm_service)
+
+        coordinator = Coordinator(
+            planner=planner_agent,
+            perceiver=perceiver_agent,
+            actor=actor_agent,
+            verifier=verifier_agent,
+            task_progress=task_progress_service,
+            reactive_gen=reactive_step_gen,
+        )
+        initialize_coordinator(coordinator)
+        logger.info("  - Coordinator: Initialized (Phase 3 multi-agent execution)")
+
+        # Initialize PromptGuard (safety screening before CommanderAgent)
+        from services.prompt_guard import initialize_prompt_guard
+        groq_client = llm_service.groq_client
+        prompt_guard = initialize_prompt_guard(groq_client, model=settings.safety_model)
+        if prompt_guard.available:
+            logger.info(f"  - PromptGuard: Initialized ({settings.safety_model} via Groq)")
+        else:
+            logger.warning("  - PromptGuard: Disabled (no Groq API key)")
+
+        # Initialize nodes with services and agents
+        initialize_nodes(
+            app_settings=settings,
+            app_stt_service=stt_service,
+            app_llm_service=llm_service,
+            app_vlm_service=vlm_service,
+            app_tts_service=tts_service,
+            app_accessibility_service=real_accessibility_service,
+            app_device_executor_service=device_executor_service,
+            app_commander_agent=commander_agent,
+            app_responder_agent=responder_agent,
+            app_screen_vlm_agent=perceiver_agent,
+            app_validator_agent=validator_agent,
+        )
+
+        logger.info("Services and agents initialized (tri-provider architecture)")
+        logger.info(
+            f"  - VLM Provider: {settings.default_vlm_provider} ({settings.default_vlm_model})"
+        )
+        logger.info(
+            f"  - LLM Provider: {settings.default_llm_provider} ({settings.default_llm_model})"
+        )
+        logger.info(
+            f"  - Planning Provider: {settings.planning_provider} ({settings.planning_model})"
+        )
+        logger.info(f"  - STT Model: {settings.default_stt_model}")
+        logger.info(f"  - TTS Provider: {settings.default_tts_provider}")
+        logger.info(f"  - Parallel Execution: {settings.enable_parallel_execution}")
+
+        # Create and compile graph
+        graph = create_aura_graph()
+
+        if checkpointer:
+            app = graph.compile(checkpointer=checkpointer)
+        else:
+            app = graph.compile()
+
+        logger.info("Graph compiled successfully (parallel architecture enabled)")
+        return app
+
+    except Exception as e:
+        logger.error(f"Failed to compile graph: {e}")
+        raise
+
+
+async def execute_aura_task_from_streaming(
+    app: Any,
+    streaming_transcript: str,
+    config: Dict[str, Any] = None,
+    thread_id: str = None,
+    track_workflow: bool = True,
+    session_id: str = None,
+) -> Dict[str, Any]:
+    """
+    Execute AURA task from streaming transcript (WebSocket).
+
+    Args:
+        app: Compiled graph application.
+        streaming_transcript: Final transcript from streaming audio.
+        config: Optional execution configuration.
+        thread_id: Optional thread ID for state persistence.
+        track_workflow: Whether to track workflow steps.
+        session_id: Conversation session ID for context tracking (NEW).
+
+    Returns:
+        Final task state.
+    """
+    try:
+        logger.info(
+            f"Executing streaming task (thread: {thread_id}, session: {session_id})"
+        )
+
+        # Get or create conversation session (NEW)
+        from services.conversation_session import get_session_manager
+
+        session_manager = get_session_manager()
+
+        # Use thread_id as session_id if not provided
+        effective_session_id = session_id or thread_id or "default_session"
+        session = session_manager.get_session(effective_session_id)
+
+        # Update session (increments turn, checks timeout)
+        session.update()
+        session_context = session.get_context()
+
+        logger.info(
+            f"Session context: turn={session_context['conversation_turn']}, "
+            f"introduced={session_context['has_introduced']}, "
+            f"follow_up={session_context['is_follow_up']}"
+        )
+
+        # Create config with tracking
+        exec_config = config or {}
+        exec_config["track_workflow"] = track_workflow
+
+        initial_state = _create_initial_state(
+            input_type="streaming",
+            streaming_transcript=streaming_transcript,
+            config=exec_config,
+        )
+
+        # Inject session context into state (NEW)
+        initial_state.update(
+            {
+                "session_id": effective_session_id,
+                "conversation_turn": session_context["conversation_turn"],
+                "has_introduced": session_context["has_introduced"],
+                "is_follow_up": session_context["is_follow_up"],
+                "last_interaction_time": session_context["last_interaction_time"],
+            }
+        )
+        
+        # Create new execution logger with task_id
+        task_id = initial_state.get("task_id", "unknown")
+        cmd_logger = create_new_execution_logger(execution_id=task_id)
+        
+        # Log streaming command
+        cmd_logger.log_command(
+            command=streaming_transcript,
+            input_type="streaming",
+            session_id=effective_session_id,
+            metadata={
+                "text_length": len(streaming_transcript),
+                "conversation_turn": session_context["conversation_turn"],
+                "is_follow_up": session_context["is_follow_up"]
+            }
+        )
+
+        # Execute the graph
+        start_time = time.time()
+
+        # Configure execution
+        exec_config = {
+            "thread_id": thread_id,
+            "checkpoint_id": None,
+            "recursion_limit": 50,
+            "configurable": {
+                "user_id": initial_state.get("user_id"),
+                "task_id": initial_state.get("task_id"),
+            },
+        }
+
+        logger.debug("Starting graph execution for streaming task")
+        result = await app.ainvoke(initial_state, config=exec_config)
+
+        execution_time = time.time() - start_time
+        result["execution_time"] = execution_time
+        result["end_time"] = time.time()
+
+        # Update session if introduction occurred (NEW)
+        if result.get("has_introduced") and not session_context["has_introduced"]:
+            session.mark_introduced()
+            logger.info(f"Session {effective_session_id} marked as introduced")
+
+        # Ensure spoken_response is set from feedback_message if present
+        if result.get("feedback_message") and not result.get("spoken_response"):
+            result["spoken_response"] = result["feedback_message"]
+        elif not result.get("spoken_response"):
+            result["spoken_response"] = "I processed your request."
+
+        logger.info(f"AURA streaming task completed in {execution_time:.2f}s")
+        logger.debug(
+            f"Final streaming result: status={result.get('status')}, "
+            f"intent={result.get('intent', {}).get('action_type') if result.get('intent') else 'none'}"
+        )
+        
+        # Log complete graph execution
+        final_status = result.get("status", "unknown")
+        cmd_logger.log_graph_execution(
+            task_id=initial_state.get("task_id", "unknown"),
+            input_data={"input_type": "streaming", "command": streaming_transcript},
+            output_data={
+                "status": final_status, 
+                "transcript": streaming_transcript, 
+                "spoken_response": result.get("spoken_response")
+            },
+            execution_time=execution_time,
+            status=final_status,
+            metadata={"error": result.get("error_message")} if result.get("error_message") else None
+        )
+        
+        # Finalize log with summary before clearing
+        try:
+            cmd_logger.finalize(status=final_status)
+        except Exception as finalize_err:
+            logger.error(f"Failed to finalize command log: {finalize_err}")
+        finally:
+            clear_execution_logger()
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Failed to execute AURA streaming task: {e}")
+        # Finalize and clear logger on error too
+        try:
+            if 'cmd_logger' in locals() and cmd_logger:
+                cmd_logger.finalize(status="error")
+        except Exception as finalize_err:
+            logger.error(f"Failed to finalize command log on error: {finalize_err}")
+        finally:
+            clear_execution_logger()
+        return {
+            "status": "failed",
+            "error_message": f"Task execution failed: {str(e)}",
+            "transcript": streaming_transcript,
+            "execution_time": time.time()
+            - (
+                initial_state.get("start_time", time.time())
+                if "initial_state" in locals()
+                else time.time()
+            ),
+            "end_time": time.time(),
+        }
+
+
+async def execute_aura_task_from_text(
+    app: Any,
+    text_input: str,
+    config: Dict[str, Any] = None,
+    thread_id: str = None,
+    track_workflow: bool = False,
+) -> Dict[str, Any]:
+    """
+    Execute AURA task from text input, bypassing STT.
+
+    Args:
+        app: Compiled graph application.
+        text_input: Text input to process.
+        config: Optional execution configuration.
+        thread_id: Optional thread ID for state persistence.
+
+    Returns:
+        Final task state.
+    """
+    try:
+        logger.info(f"Executing text task (thread: {thread_id})")
+        
+        # Create NEW log file for this execution
+        exec_config = config or {}
+        should_track = track_workflow or exec_config.get("track_workflow", False)
+        exec_config["track_workflow"] = should_track
+
+        initial_state = _create_initial_state(
+            input_type="text", transcript=text_input, config=exec_config
+        )
+        
+        # Create new execution logger with task_id
+        task_id = initial_state.get("task_id", "unknown")
+        cmd_logger = create_new_execution_logger(execution_id=task_id)
+        
+        # Log text command
+        cmd_logger.log_command(
+            command=text_input,
+            input_type="text",
+            session_id=initial_state.get("session_id"),
+            metadata={"text_length": len(text_input), "config": config}
+        )
+
+        # Add any config parameters to state
+        if config:
+            initial_state.update(config)
+
+        logger.info("Executing graph with initial state")
+
+        # Execute the graph starting from parse_intent instead of stt
+        start_time = time.time()
+
+        # Use thread_id for checkpointing if provided
+        if thread_id:
+            final_state = await app.ainvoke(
+                initial_state, config={"configurable": {"thread_id": thread_id}, "recursion_limit": 50}
+            )
+        else:
+            final_state = await app.ainvoke(initial_state, config={"recursion_limit": 50})
+
+        end_time = time.time()
+        execution_time = end_time - start_time
+
+        # Update final state with execution time
+        final_state["execution_time"] = execution_time
+        final_state["end_time"] = end_time
+
+        # Extract key information for response
+        status = final_state.get("status", "unknown")
+
+        # Generate spoken response if not present
+        if not final_state.get("feedback_message") and not final_state.get(
+            "spoken_response"
+        ):
+            final_state["spoken_response"] = final_state.get(
+                "feedback_message", "I processed your request."
+            )
+        elif final_state.get("feedback_message") and not final_state.get(
+            "spoken_response"
+        ):
+            final_state["spoken_response"] = final_state["feedback_message"]
+
+        logger.info(
+            f"Task execution completed: status={status}, time={execution_time:.2f}s"
+        )
+
+        if final_state.get("error_message"):
+            logger.warning(
+                f"Task completed with errors: {final_state['error_message']}"
+            )
+        
+        # Log complete graph execution
+        cmd_logger.log_graph_execution(
+            task_id=initial_state.get("task_id", "unknown"),
+            input_data={"input_type": "text", "command": text_input},
+            output_data={
+                "status": status, 
+                "transcript": text_input, 
+                "spoken_response": final_state.get("spoken_response")
+            },
+            execution_time=execution_time,
+            status=status,
+            metadata={"error": final_state.get("error_message")} if final_state.get("error_message") else None
+        )
+        
+        # Finalize log with summary before clearing
+        try:
+            cmd_logger.finalize(status=status)
+        except Exception as finalize_err:
+            logger.error(f"Failed to finalize command log: {finalize_err}")
+        finally:
+            clear_execution_logger()
+
+        return final_state
+
+    except Exception as e:
+        logger.error(f"Graph execution failed: {e}")
+        # Finalize and clear logger on error too
+        try:
+            if 'cmd_logger' in locals() and cmd_logger:
+                cmd_logger.finalize(status="error")
+        except Exception as finalize_err:
+            logger.error(f"Failed to finalize command log on error: {finalize_err}")
+        finally:
+            clear_execution_logger()
+        return {
+            "transcript": text_input,
+            "status": "failed",
+            "error_message": f"Task execution failed: {str(e)}",
+            "spoken_response": "I'm sorry, I encountered an error processing your request.",
+            "execution_time": time.time() - time.time(),
+            "debug_info": {"error": str(e), "type": type(e).__name__},
+        }
+
+
+async def execute_aura_task(
+    app: Any, raw_audio: bytes, config: Dict[str, Any] = None, thread_id: str = None
+) -> Dict[str, Any]:
+    """
+    Execute AURA task from audio input.
+
+    Args:
+        app: Compiled graph application.
+        raw_audio: Audio data to process.
+        config: Optional execution configuration.
+        thread_id: Optional thread ID for state persistence.
+
+    Returns:
+        Final task state.
+    """
+    try:
+        logger.info(f"Executing audio task (thread: {thread_id})")
+        
+        initial_state = _create_initial_state(
+            input_type="audio", raw_audio=raw_audio, config=config
+        )
+        
+        # Create new execution logger with task_id
+        task_id = initial_state.get("task_id", "unknown")
+        cmd_logger = create_new_execution_logger(execution_id=task_id)
+        
+        # Log audio command
+        cmd_logger.log_command(
+            command=f"[Audio Input - {len(raw_audio)} bytes]",
+            input_type="audio",
+            session_id=initial_state.get("session_id"),
+            metadata={"audio_size": len(raw_audio), "config": config}
+        )
+
+        # Prepare execution config
+        execution_config = config or {}
+        if thread_id:
+            execution_config["configurable"] = {"thread_id": thread_id}
+
+        # Execute the graph
+        logger.info("Executing graph with initial state")
+        final_state = None
+
+        async for output in app.astream(initial_state, config=execution_config):
+            # Log intermediate states
+            for node_name, node_output in output.items():
+                logger.debug(f"Node '{node_name}' output: {type(node_output)}")
+                final_state = node_output
+
+        if final_state is None:
+            raise RuntimeError("Graph execution completed without output")
+
+        # Log execution summary
+        status = final_state.get("status", "unknown")
+        error_message = final_state.get("error_message")
+        execution_time = final_state.get("execution_time", 0.0)
+
+        logger.info(
+            f"Task execution completed: status={status}, time={execution_time:.2f}s"
+        )
+
+        if error_message:
+            logger.warning(f"Task completed with errors: {error_message}")
+        
+        # Log complete graph execution
+        cmd_logger.log_graph_execution(
+            task_id=initial_state.get("task_id", "unknown"),
+            input_data={"input_type": "audio", "audio_size": len(raw_audio)},
+            output_data={
+                "status": status, 
+                "transcript": final_state.get("transcript"), 
+                "spoken_response": final_state.get("spoken_response")
+            },
+            execution_time=execution_time,
+            status=status,
+            metadata={"error": error_message} if error_message else None
+        )
+        
+        # Finalize log with summary before clearing
+        try:
+            cmd_logger.finalize(status=status)
+        except Exception as finalize_err:
+            logger.error(f"Failed to finalize command log: {finalize_err}")
+        finally:
+            clear_execution_logger()
+
+        return final_state
+
+    except Exception as e:
+        logger.error(f"Task execution failed: {e}")
+        # Finalize and clear logger on error too
+        try:
+            if 'cmd_logger' in locals() and cmd_logger:
+                cmd_logger.finalize(status="error")
+        except Exception as finalize_err:
+            logger.error(f"Failed to finalize command log on error: {finalize_err}")
+        finally:
+            clear_execution_logger()
+
+        # Return error state
+        return {
+            "status": "failed",
+            "error_message": str(e),
+            "spoken_response": "I encountered an error while processing your request.",
+            "execution_time": 0.0,
+            "retry_count": 0,
+        }
+
+
+def get_graph_info() -> Dict[str, Any]:
+    """
+    Get information about the graph configuration.
+
+    Returns:
+        Dictionary with graph information.
+    """
+    from config.settings import get_settings
+
+    settings = get_settings()
+
+    return {
+        "nodes": [
+            "stt",
+            "parse_intent",
+            "validate_intent",
+            "analyze_ui",
+            "parallel_processing",
+            "create_plan",
+            "execute",
+            "speak",
+            "error_handler",
+        ],
+        "entry_point": "stt",
+        "edges": {
+            "start": ["stt", "error_handler"],
+            "stt": ["parse_intent", "error_handler"],
+            "parse_intent": [
+                "parallel_processing",
+                "analyze_ui",
+                "speak",
+                "error_handler",
+            ],
+            "parallel_processing": ["create_plan", "speak", "error_handler"],
+            "validate_intent": ["analyze_ui"],
+            "analyze_ui": ["create_plan", "speak", "error_handler"],
+            "create_plan": ["execute", "error_handler"],
+            "execute": ["speak", "error_handler", "analyze_ui"],
+            "error_handler": ["analyze_ui", "speak", "END"],
+            "speak": ["END"],
+        },
+        "parallel_nodes": ["parallel_processing"],
+        "agents": {
+            "commander": {
+                "model": f"groq/{settings.default_llm_model}",
+                "role": "intent_parsing",
+            },
+            "navigator": {
+                "model": settings.planning_model,
+                "role": "ui_analysis_planning",
+            },
+            "responder": {
+                "model": settings.crewai_model,
+                "role": "feedback_generation",
+            },
+            "screen_vlm": {
+                "model": settings.default_vlm_model,
+                "role": "visual_understanding_and_location",
+            },
+            "validator": {
+                "model": f"groq/{settings.default_llm_model}",
+                "role": "intent_validation",
+            },
+        },
+        "architecture": "hybrid_parallel",
+        "supports_checkpointing": True,
+        "supports_streaming": True,
+        "version": "2.0.0",
+    }

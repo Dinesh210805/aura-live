@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Agent Visual Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e14;
+            color: #c9d1d9;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        select, button {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        select:hover, button:hover {
+            background: #30363d;
+            border-color: #58a6ff;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Flow Canvas */
+        .flow-canvas {
+            flex: 1;
+            position: relative;
+            background: 
+                linear-gradient(90deg, rgba(48, 54, 61, 0.2) 1px, transparent 1px),
+                linear-gradient(rgba(48, 54, 61, 0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            overflow: auto;
+        }
+
+        .flow-content {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+            position: relative;
+        }
+
+        /* Agent Node */
+        .agent-node {
+            width: 180px;
+            background: #161b22;
+            border: 2px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .agent-node:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .agent-node.active {
+            border-color: #58a6ff;
+            box-shadow: 
+                0 0 20px rgba(88, 166, 255, 0.3),
+                0 0 40px rgba(88, 166, 255, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .agent-node.completed {
+            border-color: #3fb950;
+            opacity: 0.7;
+        }
+
+        .agent-node.error {
+            border-color: #f85149;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(88, 166, 255, 0.3), 0 0 40px rgba(88, 166, 255, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(88, 166, 255, 0.5), 0 0 60px rgba(88, 166, 255, 0.3); }
+        }
+
+        .agent-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 12px;
+            position: relative;
+        }
+
+        .agent-icon.stt { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+        .agent-icon.commander { background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%); }
+        .agent-icon.perception { background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%); }
+        .agent-icon.navigator { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        .agent-icon.executor { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+        .agent-icon.responder { background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); }
+
+        .agent-name {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .agent-status {
+            font-size: 11px;
+            text-align: center;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .agent-status.active {
+            color: #58a6ff;
+            font-weight: 600;
+        }
+
+        .agent-status.completed {
+            color: #3fb950;
+        }
+
+        .agent-status.error {
+            color: #f85149;
+        }
+
+        /* Connection Wire */
+        .connection-wire {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .wire-line {
+            stroke: #30363d;
+            stroke-width: 3;
+            fill: none;
+            transition: all 0.3s;
+        }
+
+        .wire-line.active {
+            stroke: #58a6ff;
+            stroke-width: 4;
+            filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.8));
+            animation: flow 1.5s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -20; }
+        }
+
+        .wire-arrow {
+            fill: #30363d;
+            transition: all 0.3s;
+        }
+
+        .wire-arrow.active {
+            fill: #58a6ff;
+            filter: drop-shadow(0 0 6px rgba(88, 166, 255, 0.8));
+        }
+
+        /* Input/Output Panel */
+        .io-panel {
+            width: 400px;
+            background: #161b22;
+            border-left: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .io-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .io-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0d1117;
+        }
+
+        .io-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .io-icon.input {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+
+        .io-icon.output {
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        }
+
+        .io-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .io-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+
+        .io-divider {
+            height: 1px;
+            background: #30363d;
+        }
+
+        .io-message {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .io-message-label {
+            font-size: 11px;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .io-message-text {
+            color: #c9d1d9;
+            word-wrap: break-word;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #8b949e;
+            margin-bottom: 8px;
+        }
+
+        .empty-hint {
+            font-size: 14px;
+            color: #6e7681;
+        }
+
+        /* Flow Container */
+        .flow-nodes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 80px;
+            position: relative;
+            min-width: 300px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🤖</div>
+                <div class="logo-text">
+                    <h1>AURA Visual Flow</h1>
+                    <p>Real-time Agent Orchestration</p>
+                </div>
+            </div>
+            <div class="controls">
+                <select id="sessionSelect">
+                    <option value="">Select Session...</option>
+                </select>
+                <button id="refreshBtn">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Flow Canvas -->
+            <div class="flow-canvas">
+                <div class="flow-content" id="flowContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔀</div>
+                        <div class="empty-title">No Session Selected</div>
+                        <div class="empty-hint">Select a session from the dropdown to visualize agent flow</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input/Output Panel -->
+            <div class="io-panel">
+                <div class="io-section">
+                    <div class="io-header">
+                        <div class="io-icon input">⬇️</div>
+                        <div class="io-title">Input</div>
+                    </div>
+                    <div class="io-content" id="inputContent">
+                        <div class="io-message">
+                            <div class="io-message-label">Waiting for input</div>
+                            <div class="io-message-text">No input data yet</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="io-divider"></div>
+                
+                <div class="io-section">
+                    <div class="io-header">
+                        <div class="io-icon output">⬆️</div>
+                        <div class="io-title">Output</div>
+                    </div>
+                    <div class="io-content" id="outputContent">
+                        <div class="io-message">
+                            <div class="io-message-label">Waiting for output</div>
+                            <div class="io-message-text">No output data yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let autoRefreshInterval = null;
+
+        const agentMetadata = {
+            'stt_node': { name: 'STT', icon: '🎤', class: 'stt' },
+            'parse_intent_node': { name: 'Commander', icon: '🧠', class: 'commander' },
+            'perception_node': { name: 'Perception', icon: '👁️', class: 'perception' },
+            'plan_node': { name: 'Navigator', icon: '🗺️', class: 'navigator' },
+            'execute_node': { name: 'Executor', icon: '⚡', class: 'executor' },
+            'respond_node': { name: 'Responder', icon: '💬', class: 'responder' }
+        };
+
+        // Load sessions on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSessions();
+            
+            document.getElementById('sessionSelect').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    loadWorkflow(e.target.value);
+                }
+            });
+            
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                if (currentSessionId) {
+                    loadWorkflow(currentSessionId);
+                } else {
+                    loadSessions();
+                }
+            });
+        });
+
+        async function loadSessions() {
+            try {
+                const response = await fetch('/api/workflow/sessions');
+                const sessions = await response.json();
+                
+                const select = document.getElementById('sessionSelect');
+                select.innerHTML = '<option value="">Select Session...</option>';
+                
+                sessions.forEach(session => {
+                    const option = document.createElement('option');
+                    option.value = session.session_id;
+                    option.textContent = `${session.timestamp} - ${session.transcript.substring(0, 50)}...`;
+                    select.appendChild(option);
+                });
+
+                // Auto-select latest if exists
+                if (sessions.length > 0 && !currentSessionId) {
+                    select.value = sessions[0].session_id;
+                    loadWorkflow(sessions[0].session_id);
+                }
+            } catch (error) {
+                console.error('Failed to load sessions:', error);
+            }
+        }
+
+        async function loadWorkflow(sessionId) {
+            currentSessionId = sessionId;
+            
+            try {
+                const response = await fetch(`/api/workflow/${sessionId}`);
+                const data = await response.json();
+                renderWorkflow(data);
+                
+                // Start auto-refresh if workflow is in progress
+                if (data.status === 'in_progress') {
+                    if (!autoRefreshInterval) {
+                        autoRefreshInterval = setInterval(() => loadWorkflow(sessionId), 2000);
+                    }
+                } else {
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                        autoRefreshInterval = null;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load workflow:', error);
+            }
+        }
+
+        function renderWorkflow(data) {
+            const flowContent = document.getElementById('flowContent');
+            const inputContent = document.getElementById('inputContent');
+            const outputContent = document.getElementById('outputContent');
+            
+            // Render input
+            inputContent.innerHTML = `
+                <div class="io-message">
+                    <div class="io-message-label">User Input (Transcript)</div>
+                    <div class="io-message-text">${data.transcript || 'N/A'}</div>
+                </div>
+                ${data.workflow_steps && data.workflow_steps.length > 0 ? `
+                <div class="io-message">
+                    <div class="io-message-label">Intent</div>
+                    <div class="io-message-text">${JSON.stringify(data.workflow_steps.find(s => s.agent === 'parse_intent_node')?.output?.intent || {}, null, 2)}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            // Render output
+            const responderStep = data.workflow_steps?.find(s => s.agent === 'respond_node');
+            outputContent.innerHTML = `
+                <div class="io-message">
+                    <div class="io-message-label">Status</div>
+                    <div class="io-message-text">${data.status || 'Unknown'}</div>
+                </div>
+                ${responderStep ? `
+                <div class="io-message">
+                    <div class="io-message-label">Response</div>
+                    <div class="io-message-text">${responderStep.output?.response || 'N/A'}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            // Render flow
+            const steps = data.workflow_steps || [];
+            const usedAgents = data.used_agents || [];
+            
+            if (usedAgents.length === 0) {
+                flowContent.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⏳</div>
+                        <div class="empty-title">Workflow in Progress</div>
+                        <div class="empty-hint">Waiting for agents to activate...</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Build node structure
+            const nodesHTML = usedAgents.map((agent, index) => {
+                const meta = agentMetadata[agent] || { name: agent, icon: '🔹', class: 'default' };
+                const step = steps.find(s => s.agent === agent);
+                
+                let statusClass = '';
+                let statusText = 'Pending';
+                
+                if (step) {
+                    if (step.status === 'completed') {
+                        statusClass = 'completed';
+                        statusText = 'Completed';
+                    } else if (step.status === 'error' || step.status === 'failed') {
+                        statusClass = 'error';
+                        statusText = 'Error';
+                    } else {
+                        statusClass = 'active';
+                        statusText = 'Running';
+                    }
+                } else if (index === 0) {
+                    statusClass = 'active';
+                    statusText = 'Running';
+                }
+                
+                return `
+                    <div class="agent-node ${statusClass}" data-agent="${agent}">
+                        <div class="agent-icon ${meta.class}">
+                            ${meta.icon}
+                        </div>
+                        <div class="agent-name">${meta.name}</div>
+                        <div class="agent-status ${statusClass}">${statusText}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            flowContent.innerHTML = `
+                <div class="flow-nodes-container" id="nodesContainer">
+                    ${nodesHTML}
+                </div>
+                <svg class="connection-wire" id="wiresSvg"></svg>
+            `;
+            
+            // Draw wires after nodes are rendered
+            setTimeout(drawWires, 100);
+        }
+
+        function drawWires() {
+            const container = document.getElementById('nodesContainer');
+            const svg = document.getElementById('wiresSvg');
+            
+            if (!container || !svg) return;
+            
+            const nodes = Array.from(container.querySelectorAll('.agent-node'));
+            const containerRect = container.getBoundingClientRect();
+            const flowRect = document.getElementById('flowContent').getBoundingClientRect();
+            
+            // Set SVG size
+            svg.style.width = `${containerRect.width + 200}px`;
+            svg.style.height = `${containerRect.height + 200}px`;
+            svg.style.left = `${containerRect.left - flowRect.left - 100}px`;
+            svg.style.top = `${containerRect.top - flowRect.top - 100}px`;
+            
+            // Clear existing wires
+            svg.innerHTML = '';
+            
+            // Draw connections between consecutive nodes
+            for (let i = 0; i < nodes.length - 1; i++) {
+                const fromNode = nodes[i];
+                const toNode = nodes[i + 1];
+                
+                const fromRect = fromNode.getBoundingClientRect();
+                const toRect = toNode.getBoundingClientRect();
+                
+                // Calculate connection points (center bottom to center top)
+                const x1 = fromRect.left - containerRect.left + fromRect.width / 2 + 100;
+                const y1 = fromRect.bottom - containerRect.top + 100;
+                const x2 = toRect.left - containerRect.left + toRect.width / 2 + 100;
+                const y2 = toRect.top - containerRect.top + 100;
+                
+                const midY = (y1 + y2) / 2;
+                
+                // Determine if wire should be active
+                const isActive = fromNode.classList.contains('completed') || fromNode.classList.contains('active');
+                const activeClass = isActive ? 'active' : '';
+                
+                // Create curved path
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+                path.setAttribute('class', `wire-line ${activeClass}`);
+                if (isActive) {
+                    path.setAttribute('stroke-dasharray', '10 10');
+                }
+                svg.appendChild(path);
+                
+                // Add arrow at the end
+                const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                arrow.setAttribute('points', `${x2},${y2 - 15} ${x2 - 6},${y2 - 5} ${x2 + 6},${y2 - 5}`);
+                arrow.setAttribute('class', `wire-arrow ${activeClass}`);
+                svg.appendChild(arrow);
+            }
+        }
+
+        // Redraw wires on window resize
+        window.addEventListener('resize', () => {
+            if (currentSessionId) {
+                setTimeout(drawWires, 100);
+            }
+        });
+    </script>
+</body>
+</html>

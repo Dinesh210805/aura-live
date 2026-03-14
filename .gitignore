@@ -1,0 +1,49 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.hypothesis/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build and packaging artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Coverage and test artifacts
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project runtime artifacts
+logs/
+terminal_logs/
+data/failure_screenshots/
+
+# Optional local tooling/workspace folders
+.kiro/
+Google-Edge-AI-gallery-main/

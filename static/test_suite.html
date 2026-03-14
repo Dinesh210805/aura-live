@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURA Test Suite</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--card:#12121a;--border:#1e1e2e;--surface:#16161f;
+  --primary:#6366f1;--primary-dim:#4f46e5;--success:#22c55e;--warning:#f59e0b;--error:#ef4444;--info:#3b82f6;
+  --text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;
+  --font-ui:system-ui,-apple-system,sans-serif;--font-mono:'Cascadia Code','Fira Code',monospace;
+  --radius:10px;--glow:0 0 20px rgba(99,102,241,.08);
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:13px;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:8px 20px;background:var(--card);border-bottom:1px solid var(--border);height:48px;flex-shrink:0}
+.header h1{font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--primary),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-indicators{display:flex;gap:16px;align-items:center;font-size:12px}
+.indicator{display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.on{background:var(--success);box-shadow:0 0 6px var(--success)}
+.dot.off{background:var(--error);box-shadow:0 0 6px var(--error)}
+.dot.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.toggle-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;transition:all .2s}
+.toggle-btn.active{background:var(--primary-dim);color:#fff;border-color:var(--primary)}
+
+/* MAIN GRID */
+.main{display:grid;grid-template-columns:280px 1fr 360px;grid-template-rows:1fr 200px;gap:0;flex:1;overflow:hidden;min-height:0}
+
+/* PANELS */
+.panel{border-right:1px solid var(--border);overflow-y:auto;padding:12px}
+.panel:last-child{border-right:none}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.panel-title svg{width:14px;height:14px;opacity:.6}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;box-shadow:var(--glow);transition:border-color .2s}
+.card:hover{border-color:#2e2e4e}
+.card-header{font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.card-header .badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500}
+.badge-success{background:rgba(34,197,94,.15);color:var(--success)}
+.badge-warning{background:rgba(245,158,11,.15);color:var(--warning)}
+.badge-error{background:rgba(239,68,68,.15);color:var(--error)}
+.badge-info{background:rgba(59,130,246,.15);color:var(--info)}
+
+/* LEFT PANEL - SCREEN MIRROR */
+.screen-panel{display:flex;flex-direction:column;gap:8px}
+.mirror-container{background:#000;border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:9/19.5;width:100%;max-height:calc(100vh - 350px)}
+.mirror-container canvas{width:100%;height:100%;object-fit:contain;display:block}
+.mirror-overlay{position:absolute;top:8px;right:8px;display:flex;gap:6px;align-items:center}
+.fps-badge{background:rgba(0,0,0,.7);color:var(--success);font-size:10px;padding:2px 6px;border-radius:4px;font-family:var(--font-mono)}
+.mirror-status{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);font-size:12px;text-align:center}
+.coord-tooltip{position:absolute;background:rgba(0,0,0,.85);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;pointer-events:none;display:none;font-family:var(--font-mono)}
+
+/* COMMAND INPUT */
+.cmd-area{display:flex;gap:6px}
+.cmd-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:var(--font-ui);outline:none;transition:border-color .2s}
+.cmd-input:focus{border-color:var(--primary)}
+.cmd-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.cmd-btn:hover{background:var(--primary-dim);transform:translateY(-1px)}
+.cmd-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.quick-cmds{margin-top:4px}
+.quick-cmds select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 8px;border-radius:6px;font-size:11px;cursor:pointer}
+
+/* CENTER PANEL */
+.center-panel{display:flex;flex-direction:column;border-right:1px solid var(--border)}
+.cmd-section{padding:12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.timeline-section{flex:1;overflow-y:auto;padding:12px}
+
+/* EXECUTION RESPONSE */
+.exec-response{margin-top:10px}
+.exec-response .resp-row{display:flex;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)}
+.exec-response .resp-label{color:var(--muted);min-width:80px;font-weight:500}
+.exec-response .resp-value{color:var(--text);word-break:break-word}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:12px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tl-dot{position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--card)}
+.tl-dot.success{border-color:var(--success);background:var(--success)}
+.tl-dot.error{border-color:var(--error);background:var(--error)}
+.tl-dot.warning{border-color:var(--warning);background:var(--warning)}
+.tl-dot.info{border-color:var(--info);background:var(--info)}
+.tl-dot.escalation{border-color:#a78bfa;background:#a78bfa}
+.tl-content{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.tl-title{font-size:12px;font-weight:600;margin-bottom:4px;display:flex;justify-content:space-between}
+.tl-title .tl-time{color:var(--dim);font-weight:400;font-size:11px;font-family:var(--font-mono)}
+.tl-detail{font-size:11px;color:var(--muted);line-height:1.5}
+.tl-content.escalation{border-left:3px solid #a78bfa}
+.tl-content.error-card{border-left:3px solid var(--error)}
+.tl-content.success-card{border-left:3px solid var(--success)}
+
+/* RIGHT PANEL */
+.right-panel{overflow-y:auto}
+
+/* PROGRESS BARS */
+.metric-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.metric-label{min-width:70px;color:var(--muted);font-weight:500}
+.metric-bar{flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden}
+.metric-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.metric-fill.high{background:linear-gradient(90deg,var(--success),#4ade80)}
+.metric-fill.medium{background:linear-gradient(90deg,var(--warning),#fbbf24)}
+.metric-fill.low{background:linear-gradient(90deg,var(--error),#f87171)}
+.metric-value{min-width:50px;text-align:right;font-family:var(--font-mono);font-size:11px}
+
+/* CONFIG TABLE */
+.config-table{width:100%;font-size:11px}
+.config-table td{padding:4px 0;border-bottom:1px solid var(--border)}
+.config-table td:first-child{color:var(--muted);width:100px;font-weight:500}
+.config-table td:last-child{color:var(--text);font-family:var(--font-mono);word-break:break-all}
+
+/* TOKEN STATS */
+.token-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.token-stat{text-align:center;padding:8px;background:var(--surface);border-radius:8px}
+.token-stat .num{font-size:18px;font-weight:700;font-family:var(--font-mono);color:var(--text)}
+.token-stat .lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+
+/* UI TREE */
+.tree-container{max-height:250px;overflow-y:auto;font-family:var(--font-mono);font-size:11px}
+.tree-node{padding:2px 0 2px 16px;border-left:1px solid var(--border);cursor:default;line-height:1.6}
+.tree-node:hover{background:rgba(99,102,241,.06)}
+.tree-cls{color:var(--primary);font-weight:500}
+.tree-text{color:var(--success)}
+.tree-bounds{color:var(--dim);font-size:10px}
+.tree-badge{display:inline-block;font-size:9px;padding:0 4px;border-radius:3px;margin-left:4px}
+.tree-badge.click{background:rgba(59,130,246,.15);color:var(--info)}
+.tree-badge.edit{background:rgba(245,158,11,.15);color:var(--warning)}
+.tree-badge.scroll{background:rgba(34,197,94,.15);color:var(--success)}
+.tree-stats{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:8px}
+.tree-stats span{display:flex;align-items:center;gap:4px}
+.refresh-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;transition:all .2s}
+.refresh-btn:hover{border-color:var(--primary);color:var(--primary)}
+
+/* LOG PANEL */
+.log-panel{grid-column:1/-1;border-top:1px solid var(--border);display:flex;flex-direction:column}
+.log-header{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.log-filters{display:flex;gap:4px}
+.log-filter{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;transition:all .2s}
+.log-filter.active{background:var(--primary-dim);color:#fff;border-color:var(--primary)}
+.log-body{flex:1;overflow-y:auto;padding:4px 12px;font-family:var(--font-mono);font-size:11px;line-height:1.7}
+.log-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-line .ts{color:var(--dim)}
+.log-line .lvl{font-weight:600;min-width:50px;display:inline-block}
+.log-line .src{color:var(--primary);min-width:100px;display:inline-block}
+.log-line.DEBUG .lvl{color:#6b7280}
+.log-line.INFO .lvl{color:var(--info)}
+.log-line.WARNING .lvl{color:var(--warning)}
+.log-line.ERROR .lvl{color:var(--error)}
+
+/* LOADING */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SCROLLBARS */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#3e3e5e}
+
+/* EMPTY STATE */
+.empty{color:var(--dim);text-align:center;padding:20px;font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>⚡ AURA Test Suite</h1>
+  <div class="header-indicators">
+    <div class="indicator"><div class="dot off" id="dot-device"></div><span id="lbl-device">Device: —</span></div>
+    <div class="indicator"><div class="dot off" id="dot-server"></div><span id="lbl-server">Server: —</span></div>
+    <div class="indicator"><div class="dot off" id="dot-mirror"></div><span id="lbl-mirror">Mirror: —</span></div>
+    <button class="toggle-btn active" id="btn-auto" onclick="toggleAutoRefresh()">Auto-refresh: ON</button>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main">
+
+  <!-- LEFT: Screen Mirror -->
+  <div class="panel screen-panel">
+    <div class="panel-title">📱 Screen Mirror</div>
+    <div class="mirror-container" id="mirror-box">
+      <canvas id="mirror-canvas"></canvas>
+      <div class="mirror-overlay"><span class="fps-badge" id="fps-display">0 FPS</span></div>
+      <div class="mirror-status" id="mirror-status">Connecting...</div>
+      <div class="coord-tooltip" id="coord-tip"></div>
+    </div>
+    <div class="card" style="padding:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">
+        <span id="screen-dims">—</span>
+        <span id="frame-count">Frame: 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: Command + Timeline -->
+  <div class="center-panel">
+    <div class="cmd-section">
+      <div class="panel-title">🎯 Command Center</div>
+      <div class="cmd-area">
+        <input type="text" class="cmd-input" id="cmd-input" placeholder="Type a command... e.g. Open Amazon and search for iPhone" onkeydown="if(event.key==='Enter')sendCommand()">
+        <button class="cmd-btn" id="cmd-send" onclick="sendCommand()">▶ Send</button>
+      </div>
+      <div class="quick-cmds">
+        <select id="quick-select" onchange="loadQuickCmd(this)">
+          <option value="">— Quick Commands —</option>
+          <option value="Open Amazon and search for iPhone 17 Pro and add it to cart">🛒 Amazon: iPhone 17 Pro</option>
+          <option value="Open WhatsApp and send hello to Mom">💬 WhatsApp: Send hello</option>
+          <option value="Open Settings and turn on WiFi">⚙️ Settings: WiFi</option>
+          <option value="Open YouTube and search for music">🎵 YouTube: Search music</option>
+          <option value="Open Chrome and go to google.com">🌐 Chrome: Google</option>
+          <option value="Open Camera and take a photo">📷 Camera: Take photo</option>
+        </select>
+      </div>
+      <div class="exec-response" id="exec-response" style="display:none"></div>
+    </div>
+    <div class="timeline-section">
+      <div class="panel-title">📋 Execution Timeline</div>
+      <div class="timeline" id="timeline">
+        <div class="empty">Send a command to see the execution timeline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Dashboard -->
+  <div class="panel right-panel">
+    <!-- Perception Metrics -->
+    <div class="card">
+      <div class="card-header">Perception Pipeline <button class="refresh-btn" onclick="refreshMetrics()">↻</button></div>
+      <div id="metrics-content">
+        <div class="metric-row"><span class="metric-label">UI Tree</span><div class="metric-bar"><div class="metric-fill high" id="bar-uitree" style="width:0%"></div></div><span class="metric-value" id="val-uitree">—</span></div>
+        <div class="metric-row"><span class="metric-label">CV+VLM</span><div class="metric-bar"><div class="metric-fill medium" id="bar-cvvlm" style="width:0%"></div></div><span class="metric-value" id="val-cvvlm">—</span></div>
+        <div class="metric-row"><span class="metric-label">Heuristic</span><div class="metric-bar"><div class="metric-fill low" id="bar-heur" style="width:0%"></div></div><span class="metric-value" id="val-heur">—</span></div>
+        <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--muted)">
+          <span>Failures: <b id="val-failures" style="color:var(--error)">0</b></span>
+          <span>Avg: <b id="val-latency" style="color:var(--text)">—</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Usage -->
+    <div class="card">
+      <div class="card-header">Token Usage <button class="refresh-btn" onclick="refreshTokens()">↻</button></div>
+      <div class="token-grid" id="token-content">
+        <div class="token-stat"><div class="num" id="tok-total">—</div><div class="lbl">Total</div></div>
+        <div class="token-stat"><div class="num" id="tok-calls">—</div><div class="lbl">Calls</div></div>
+        <div class="token-stat"><div class="num" id="tok-prompt">—</div><div class="lbl">Prompt</div></div>
+        <div class="token-stat"><div class="num" id="tok-comp">—</div><div class="lbl">Completion</div></div>
+      </div>
+    </div>
+
+    <!-- Configuration -->
+    <div class="card">
+      <div class="card-header">Configuration <button class="refresh-btn" onclick="refreshConfig()">↻</button></div>
+      <table class="config-table" id="config-content">
+        <tr><td>LLM</td><td id="cfg-llm">—</td></tr>
+        <tr><td>VLM</td><td id="cfg-vlm">—</td></tr>
+        <tr><td>LLM Model</td><td id="cfg-llm-model">—</td></tr>
+        <tr><td>VLM Model</td><td id="cfg-vlm-model">—</td></tr>
+        <tr><td>Modality</td><td id="cfg-modality">—</td></tr>
+      </table>
+    </div>
+
+    <!-- UI Tree Explorer -->
+    <div class="card">
+      <div class="card-header">UI Tree Explorer <button class="refresh-btn" onclick="refreshTree()">↻ Refresh</button></div>
+      <div class="tree-stats" id="tree-stats"><span>No data</span></div>
+      <div class="tree-container" id="tree-container">
+        <div class="empty">Click refresh to load UI tree</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM: Logs -->
+  <div class="log-panel">
+    <div class="log-header">
+      <div class="panel-title" style="margin:0">📋 Live Logs</div>
+      <div class="log-filters">
+        <button class="log-filter active" data-filter="ALL" onclick="setLogFilter(this)">ALL</button>
+        <button class="log-filter" data-filter="PERCEPTION" onclick="setLogFilter(this)">PERCEPTION</button>
+        <button class="log-filter" data-filter="AGENT" onclick="setLogFilter(this)">AGENT</button>
+        <button class="log-filter" data-filter="GESTURE" onclick="setLogFilter(this)">GESTURE</button>
+        <button class="log-filter" data-filter="ERROR" onclick="setLogFilter(this)">ERRORS</button>
+      </div>
+      <button class="refresh-btn" onclick="clearLogs()">Clear</button>
+      <span style="margin-left:auto;font-size:10px;color:var(--dim)" id="log-count">0 entries</span>
+    </div>
+    <div class="log-body" id="log-body"></div>
+  </div>
+
+</div>
+
+<script>
+const BASE = location.origin;
+const API = `${BASE}/api/v1`;
+let autoRefresh = true;
+let mirrorWs = null;
+let frameCount = 0;
+let lastFrameTime = 0;
+let fps = 0;
+let logFilter = 'ALL';
+let lastLogTimestamp = '';
+let allLogs = [];
+
+// ─── FETCH HELPERS ──────────────────────────────────────────
+async function apiFetch(url) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${r.status}`);
+    return await r.json();
+  } catch (e) {
+    console.warn(`API ${url}: ${e.message}`);
+    return null;
+  }
+}
+
+function fmt(n) {
+  if (n == null) return '—';
+  if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  return String(n);
+}
+
+function ts(d) { return new Date(d).toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}) }
+
+// ─── DEVICE STATUS ──────────────────────────────────────────
+async function refreshDeviceStatus() {
+  const d = await apiFetch(`${BASE}/device/status`);
+  const dotDev = document.getElementById('dot-device');
+  const lblDev = document.getElementById('lbl-device');
+  if (d) {
+    const on = d.connected;
+    dotDev.className = `dot ${on?'on pulse':'off'}`;
+    lblDev.textContent = on ? `Device: ${d.device_name||'Connected'}` : 'Device: Disconnected';
+    document.getElementById('screen-dims').textContent = `${d.screen_width||'?'}×${d.screen_height||'?'}`;
+  }
+  // Server check
+  const dotSrv = document.getElementById('dot-server');
+  const lblSrv = document.getElementById('lbl-server');
+  dotSrv.className = `dot ${d?'on':'off'}`;
+  lblSrv.textContent = d ? 'Server: Online' : 'Server: Offline';
+}
+
+// ─── SCREEN MIRROR ──────────────────────────────────────────
+function connectMirror() {
+  const wsUrl = `${BASE.replace('http','ws')}/ws/screen-mirror`;
+  const canvas = document.getElementById('mirror-canvas');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('mirror-status');
+  const dotMirror = document.getElementById('dot-mirror');
+  const lblMirror = document.getElementById('lbl-mirror');
+
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Connecting...';
+
+  try { if (mirrorWs) mirrorWs.close(); } catch(e) {}
+
+  mirrorWs = new WebSocket(wsUrl);
+
+  mirrorWs.onopen = () => {
+    statusEl.style.display = 'none';
+    dotMirror.className = 'dot on pulse';
+    lblMirror.textContent = 'Mirror: Live';
+  };
+
+  mirrorWs.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'frame' && msg.data) {
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = 'data:image/png;base64,' + msg.data;
+        frameCount = msg.frame_number || frameCount + 1;
+        document.getElementById('frame-count').textContent = `Frame: ${frameCount}`;
+        // FPS calc
+        const now = performance.now();
+        if (lastFrameTime > 0) {
+          fps = Math.round(1000 / (now - lastFrameTime));
+          document.getElementById('fps-display').textContent = `${fps} FPS`;
+        }
+        lastFrameTime = now;
+      }
+    } catch(err) {}
+  };
+
+  mirrorWs.onclose = () => {
+    dotMirror.className = 'dot off';
+    lblMirror.textContent = 'Mirror: Off';
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Disconnected. Reconnecting...';
+    setTimeout(connectMirror, 3000);
+  };
+
+  mirrorWs.onerror = () => {
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Connection failed';
+  };
+
+  // Coordinate tooltip on hover
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
+    const tip = document.getElementById('coord-tip');
+    tip.style.display = 'block';
+    tip.style.left = (e.clientX - rect.left + 12) + 'px';
+    tip.style.top = (e.clientY - rect.top - 8) + 'px';
+    tip.textContent = `(${x}, ${y})`;
+  });
+  canvas.addEventListener('mouseleave', () => {
+    document.getElementById('coord-tip').style.display = 'none';
+  });
+}
+
+// ─── COMMAND EXECUTION ──────────────────────────────────────
+async function sendCommand() {
+  const input = document.getElementById('cmd-input');
+  const btn = document.getElementById('cmd-send');
+  const text = input.value.trim();
+  if (!text) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  clearTimeline();
+  addTimelineItem('info', '🎤 Command Sent', text, '');
+
+  const respDiv = document.getElementById('exec-response');
+  respDiv.style.display = 'block';
+  respDiv.innerHTML = '<div style="color:var(--muted);font-size:12px"><span class="spinner"></span> Executing...</div>';
+
+  const startTime = Date.now();
+  addTimelineItem('info', '⏳ Processing', 'Sending to AURA pipeline...', '');
+
+  try {
+    const r = await fetch(`${BASE}/tasks/execute`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text_input: text, input_type: 'text'})
+    });
+    const data = await r.json();
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+    // Show response
+    const success = data.status === 'completed';
+    respDiv.innerHTML = `
+      <div class="resp-row"><span class="resp-label">Status</span><span class="resp-value"><span class="badge ${success?'badge-success':'badge-error'}">${data.status||'unknown'}</span></span></div>
+      ${data.transcript ? `<div class="resp-row"><span class="resp-label">Transcript</span><span class="resp-value">${esc(data.transcript)}</span></div>` : ''}
+      ${data.intent ? `<div class="resp-row"><span class="resp-label">Intent</span><span class="resp-value">${esc(JSON.stringify(data.intent))}</span></div>` : ''}
+      ${data.spoken_response ? `<div class="resp-row"><span class="resp-label">Response</span><span class="resp-value">${esc(data.spoken_response)}</span></div>` : ''}
+      <div class="resp-row"><span class="resp-label">Time</span><span class="resp-value">${data.execution_time?.toFixed(2)||elapsed}s</span></div>
+      ${data.error_message ? `<div class="resp-row"><span class="resp-label">Error</span><span class="resp-value" style="color:var(--error)">${esc(data.error_message)}</span></div>` : ''}
+      ${data.debug_info ? `<div class="resp-row"><span class="resp-label">Debug</span><span class="resp-value" style="font-size:10px">${esc(JSON.stringify(data.debug_info))}</span></div>` : ''}
+    `;
+
+    // Build execution timeline from response
+    if (data.intent) {
+      addTimelineItem('success', '🧠 Intent Parsed', `Action: ${data.intent.action||'?'}, Target: ${data.intent.recipient||data.intent.target||'?'}`, '');
+    }
+
+    // Check debug_info for escalation details
+    const dbg = data.debug_info || {};
+    if (dbg.ui_elements_count !== undefined) {
+      addTimelineItem(dbg.ui_elements_count > 0 ? 'success' : 'warning',
+        '🌲 UI Tree',
+        `${dbg.ui_elements_count} elements found`,
+        '');
+    }
+    if (dbg.issue) {
+      addTimelineItem('error', '⚠️ Issue', dbg.issue, '');
+    }
+
+    addTimelineItem(success ? 'success' : 'error',
+      success ? '✅ Completed' : '❌ Failed',
+      data.spoken_response || data.error_message || data.status,
+      `${data.execution_time?.toFixed(2)||elapsed}s`);
+
+    // Refresh metrics after execution
+    setTimeout(() => { refreshMetrics(); refreshTokens(); }, 1000);
+
+  } catch (e) {
+    respDiv.innerHTML = `<div style="color:var(--error);font-size:12px">❌ ${esc(e.message)}</div>`;
+    addTimelineItem('error', '❌ Error', e.message, '');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Send';
+
+  // Fetch fresh logs after command
+  setTimeout(refreshLogs, 1500);
+}
+
+function loadQuickCmd(sel) {
+  if (sel.value) {
+    document.getElementById('cmd-input').value = sel.value;
+    sel.selectedIndex = 0;
+  }
+}
+
+// ─── TIMELINE ───────────────────────────────────────────────
+function clearTimeline() {
+  document.getElementById('timeline').innerHTML = '';
+}
+
+function addTimelineItem(type, title, detail, time) {
+  const tl = document.getElementById('timeline');
+  if (tl.querySelector('.empty')) tl.innerHTML = '';
+  const item = document.createElement('div');
+  item.className = 'tl-item';
+  const dotCls = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'escalation' ? 'escalation' : 'info';
+  const cardCls = type === 'escalation' ? 'escalation' : type === 'error' ? 'error-card' : type === 'success' ? 'success-card' : '';
+  item.innerHTML = `
+    <div class="tl-dot ${dotCls}"></div>
+    <div class="tl-content ${cardCls}">
+      <div class="tl-title"><span>${esc(title)}</span><span class="tl-time">${esc(time)}</span></div>
+      <div class="tl-detail">${esc(detail)}</div>
+    </div>`;
+  tl.appendChild(item);
+  tl.scrollTop = tl.scrollHeight;
+}
+
+// ─── METRICS ────────────────────────────────────────────────
+async function refreshMetrics() {
+  const d = await apiFetch(`${API}/debug/metrics`);
+  if (!d) return;
+  const p = d.perception || d;
+  const ui = p.ui_tree || {};
+  const cv = p.cv_vlm || {};
+  const hr = p.heuristic || {};
+
+  setBar('bar-uitree', 'val-uitree', ui.success_rate, ui.attempts, ui.successes);
+  setBar('bar-cvvlm', 'val-cvvlm', cv.success_rate, cv.attempts, cv.successes);
+  setBar('bar-heur', 'val-heur', hr.attempts > 0 ? hr.successes/hr.attempts : 0, hr.attempts, hr.successes);
+
+  document.getElementById('val-failures').textContent = p.total_failures || 0;
+  document.getElementById('val-latency').textContent = p.avg_latency_ms ? `${p.avg_latency_ms}ms` : '—';
+}
+
+function setBar(barId, valId, rate, attempts, successes) {
+  const pct = Math.round((rate || 0) * 100);
+  const bar = document.getElementById(barId);
+  bar.style.width = pct + '%';
+  bar.className = `metric-fill ${pct >= 70 ? 'high' : pct >= 40 ? 'medium' : 'low'}`;
+  document.getElementById(valId).textContent = attempts > 0 ? `${pct}% (${successes}/${attempts})` : '—';
+}
+
+// ─── TOKENS ─────────────────────────────────────────────────
+async function refreshTokens() {
+  const d = await apiFetch(`${BASE}/tasks/token-stats`);
+  if (!d) return;
+  document.getElementById('tok-total').textContent = fmt(d.total_tokens);
+  document.getElementById('tok-calls').textContent = fmt(d.total_calls);
+  document.getElementById('tok-prompt').textContent = fmt(d.prompt_tokens || d.total_prompt_tokens);
+  document.getElementById('tok-comp').textContent = fmt(d.completion_tokens || d.total_completion_tokens);
+}
+
+// ─── CONFIG ─────────────────────────────────────────────────
+async function refreshConfig() {
+  const d = await apiFetch(`${API}/debug/config`);
+  if (!d) return;
+  document.getElementById('cfg-llm').textContent = d.llm_provider || '—';
+  document.getElementById('cfg-vlm').textContent = d.vlm_provider || '—';
+  document.getElementById('cfg-llm-model').textContent = (d.models||{}).llm_model || '—';
+  document.getElementById('cfg-vlm-model').textContent = (d.models||{}).vlm_model || '—';
+  document.getElementById('cfg-modality').textContent = d.perception_modality || '—';
+}
+
+// ─── UI TREE ────────────────────────────────────────────────
+async function refreshTree() {
+  const d = await apiFetch(`${API}/debug/ui-tree`);
+  const container = document.getElementById('tree-container');
+  const stats = document.getElementById('tree-stats');
+
+  if (!d || !d.available) {
+    container.innerHTML = '<div class="empty">No UI tree available</div>';
+    stats.innerHTML = '<span>No data</span>';
+    return;
+  }
+
+  const s = d.stats || {};
+  stats.innerHTML = `
+    <span>📦 ${s.total_nodes||0} nodes</span>
+    <span>👆 ${s.clickable||0} click</span>
+    <span>📜 ${s.scrollable||0} scroll</span>
+  `;
+
+  const elements = d.full_tree || d.sample_nodes || [];
+  if (elements.length === 0) {
+    container.innerHTML = '<div class="empty">Tree is empty</div>';
+    return;
+  }
+
+  container.innerHTML = elements.slice(0, 80).map(el => {
+    const cls = (el.className||'').split('.').pop();
+    const text = el.text || el.contentDescription || '';
+    const bounds = el.bounds || {};
+    const cx = bounds.centerX || bounds.center_x || 0;
+    const cy = bounds.centerY || bounds.center_y || 0;
+    let badges = '';
+    if (el.clickable || el.isClickable) badges += '<span class="tree-badge click">CLICK</span>';
+    if (el.isEditable || (el.className||'').includes('EditText')) badges += '<span class="tree-badge edit">EDIT</span>';
+    if (el.scrollable || el.isScrollable) badges += '<span class="tree-badge scroll">SCROLL</span>';
+    return `<div class="tree-node"><span class="tree-cls">${esc(cls)}</span> ${text ? `<span class="tree-text">"${esc(text.substring(0,40))}"</span>` : ''} ${badges} <span class="tree-bounds">(${cx},${cy})</span></div>`;
+  }).join('');
+}
+
+// ─── LOGS ───────────────────────────────────────────────────
+async function refreshLogs() {
+  const url = lastLogTimestamp
+    ? `${API}/debug/unified-logs/timeline?limit=50&since=${encodeURIComponent(lastLogTimestamp)}`
+    : `${API}/debug/unified-logs/timeline?limit=100`;
+
+  const d = await apiFetch(url);
+  if (!d || !d.timeline) return;
+
+  const entries = d.timeline;
+  if (entries.length === 0) return;
+
+  for (const entry of entries) {
+    allLogs.push(entry);
+    if (entry.timestamp) lastLogTimestamp = entry.timestamp;
+  }
+
+  // Keep last 500
+  if (allLogs.length > 500) allLogs = allLogs.slice(-500);
+
+  renderLogs();
+}
+
+function renderLogs() {
+  const body = document.getElementById('log-body');
+  const filtered = logFilter === 'ALL' ? allLogs :
+    logFilter === 'ERROR' ? allLogs.filter(l => l.level === 'ERROR' || l.level === 'WARNING') :
+    allLogs.filter(l => (l.source||'').toUpperCase().includes(logFilter) || (l.message||'').toUpperCase().includes(logFilter));
+
+  const html = filtered.slice(-200).map(l => {
+    const level = l.level || 'INFO';
+    const time = l.timestamp ? ts(l.timestamp) : '';
+    const src = (l.source || '').substring(0, 15);
+    const msg = l.message || '';
+    return `<div class="log-line ${level}"><span class="ts">${time}</span> <span class="lvl">${level}</span> <span class="src">${esc(src)}</span> ${esc(msg)}</div>`;
+  }).join('');
+
+  body.innerHTML = html || '<div class="empty">No logs yet</div>';
+  document.getElementById('log-count').textContent = `${filtered.length} entries`;
+
+  // Auto-scroll
+  body.scrollTop = body.scrollHeight;
+}
+
+function setLogFilter(btn) {
+  document.querySelectorAll('.log-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  logFilter = btn.dataset.filter;
+  renderLogs();
+}
+
+function clearLogs() {
+  allLogs = [];
+  lastLogTimestamp = '';
+  document.getElementById('log-body').innerHTML = '<div class="empty">Logs cleared</div>';
+  document.getElementById('log-count').textContent = '0 entries';
+}
+
+// ─── AUTO REFRESH ───────────────────────────────────────────
+function toggleAutoRefresh() {
+  autoRefresh = !autoRefresh;
+  const btn = document.getElementById('btn-auto');
+  btn.textContent = `Auto-refresh: ${autoRefresh ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active', autoRefresh);
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+// ─── INIT ───────────────────────────────────────────────────
+async function init() {
+  refreshDeviceStatus();
+  refreshMetrics();
+  refreshConfig();
+  refreshTokens();
+  refreshLogs();
+  connectMirror();
+
+  // Auto-refresh intervals
+  setInterval(() => { if (autoRefresh) { refreshDeviceStatus(); refreshMetrics(); } }, 5000);
+  setInterval(() => { if (autoRefresh) refreshTokens(); }, 10000);
+  setInterval(refreshLogs, 3000);
+}
+
+init();
+</script>
+</body>
+</html>

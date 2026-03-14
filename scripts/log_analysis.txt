@@ -1,0 +1,112 @@
+Total entries: 41
+
+
+============================================================
+[0] TYPE=
+📋 COMMAND 2026-02-26 10:14:42.116 open amazon and search for iphone 17 pro and add it to my cart Input type streaming Command open amazon and search for iphone 17 pro and add it to my cart Session 16beb82d-fe24-49f1-94e5-0bf89b6b97de Metadata { "text_length": 62, "conversation_turn": 1, "is_follow_up": true }
+
+============================================================
+[1] TYPE=
+🤖 LLM #1 2026-02-26 10:14:43.200 groq | llama-3.1-8b-instant Provider groq Model llama-3.1-8b-instant [ { "action": "open_app", "recipient": "amazon", "parameters": { "goal": "search_item" }, "confidence": 0.95 }, { "action": "search", "recipient": "amazon", "parameters": { "query": "iphone 17 pro" }, "confidence": 0.9 }, { "action": "add_to_cart", "recipient": "amazon", "parameters": {}, "confidence": 0.85 } ] 🔢 Prompt: 523 | Completion: 115 | Total: 638 Image metadata { "kwargs": { "max_tokens": 300, "response_format": { "type": "json_object" } } }
+
+============================================================
+[2] TYPE=INTENT_PARSED
+🧠 AGENT 2026-02-26 10:14:43.264 INTENT_PARSED action general_interaction confidence 0.3 recipient parameters [ "error" ]
+
+============================================================
+[3] TYPE=
+🤖 LLM #2 2026-02-26 10:14:45.382 groq | openai/gpt-oss-120b Provider groq Model openai/gpt-oss-120b { "goal_summary": "Open Amazon, search for iPhone 17 Pro, and add it to the cart", "subgoals": [ { "description": "Launch the Amazon app", "action_type": "open_app", "target": "Amazon", "success_hint": "Amazon home screen is displayed" }, { "description": "Tap the search input field", "action_type": "tap", "target": "Search", "success_hint": "Keyboard appears with the search field focused" }, { "description": "Enter the product name", "action_type": "type", "target": "iphone 17 pro", "success_hint": "Typed text appears in the search field" }, { "description": "Dismiss the keyboard before submitting the search", "action_type": "dismiss_keyboard", "target": "", "success_hint": "Keyboard is hidden" }, { "description": "Submit the search query", "action_type": "press_enter", "target": "", "success_hint": "Search results for \"iphone 17 pro\" are shown" }, { "description": "Tap the first product result", "action_type": "tap", "target": "First product", "success_hint": "Product detail page for iPhone 17 Pro is displayed" }, { "description": "Add the product to the cart", "action_type": "tap", "target": "Add to Cart", "success_hint": "Item is added to the cart and a confirmation appears" } ] } 🔢 Prompt: 1451 | Completion: 440 | Total: 1891 Image metadata { "kwargs": { "max_tokens": 800, "response_format": { "type": "json_object" } } }
+
+============================================================
+[4] TYPE=PLAN_CREATED
+📋 AGENT 2026-02-26 10:14:45.429 PLAN_CREATED goal Open amazon and search for iphone 17 pro and add it to my cart total_subgoals 7 subgoals [ { "index": 1, "description": "Launch the Amazon app", "action_type": "open_app", "target": "Amazon" }, { "index": 2, "description": "Tap the search input field", "action_type": "tap", "target": "Search" }, { "index": 3, "description": "Enter the product name", "action_type": "type", "target": "iphone 17 pro" }, { "index": 4, "description": "Dismiss the keyboard before submitting the search", "action_type": "dismiss_keyboard", "target": "" }, { "index": 5, "description": "Submit the search query", "action_type": "press_enter", "target": "" }, { "index": 6, "description": "Tap the first product result", "action_type": "tap", "target": "First product" }, { "index": 7, "description": "Add the product to the cart", "action_type": "tap", "target": "Add to Cart" } ]
+
+============================================================
+[5] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:14:45.431 SUBGOAL_START index 1 total 7 description Launch the Amazon app action_type open_app target Amazon attempt 1
+[7] POST_ACTION_SCREENSHOT: 📷AGENT2026-02-26 10:14:54.655POST_ACTION_SCREENSHOT
+
+============================================================
+[8] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:14:54.659 SUBGOAL_COMPLETE subgoal Launch the Amazon app action_type open_app verified_by launch_confirmed
+
+============================================================
+[9] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:14:57.678 SUBGOAL_START index 2 total 7 description Tap the search input field action_type tap target Search attempt 1
+
+============================================================
+[10] TYPE=
+👁 VLM #1 2026-02-26 10:15:03.424 groq | meta-llama/llama-4-scout-17b-16e-instruct Provider groq Model meta-llama/llama-4-scout-17b-16e-instruct You're on a product page on Amazon. The product shown is an iPhone 17 Pro in Cosmic Orange with 512 GB storage, featuring a 6.3" display, A19 Pro Chip, and advanced camera system. The product description and customer ratings are also visible, with over 100 purchases made in the past month. 🔢 Prompt: 2674 | Completion: 68 | Total: 2742 VLM input image Image metadata { "has_image": true, "image_type": "file_path", "image_size_bytes": null, "image_path": "/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCArUBNgDASIAAhEBAxEB/8QAHQABAAAHAQEAAAAAAAAAAAAAAAE
+
+============================================================
+[11] TYPE=PERCEPTION_RESULT
+🔍 AGENT 2026-02-26 10:15:03.659 PERCEPTION_RESULT Screen type native Element count 104 Target match ✅ (697, 244) via ui_tree VLM description You're on a product page on Amazon. The product shown is an iPhone 17 Pro in Cosmic Orange with 512 GB storage, featuring a 6.3" display, A19 Pro Chip, and advanced camera system. The product descript Screen capture Annotated (UI tree) UI Elements (104) # Text Content Desc Class Resource ID Bounds Center Flags 1 FrameLayout [0,0 → 1240,2772] 620,1386 2 ViewGroup [0,139 → 1240,2716] 620,1427 3 ViewGroup [0,139 → 1240,2716] 620,1427 4 ViewGroup [0,139 → 1240,2520] 620,1329 5 Button LinearLayout [525,2254 → 714,2352] 619,2303 6 ViewGroup toast-container [0,2352 → 1240,2520] 620,2436 7 ViewGroup WrappedNileFeatureContainer [0,2352 → 1240,2520] 620,2436 8 ViewGroup ScrollableAnimatedOpacity [0,2352 → 1240,2520] 620,2436 9 ViewGroup navigation-root [0,2352 → 1240,2520] 620,2436 10 ViewGroup MainNavigationHeader-header-bar [0,2352 → 1240,2464] 620,2408 11 ViewGroup MainNavigationHeader-left-button [0,2352 → 196,2464] 98,2408 12 Close Button MainNavigationHeader-left-button-close [0,2352 → 196,2464] 98,2408 tap 13 ViewGroup close-icon [70,2359 → 126,2415] 98,2387 14 Rufus View [496,2352 → 744,2443] 620,2397 15 Rufus Beta View header_text_Rufus [496,2352 → 744,2443] 620,2397 16 ViewGroup MainNavigationHeader-right-button [1030,2352 → 1240,2464] 1135,2408 17 Open menu Button MainNavigationHeader-right-button-overflow [1030,2352 → 1240,2464] 1135,2
+[13] POST_ACTION_SCREENSHOT: 📷AGENT2026-02-26 10:15:10.919POST_ACTION_SCREENSHOT
+
+============================================================
+[14] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:15:13.120 SUBGOAL_COMPLETE subgoal Tap the search input field action_type tap screen_changed True screen_before 57f0b6dda8413c01 screen_after a6f701bc74bcd534 verification_reason All criteria passed
+
+============================================================
+[15] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:15:13.122 SUBGOAL_START index 3 total 7 description Enter the product name action_type type target iphone 17 pro attempt 1
+[17] POST_ACTION_SCREENSHOT: 📷AGENT2026-02-26 10:15:18.327POST_ACTION_SCREENSHOT
+
+============================================================
+[18] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:15:20.437 SUBGOAL_COMPLETE subgoal Enter the product name action_type type screen_changed True screen_before a6f701bc74bcd534 screen_after 5de7ebe90b5a1b8e verification_reason All criteria passed
+
+============================================================
+[19] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:15:20.438 SUBGOAL_START index 4 total 7 description Dismiss the keyboard before submitting the search action_type dismiss_keyboard target attempt 1
+[21] POST_ACTION_SCREENSHOT: 📷AGENT2026-02-26 10:15:23.399POST_ACTION_SCREENSHOT
+
+============================================================
+[22] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:15:25.666 SUBGOAL_COMPLETE subgoal Dismiss the keyboard before submitting the search action_type dismiss_keyboard screen_changed False screen_before 5de7ebe90b5a1b8e screen_after 5de7ebe90b5a1b8e verification_reason All criteria passed
+
+============================================================
+[23] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:15:25.667 SUBGOAL_START index 5 total 7 description Submit the search query action_type press_enter target attempt 1
+[25] POST_ACTION_SCREENSHOT: 📷AGENT2026-02-26 10:15:29.199POST_ACTION_SCREENSHOT
+
+============================================================
+[26] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:15:32.036 SUBGOAL_COMPLETE subgoal Submit the search query action_type press_enter screen_changed True screen_before 5de7ebe90b5a1b8e screen_after 404d532d4c6d36ba verification_reason All criteria passed
+
+============================================================
+[27] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:15:32.037 SUBGOAL_START index 6 total 7 description Tap the first product result action_type tap target First product attempt 1
+
+============================================================
+[30] TYPE=PERCEPTION_RESULT
+🔍 AGENT 2026-02-26 10:15:39.964 PERCEPTION_RESULT Screen type native Element count 150 Target match ✅ (615, 1525) via cv_vlm VLM description You're on Amazon.in, searching for the iPhone 17 Pro. The screen shows a sponsored result for the iPhone 17 Pro with a large image of an orange model and three smaller images of different colors, all Screen capture Annotated (UI tree) OmniParser annotated UI Elements (150) # Text Content Desc Class Resource ID Bounds Center Flags 1 FrameLayout [0,0 → 1240,2772] 620,1386 2 ViewGroup [0,139 → 1240,2716] 620,1427 3 ViewGroup [0,139 → 1240,2716] 620,1427 4 ViewGroup [0,139 → 1240,2520] 620,1329 5 LinearLayout [0,139 → 1240,349] 620,244 6 LinearLayout [0,139 → 1240,349] 620,244 7 Back ImageButton [0,139 → 154,349] 77,244 tap 8 Search ImageButton [154,139 → 1240,349] 697,244 tap 9 iphone 17 pro TextView [343,174 → 778,328] 560,251 tap 10 scan it FrameLayout [778,174 → 932,328] 855,251 tap 11 Voice Search, tap and say what you want to search for. Doubl LinearLayout [932,174 → 1086,328] 1009,251 tap 12 scan it FrameLayout [1086,139 → 1240,349] 1163,244 tap 13 FrameLayout [0,349 → 1240,2716] 620,1532 14 RelativeLayout [0,503 → 1240,2520] 620,1511 15 WebView [0,503 → 1240,2520] 620,1511 16 Amazon.in : iphone 17 pro WebView [0,503 → 1241,2675] 620,1589 scroll focus 17 View [0,846 → 1241,2675] 620,1760 tap 18 View a-page [0,846 → 1241,2675] 620,1760 19 View search [0,846 → 1241,2675] 620,1760 20 View [0,503 → 1241,849] 620,676 21 View [0,503 → 1241,
+[32] POST_ACTION_SCREENSHOT: 📷AGENT2026-02-26 10:15:47.255POST_ACTION_SCREENSHOT
+
+============================================================
+[33] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:15:48.625 SUBGOAL_COMPLETE subgoal Tap the first product result action_type tap screen_changed True screen_before 6cc82904eba048b4 screen_after 8f709e66b7abcf01 verification_reason All criteria passed
+
+============================================================
+[34] TYPE=SUBGOAL_START
+▶ AGENT 2026-02-26 10:15:48.629 SUBGOAL_START index 7 total 7 description Add the product to the cart action_type tap target Add to Cart attempt 1
+
+============================================================
+[35] TYPE=PERCEPTION_RESULT
+🔍 AGENT 2026-02-26 10:15:50.530 PERCEPTION_RESULT Screen type native Element count 50 Target match ✅ (1072, 691) via ui_tree Screen capture Annotated (UI tree) UI Elements (50) # Text Content Desc Class Resource ID Bounds Center Flags 1 FrameLayout [0,0 → 1240,2772] 620,1386 2 ViewGroup [0,139 → 1240,2716] 620,1427 3 ViewGroup [0,139 → 1240,2716] 620,1427 4 ViewGroup [0,139 → 1240,2520] 620,1329 5 LinearLayout [0,139 → 1240,349] 620,244 6 LinearLayout [0,139 → 1240,349] 620,244 7 Back ImageButton [0,139 → 154,349] 77,244 tap 8 Search ImageButton [154,139 → 1240,349] 697,244 tap 9 Search or ask a question TextView [343,174 → 778,328] 560,251 tap 10 scan it FrameLayout [778,174 → 932,328] 855,251 tap 11 Voice Search, tap and say what you want to search for. Doubl LinearLayout [932,174 → 1086,328] 1009,251 tap 12 scan it FrameLayout [1086,139 → 1240,349] 1163,244 tap 13 FrameLayout [0,349 → 1240,2716] 620,1532 14 RelativeLayout [0,349 → 1240,2520] 620,1434 15 WebView [0,349 → 1240,2520] 620,1434 16 Amazon.in: Apple: iPhone WebView [0,349 → 1241,2521] 620,1435 focus 17 View [0,349 → 1241,2521] 620,1435 18 View a-page [0,349 → 1241,919] 620,634 19 View [0,349 → 1241,919] 620,634 20 View header [0,349 → 1241,779] 620,564 21 View Header-cwbr7vefyr [0,349 → 1241,779] 620,564 22 View [0,349 → 1241,597] 620,473 23 42a929e98ae5df0ac3f9c870dee29e59.w3000.h600._CR0%2C0%2C3000%2C600_SX1280_ apple logo - the apple logo - apple logo - - the apple logo Image [0,349 → 1241,597] 620,473 24 View
+
+============================================================
+[37] TYPE=POST_ACTION_SCREENSHOT
+📷 AGENT 2026-02-26 10:15:55.043 POST_ACTION_SCREENSHOT Subgoal Add the product to the cart Action tap Post-action screen
+
+============================================================
+[38] TYPE=SUBGOAL_COMPLETE
+✅ AGENT 2026-02-26 10:15:58.440 SUBGOAL_COMPLETE subgoal Add the product to the cart action_type tap screen_changed True screen_before 4218093520c388d8 screen_after 876d716b3ab07fe5 verification_reason All criteria passed
+
+============================================================
+[39] TYPE=
+🤖 LLM #3 2026-02-26 10:15:59.016 groq | openai/gpt-oss-120b Provider groq Model openai/gpt-oss-120b Got it—Amazon is open, the iPhone 17 Pro has been searched for, and it’s now in your cart. 🔢 Prompt: 1571 | Completion: 142 | Total: 1713 Image metadata { "kwargs": { "max_tokens": 200, "temperature": 0.7, "tools": [ { "type": "browser_search" } ] } }
+
+============================================================
+[40] TYPE=
+📊 GRAPH 2026-02-26 10:16:01.487 Status: COMPLETED Task ID streaming_1772081081737 Duration 79.368s Input { "input_type": "streaming", "command": "open amazon and search for iphone 17 pro and add it to my cart" } Output { "status": "completed", "transcript": "open amazon and search for iphone 17 pro and add it to my cart", "spoken_response": "Got it—Amazon is open, the iPhone 17 Pro has been searched for, and it’s now in your cart." }

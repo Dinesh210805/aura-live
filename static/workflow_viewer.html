@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Agent Workflow Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        select, button {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select {
+            background: white;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .transcript-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .transcript-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .transcript-text {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .workflow-canvas {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-height: 600px;
+        }
+
+        .workflow-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            position: relative;
+        }
+
+        .agent-node {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .agent-node.running {
+            border-color: #ffc107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+            animation: pulse 1.5s infinite;
+        }
+
+        .agent-node.completed {
+            border-color: #4caf50;
+        }
+
+        .agent-node.error {
+            border-color: #f44336;
+        }
+
+        .agent-node.pending {
+            border-color: #e0e0e0;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .node-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .node-icon.stt { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .node-icon.commander { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .node-icon.perception { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .node-icon.navigator { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .node-icon.executor { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .node-icon.responder { background: linear-gradient(135deg, #30cfd0, #330867); }
+
+        .node-title {
+            flex: 1;
+        }
+
+        .node-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .node-status {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.running { background: #fff3cd; color: #856404; }
+        .status-badge.completed { background: #d4edda; color: #155724; }
+        .status-badge.error { background: #f8d7da; color: #721c24; }
+        .status-badge.pending { background: #e0e0e0; color: #666; }
+
+        .node-timing {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .node-content {
+            margin-top: 15px;
+        }
+
+        .data-section {
+            margin-top: 12px;
+        }
+
+        .data-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .data-label::before {
+            content: '▶';
+            font-size: 10px;
+        }
+
+        .data-content {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .error-content {
+            background: #fff5f5;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        .connector {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 30px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            margin: -15px 0;
+        }
+
+        .connector::before {
+            content: '▼';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #764ba2;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-hint {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AURA Agent Workflow Viewer</h1>
+            <p style="color: #666; margin-top: 5px;">Real-time visualization of agent orchestration and data flow</p>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Session:</label>
+                    <select id="sessionSelect">
+                        <option value="">Select a session...</option>
+                    </select>
+                </div>
+                <button id="refreshBtn" onclick="refreshSessions()">🔄 Refresh</button>
+                <button id="autoRefreshBtn" onclick="toggleAutoRefresh()">⏸️ Stop Auto-refresh</button>
+            </div>
+
+            <div class="metrics" id="metrics" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-label">Total Time</div>
+                    <div class="metric-value" id="totalTime">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Agents Used</div>
+                    <div class="metric-value" id="agentsUsed">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Status</div>
+                    <div class="metric-value" id="overallStatus">-</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="transcript-box" id="transcriptBox" style="display: none;">
+            <h3>📝 User Input (Transcript)</h3>
+            <div class="transcript-text" id="transcriptText">-</div>
+        </div>
+
+        <div class="workflow-canvas">
+            <div id="workflowContent">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <div class="empty-state-text">No workflow selected</div>
+                    <div class="empty-state-hint">Select a session from the dropdown above to view the agent workflow</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+        let currentSessionId = null;
+
+        const AGENT_ICONS = {
+            'STT': '🎤',
+            'Parse Intent': '🧠',
+            'Perception': '👁️',
+            'Plan Actions': '📋',
+            'Generate Instructions': '⚙️',
+            'Generate Response': '💬'
+        };
+
+        async function refreshSessions() {
+            const select = document.getElementById('sessionSelect');
+            const currentValue = select.value;
+            
+            try {
+                const response = await fetch('/api/workflow/sessions');
+                const sessions = await response.json();
+                
+                select.innerHTML = '<option value="">Select a session...</option>';
+                sessions.forEach(session => {
+                    const option = document.createElement('option');
+                    option.value = session.session_id;
+                    option.textContent = `${session.transcript || 'No transcript'} (${new Date(session.timestamp * 1000).toLocaleTimeString()})`;
+                    select.appendChild(option);
+                });
+                
+                if (currentValue) {
+                    select.value = currentValue;
+                }
+            } catch (error) {
+                console.error('Failed to fetch sessions:', error);
+            }
+        }
+
+        async function loadWorkflow(sessionId) {
+            if (!sessionId) {
+                document.getElementById('workflowContent').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">No workflow selected</div>
+                        <div class="empty-state-hint">Select a session from the dropdown above</div>
+                    </div>
+                `;
+                document.getElementById('transcriptBox').style.display = 'none';
+                document.getElementById('metrics').style.display = 'none';
+                return;
+            }
+
+            currentSessionId = sessionId;
+            document.getElementById('workflowContent').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading workflow...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/api/workflow/${sessionId}`);
+                const data = await response.json();
+                
+                renderWorkflow(data);
+            } catch (error) {
+                console.error('Failed to load workflow:', error);
+                document.getElementById('workflowContent').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <div class="empty-state-text">Failed to load workflow</div>
+                        <div class="empty-state-hint">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderWorkflow(data) {
+            // Show transcript
+            if (data.transcript) {
+                document.getElementById('transcriptBox').style.display = 'block';
+                document.getElementById('transcriptText').textContent = data.transcript;
+            }
+
+            // Show metrics
+            document.getElementById('metrics').style.display = 'grid';
+            const totalTime = data.end_time && data.start_time ? 
+                ((data.end_time - data.start_time) * 1000).toFixed(0) + 'ms' : '-';
+            document.getElementById('totalTime').textContent = totalTime;
+            document.getElementById('agentsUsed').textContent = data.used_agents?.length || 0;
+            document.getElementById('overallStatus').textContent = data.status || 'running';
+
+            // Render workflow steps
+            const steps = data.workflow_steps || [];
+            if (steps.length === 0) {
+                document.getElementById('workflowContent').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⏳</div>
+                        <div class="empty-state-text">Workflow in progress...</div>
+                        <div class="empty-state-hint">Waiting for agents to process</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="workflow-grid">';
+            
+            steps.forEach((step, index) => {
+                const icon = AGENT_ICONS[step.node] || '🤖';
+                const statusClass = step.status || 'pending';
+                const timing = step.execution_time ? 
+                    `${(step.execution_time * 1000).toFixed(0)}ms` : '';
+
+                html += `
+                    <div class="agent-node ${statusClass}">
+                        <div class="node-header">
+                            <div class="node-icon ${step.node.toLowerCase().replace(/\s+/g, '-')}">
+                                ${icon}
+                            </div>
+                            <div class="node-title">
+                                <div class="node-name">${step.node}</div>
+                                <div class="node-status">
+                                    <span class="status-badge ${statusClass}">${statusClass}</span>
+                                </div>
+                                ${timing ? `<div class="node-timing">⏱️ ${timing}</div>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="node-content">
+                            ${step.description ? `<div style="color: #666; margin-bottom: 10px;">${step.description}</div>` : ''}
+                            
+                            ${step.output ? `
+                                <div class="data-section">
+                                    <div class="data-label">Output</div>
+                                    <div class="data-content">${formatOutput(step.output)}</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${step.error ? `
+                                <div class="data-section">
+                                    <div class="data-label" style="color: #f44336;">⚠️ Error</div>
+                                    <div class="data-content error-content">${step.error}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+
+                if (index < steps.length - 1) {
+                    html += '<div class="connector"></div>';
+                }
+            });
+
+            html += '</div>';
+            document.getElementById('workflowContent').innerHTML = html;
+        }
+
+        function formatOutput(output) {
+            if (typeof output === 'string') {
+                return output;
+            }
+            return JSON.stringify(output, null, 2);
+        }
+
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('autoRefreshBtn');
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                btn.textContent = '▶️ Start Auto-refresh';
+            } else {
+                autoRefreshInterval = setInterval(() => {
+                    if (currentSessionId) {
+                        loadWorkflow(currentSessionId);
+                    }
+                }, 2000);
+                btn.textContent = '⏸️ Stop Auto-refresh';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('sessionSelect').addEventListener('change', (e) => {
+            loadWorkflow(e.target.value);
+        });
+
+        // Initialize
+        refreshSessions();
+        
+        // Start auto-refresh by default
+        autoRefreshInterval = setInterval(() => {
+            if (currentSessionId) {
+                loadWorkflow(currentSessionId);
+            } else {
+                refreshSessions();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

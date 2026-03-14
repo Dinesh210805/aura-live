@@ -1,0 +1,8 @@
+"""Application-wide constants."""
+
+API_VERSION = "v1"
+API_PREFIX = f"/api/{API_VERSION}"
+MAX_AUDIO_SIZE = 10 * 1024 * 1024  # 10MB
+MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024  # 5MB
+AUDIO_BUFFER_THRESHOLD = 16000  # ~1 second at 16kHz
+REQUEST_ID_HEADER = "X-Request-ID"

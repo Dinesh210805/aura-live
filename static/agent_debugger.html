@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Agent Debugger (Canvas Mode)</title>
+    <!-- Use Google Fonts for Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --grid-color: #e4e7eb;
+            --node-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #6366f1;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --running-color: #f59e0b;
+        }
+
+        .dark-mode {
+            --bg-color: #111827;
+            --grid-color: #1f2937;
+            --node-bg: #1f2937;
+            --border-color: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+
+        /* --- Header / Toolbar --- */
+        .toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--node-bg);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .command-bar {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-color);
+            padding: 4px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        
+        .toggle-option {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+        
+        .toggle-option.active {
+            background: white;
+            color: var(--accent-primary);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-color: var(--border-color);
+        }
+
+        /* --- Canvas --- */
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: grab;
+            overflow: hidden;
+            padding-top: 64px; /* Toolbar height */
+        }
+        
+        #canvas-container.grabbing {
+            cursor: grabbing;
+        }
+
+        .grid-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%; /* Large enough for panning */
+            height: 200%;
+            background-image: 
+                radial-gradient(var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            transform-origin: 0 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .nodes-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
+            z-index: 10;
+        }
+        
+        .connections-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* pointer-events: none; allows clicking but SVG handles it */
+            z-index: 5;
+            overflow: visible;
+        }
+
+        /* --- Nodes --- */
+        .node {
+            position: absolute;
+            width: 240px;
+            background: var(--node-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .node:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-primary);
+        }
+
+        .node.selected {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .node.running {
+            border-color: var(--running-color);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+        
+        .node.completed {
+            border-color: var(--success-color);
+        }
+        
+        .node.failed {
+            border-color: var(--error-color);
+        }
+
+        .node-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .node-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: #f3f4f6; /* Default icon bg */
+        }
+
+        .node-title-group {
+            flex: 1;
+        }
+
+        .node-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .node-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .node-status-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s;
+        }
+        
+        .node-status-badge.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .node-preview {
+            padding: 12px 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.02);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 20px;
+        }
+
+        /* Anchors */
+        .anchor {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff; /* var(--node-bg) doesn't work well over border */
+            border: 2px solid var(--text-secondary);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 15;
+            transition: all 0.2s;
+        }
+        
+        .anchor.input { left: -6px; }
+        .anchor.output { right: -6px; }
+        
+        .node:hover .anchor {
+            border-color: var(--accent-primary);
+            background: white;
+        }
+
+        /* --- Connections --- */
+        path.connection {
+            fill: none;
+            stroke: #9ca3af;
+            stroke-width: 2px;
+            transition: stroke 0.3s;
+        }
+        
+        path.connection.active {
+            stroke: var(--accent-primary);
+            stroke-width: 3px;
+            /* Animation handled by SVG marker/dash if desired */
+            stroke-dasharray: 10;
+            animation: dash 1s linear infinite;
+        }
+        
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        /* --- Panel (Inspector) --- */
+        .inspector-panel {
+            position: absolute;
+            right: 24px;
+            top: 88px;
+            width: 320px;
+            background: var(--node-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 120px);
+            z-index: 100;
+            overflow: hidden;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .inspector-panel.open {
+            transform: translateX(0);
+        }
+        
+        .inspector-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .inspector-content {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            overflow-x: auto;
+            color: #374151;
+            font-family: 'Monaco', monospace;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="logo">
+            <span style="font-size: 24px;">💫</span>
+            <span>AURA Debugger</span>
+        </div>
+        
+        <div class="command-bar">
+            <input type="text" id="commandInput" placeholder="Enter a command (e.g., 'Open Spotify and play liked songs')..." />
+            <div class="toggle-switch" id="modeSwitch">
+                <div class="toggle-option active" data-mode="simulation">Simulation</div>
+                <div class="toggle-option" data-mode="live">Live Device</div>
+            </div>
+            <button class="btn-primary" id="executeBtn">Execute</button>
+        </div>
+        
+        <div class="actions">
+            <button class="btn-secondary" id="clearBtn" title="Clear Canvas">🗑️</button>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <div class="grid-layer" id="gridLayer"></div>
+        
+        <svg class="connections-layer" id="connectionsSvg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af" />
+                </marker>
+                <marker id="arrowhead-active" markerWidth="10" markerHeight="7" 
+                refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+                </marker>
+            </defs>
+        </svg>
+        
+        <div class="nodes-layer" id="nodesLayer"></div>
+    </div>
+
+    <div class="inspector-panel" id="inspector">
+        <div class="inspector-header" id="inspectorHeader">Node Details</div>
+        <div class="inspector-content" id="inspectorContent">
+            Select a node to view details...
+        </div>
+    </div>
+
+    <script>
+        // --- State ---
+        let executionMode = 'simulation';
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isPanning = false;
+        let startPanX = 0;
+        let startPanY = 0;
+        let nodes = [];
+        let edges = [];
+        let pollingInterval = null;
+        let currentSessionId = null;
+
+        // --- DOM Elements ---
+        const canvasContainer = document.getElementById('canvas-container');
+        const nodesLayer = document.getElementById('nodesLayer');
+        const gridLayer = document.getElementById('gridLayer');
+        const connectionsSvg = document.getElementById('connectionsSvg');
+        const inspector = document.getElementById('inspector');
+        
+        // --- Initialization ---
+        function init() {
+            bindEvents();
+            centerCanvas();
+            
+            // Create initial start node
+            addNode({ 
+                id: 'start', 
+                type: 'start', 
+                label: 'User Command', 
+                subtitle: 'Waiting...', 
+                x: 100, 
+                y: 300,
+                status: 'pending'
+            });
+        }
+
+        function bindEvents() {
+            // Mode Switch
+            document.querySelectorAll('.toggle-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    document.querySelectorAll('.toggle-option').forEach(o => o.classList.remove('active'));
+                    opt.classList.add('active');
+                    executionMode = opt.getAttribute('data-mode');
+                });
+            });
+
+            // Pan and Zoom
+            canvasContainer.addEventListener('mousedown', (e) => {
+                if(e.target === canvasContainer || e.target === gridLayer || e.target.tagName === 'svg') {
+                    isPanning = true;
+                    startPanX = e.clientX - panX;
+                    startPanY = e.clientY - panY;
+                    canvasContainer.classList.add('grabbing');
+                }
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (isPanning) {
+                    panX = e.clientX - startPanX;
+                    panY = e.clientY - startPanY;
+                    updateTransform();
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                isPanning = false;
+                canvasContainer.classList.remove('grabbing');
+            });
+
+            canvasContainer.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                scale = Math.min(Math.max(0.5, scale * delta), 2);
+                updateTransform();
+            });
+
+            // Execute
+            document.getElementById('executeBtn').addEventListener('click', executeCommand);
+            
+            // Clear
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                nodes = [];
+                edges = [];
+                render();
+                // Re-add start
+                 addNode({ 
+                    id: 'start', 
+                    type: 'start', 
+                    label: 'User Command', 
+                    subtitle: 'Waiting...', 
+                    x: 100, 
+                    y: 300,
+                    status: 'pending'
+                });
+            });
+        }
+
+        function centerCanvas() {
+            const rect = canvasContainer.getBoundingClientRect();
+            panX = 0;
+            panY = 0;
+            updateTransform();
+        }
+
+        function updateTransform() {
+            nodesLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            gridLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            connectionsSvg.innerHTML = `<defs>${connectionsSvg.querySelector('defs').innerHTML}</defs>`; // Clear lines but keep defs
+            renderConnections(); // Re-render lines (SVG paths don't inherit CSS transform well for endpoints)
+            // Actually usually we apply transform to a group inside SVG
+            // Let's optimize: Wrapper group g
+        }
+        
+        // Improve SVG transform:
+        // We need a <g> inside the SVG to apply the transform to match nodesLayer
+        const svgGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        svgGroup.id = "connectionsGroup";
+        connectionsSvg.appendChild(svgGroup);
+        
+        // Override updateTransform to apply to SVG group too
+        const baseUpdateTransform = updateTransform;
+        updateTransform = function() {
+            nodesLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            gridLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            document.getElementById('connectionsGroup').setAttribute('transform', `translate(${panX}, ${panY}) scale(${scale})`);
+        }
+
+
+        // --- Logic ---
+        
+        async function executeCommand() {
+            const text = document.getElementById('commandInput').value;
+            if (!text) return;
+
+            // Reset UI
+            if (currentSessionId) clearInterval(pollingInterval);
+            nodes = [];
+            edges = [];
+            render();
+            
+            // Add Start Node
+            addNode({
+                id: 'input',
+                type: 'start',
+                label: 'User Input',
+                subtitle: text.length > 20 ? text.substring(0,20)+'...' : text,
+                x: 100,
+                y: 300,
+                status: 'completed',
+                data: { text: text }
+            });
+
+            // Execute API
+            try {
+                const response = await fetch('/api/v1/tasks/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text_input: text,
+                        input_type: 'text',
+                        config: {
+                            execution_mode: executionMode,
+                            track_workflow: true
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+                
+                const data = await response.json();
+                currentSessionId = data.task_id.replace('task_', ''); // Approximate session ID usage logic
+                // Or verify debug_info for session_id 
+                // Actually the API doesn't return session_id directly in clear field, usually task_id suffices if it maps one-to-one
+                // In graph.py, session_id is generated. 
+                // Let's poll /api/workflow/sessions to find the latest
+                
+                pollWorkflow();
+                
+            } catch (e) {
+                console.error(e);
+                alert('Execution failed: ' + e.message);
+            }
+        }
+
+        function pollWorkflow() {
+            // Start by fetching sessions to find the latest one matching our task
+            // Ideally backend returns session_id, but assuming it's the latest
+            
+            // For now, let's poll sessions list first
+             fetch('/api/workflow/sessions')
+                .then(r => r.json())
+                .then(sessions => {
+                    if(sessions.length > 0) {
+                        const latest = sessions[0]; // Logic assumes sorted desc
+                        processWorkflowUpdate(latest);
+                        
+                        pollingInterval = setInterval(async () => {
+                            const r = await fetch(`/api/workflow/${latest.session_id}`);
+                            const data = await r.json();
+                            processWorkflowUpdate(data);
+                            
+                            if (data.status === 'completed' || data.status === 'failed') {
+                                clearInterval(pollingInterval);
+                            }
+                        }, 1000);
+                    }
+                });
+        }
+
+        function processWorkflowUpdate(data) {
+            // data.workflow_steps contains the history
+            // We map agents to node positions
+            const agentMap = {
+                'stt_node': { x: 300, y: 300, label: 'Speech-to-Text' },
+                'parse_intent_node': { x: 550, y: 300, label: 'Commander Agent' },
+                'perception_node': { x: 550, y: 500, label: 'Perception Controller' }, 
+                'plan_node': { x: 800, y: 300, label: 'Navigator/Universal' },
+                'execute_node': { x: 1050, y: 300, label: 'Executor' },
+                'universal_agent_node': { x: 800, y: 300, label: 'Universal Agent' },
+                'validate_outcome_node': { x: 1050, y: 500, label: 'Validator' },
+                'respond_node': { x: 1300, y: 300, label: 'Responder' },
+                'speak_node': { x: 1300, y: 300, label: 'Speaker' }
+            };
+
+            const steps = data.workflow_steps || [];
+            
+            steps.forEach((step, index) => {
+                const nodeId = step.node; // e.g., 'parse_intent_node'
+                const existingInfo = agentMap[nodeId] || { x: 300 + (index * 250), y: 400, label: nodeId };
+                
+                // Add or update node
+                addNode({
+                    id: nodeId,
+                    type: nodeId,
+                    label: existingInfo.label,
+                    subtitle: step.status,
+                    x: existingInfo.x,
+                    y: existingInfo.y,
+                    status: step.status,
+                    data: step
+                });
+                
+                // Add edge from previous
+                if (index === 0) {
+                     // Connect input to first node
+                     addEdge('input', nodeId);
+                } else {
+                    const prevNodeId = steps[index-1].node;
+                    addEdge(prevNodeId, nodeId);
+                }
+            });
+            
+            render();
+        }
+
+        // --- Render Engine ---
+
+        function addNode(nodeData) {
+            const existingIndex = nodes.findIndex(n => n.id === nodeData.id);
+            if (existingIndex > -1) {
+                // Update existing
+                nodes[existingIndex] = { ...nodes[existingIndex], ...nodeData };
+            } else {
+                nodes.push(nodeData);
+            }
+        }
+        
+        function addEdge(source, target) {
+            if (!edges.find(e => e.source === source && e.target === target)) {
+                edges.push({ source, target });
+            }
+        }
+
+        function render() {
+            // Render Nodes
+            nodesLayer.innerHTML = '';
+            nodes.forEach(node => {
+                const el = document.createElement('div');
+                el.className = `node ${node.status}`;
+                el.style.left = `${node.x}px`;
+                el.style.top = `${node.y}px`;
+                
+                // Icons mapping
+                const icons = {
+                    'start': '🏁',
+                    'stt_node': '🎤',
+                    'parse_intent_node': '🧠',
+                    'plan_node': '🗺️',
+                    'execute_node': '⚡',
+                    'speak_node': '🔊',
+                    'universal_agent_node': '🤖'
+                };
+                
+                el.innerHTML = `
+                    <div class="node-header">
+                        <div class="node-icon">${icons[node.type] || '📦'}</div>
+                        <div class="node-title-group">
+                            <div class="node-title">${node.label}</div>
+                            <div class="node-subtitle">${node.subtitle}</div>
+                        </div>
+                        <div class="node-status-badge ${node.status === 'completed' ? 'visible' : ''}">✓</div>
+                    </div>
+                    <div class="node-preview">
+                        ${node.data?.output ? JSON.stringify(node.data.output).substring(0, 40) + '...' : 'No output'}
+                    </div>
+                    <div class="anchor input"></div>
+                    <div class="anchor output"></div>
+                `;
+                
+                el.onclick = () => showInspector(node);
+                nodesLayer.appendChild(el);
+            });
+            
+            renderConnections();
+        }
+        
+        function renderConnections() {
+            const group = document.getElementById('connectionsGroup');
+            group.innerHTML = '';
+            
+            edges.forEach(edge => {
+                const sourceNode = nodes.find(n => n.id === edge.source);
+                const targetNode = nodes.find(n => n.id === edge.target);
+                
+                if (!sourceNode || !targetNode) return;
+                
+                // Get absolute coordinates (relative to canvas origin 0,0)
+                // Source output anchor (Right side)
+                const startX = sourceNode.x + 240; // width
+                const startY = sourceNode.y + 40; // approx center height
+                
+                // Target input anchor (Left side)
+                const endX = targetNode.x;
+                const endY = targetNode.y + 40;
+                
+                // Bezier
+                const cp1X = startX + 50;
+                const cp1Y = startY;
+                const cp2X = endX - 50;
+                const cp2Y = endY;
+                
+                const d = `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", d);
+                path.setAttribute("class", "connection " + (sourceNode.status === 'completed' ? 'active' : ''));
+                path.setAttribute("marker-end", sourceNode.status === 'completed' ? "url(#arrowhead-active)" : "url(#arrowhead)");
+                
+                group.appendChild(path);
+            });
+        }
+        
+        function showInspector(node) {
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+            // Find current DOM element roughly or re-render - simplification for this example
+            
+            inspector.classList.add('open');
+            document.getElementById('inspectorHeader').textContent = node.label;
+            document.getElementById('inspectorContent').innerHTML = `
+                <div style="margin-bottom:12px"><strong>Status:</strong> ${node.status}</div>
+                <div style="margin-bottom:8px"><strong>Data:</strong></div>
+                <pre>${JSON.stringify(node.data, null, 2)}</pre>
+            `;
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>

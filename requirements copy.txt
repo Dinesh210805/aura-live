@@ -1,0 +1,55 @@
+# AURA Backend Dependencies
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.3
+python-dotenv==1.0.0
+
+# AI Orchestration & Agents - Updated to latest stable versions
+crewai>=0.86.0
+langgraph>=0.3.27
+langchain>=0.3.0,<0.4
+langchain-community>=0.3.0,<0.4
+langchain-core>=0.2.38
+
+# AI Model Providers
+groq==0.11.0
+google-genai>=1.0.0
+openai>=1.0.0  # For OpenRouter API (intent classification)
+
+# Policy Engine / Guardrails
+regopy>=0.4.0             # Pure Python Rego interpreter for OPA policies
+
+# OmniParser CV + VLM Hybrid Perception
+ultralytics>=8.0.0        # YOLOv8 for UI element detection
+huggingface-hub>=0.19.0   # Model download from HuggingFace
+opencv-python>=4.8.0      # Image processing for Set-of-Marks visualization
+numpy>=1.24.0             # Array operations
+
+# Audio Processing
+speechrecognition==3.10.0
+pydub==0.25.1
+pyaudio==0.2.11
+edge-tts>=6.1.0
+
+# HTTP Client
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Observability
+langsmith==0.0.70
+
+# Terminal UI
+rich>=13.7.0
+
+# Development Tools
+black==23.11.0
+isort==5.12.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Utilities
+typing-extensions==4.8.0
+python-multipart==0.0.6

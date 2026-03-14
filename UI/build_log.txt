@@ -1,0 +1,372 @@
+Initialized native services in: C:\Users\DINESHKUMAR C\.gradle\native
+Initialized jansi services in: C:\Users\DINESHKUMAR C\.gradle\native
+Found daemon DaemonInfo{pid=22632, address=[188c2e76-7047-4ec7-aa32-e5f8dbca47d7 port:49919, addresses:[/127.0.0.1]], state=Idle, lastBusy=1769004229127, context=DefaultDaemonContext[uid=d89e03a9-a227-407e-9f3e-1b9afe5e33be,javaHome=C:\Users\DINESHKUMAR C\.vscode-insiders\extensions\redhat.java-1.51.0-win32-x64\jre\21.0.9-win32-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=C:\Users\DINESHKUMAR C\.gradle\daemon,pid=22632,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx2048m,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Java\jdk-22 (no JDK specified, using current Java home), daemonOpts=[-Xmx2048m, -Dfile.encoding=UTF-8, -Duser.country=IN, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=d89e03a9-a227-407e-9f3e-1b9afe5e33be,javaHome=C:\Users\DINESHKUMAR C\.vscode-insiders\extensions\redhat.java-1.51.0-win32-x64\jre\21.0.9-win32-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=C:\Users\DINESHKUMAR C\.gradle\daemon,pid=22632,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx2048m,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 1648). The daemon log file: C:\Users\DINESHKUMAR C\.gradle\daemon\8.13\daemon-1648.out.log
+Starting 16th build in daemon [uptime: 46 mins 51.487 secs, performance: 99%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 16 worker leases.
+Now considering [D:\PROJECTS\Aura_agent - Phase 2\UI] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'D:\PROJECTS\Aura_agent - Phase 2\UI\settings.gradle.kts'.
+Projects loaded. Root project using build file 'D:\PROJECTS\Aura_agent - Phase 2\UI\build.gradle.kts'.
+Included projects: [root project 'aura_ui', project ':app']
+
+> Configure project :
+Evaluating root project 'aura_ui' using build file 'D:\PROJECTS\Aura_agent - Phase 2\UI\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application', version: '8.7.3', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.0.21', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.plugin.compose', version: '2.0.21', apply: false]
+Resolved plugin [id: 'com.google.devtools.ksp', version: '2.0.21-1.0.28', apply: false]
+Resolved plugin [id: 'com.google.dagger.hilt.android', version: '2.52', apply: false]
+
+> Configure project :app
+Evaluating project ':app' using build file 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application', version: '8.7.3']
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.0.21']
+Resolved plugin [id: 'org.jetbrains.kotlin.plugin.compose', version: '2.0.21']
+Resolved plugin [id: 'com.google.devtools.ksp', version: '2.0.21-1.0.28']
+Resolved plugin [id: 'com.google.dagger.hilt.android', version: '2.52']
+Resolved plugin [id: 'kotlin-parcelize']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle85 variant
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+All projects evaluated.
+Task name matched 'assembleDebug'
+Selected primary task 'assembleDebug' from project :
+Tasks to be executed: [task ':app:preBuild', task ':app:preDebugBuild', task ':app:mergeDebugNativeDebugMetadata', task ':app:checkKotlinGradlePluginConfigurationErrors', task ':app:dataBindingMergeDependencyArtifactsDebug', task ':app:generateDebugResValues', task ':app:generateDebugResources', task ':app:mergeDebugResources', task ':app:packageDebugResources', task ':app:parseDebugLocalResources', task ':app:dataBindingGenBaseClassesDebug', task ':app:checkDebugAarMetadata', task ':app:mapDebugSourceSetPaths', task ':app:createDebugCompatibleScreenManifests', task ':app:extractDeepLinksDebug', task ':app:processDebugMainManifest', task ':app:processDebugManifest', task ':app:processDebugManifestForPackage', task ':app:processDebugResources', task ':app:kspDebugKotlin', task ':app:compileDebugKotlin', task ':app:javaPreCompileDebug', task ':app:compileDebugJavaWithJavac', task ':app:mergeDebugShaders', task ':app:compileDebugShaders', task ':app:generateDebugAssets', task ':app:mergeDebugAssets', task ':app:compressDebugAssets', task ':app:hiltAggregateDepsDebug', task ':app:hiltJavaCompileDebug', task ':app:processDebugJavaRes', task ':app:mergeDebugJavaResource', task ':app:checkDebugDuplicateClasses', task ':app:desugarDebugFileDependencies', task ':app:mergeExtDexDebug', task ':app:mergeLibDexDebug', task ':app:transformDebugClassesWithAsm', task ':app:dexBuilderDebug', task ':app:mergeProjectDexDebug', task ':app:mergeDebugJniLibFolders', task ':app:mergeDebugNativeLibs', task ':app:stripDebugDebugSymbols', task ':app:validateSigningDebug', task ':app:writeDebugAppMetadata', task ':app:writeDebugSigningConfigVersions', task ':app:packageDebug', task ':app:createDebugApkListingFileRedirect', task ':app:assembleDebug']
+Tasks that were excluded: []
+Resolve mutations for :app:preBuild (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:preBuild (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+Resolve mutations for :app:preDebugBuild (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:preDebugBuild (Thread[#2543,Execution worker Thread 8,5,main]) started.
+
+> Task :app:preDebugBuild UP-TO-DATE
+Skipping task ':app:preDebugBuild' as it has no actions.
+Resolve mutations for :app:mergeDebugNativeDebugMetadata (Thread[#2543,Execution worker Thread 8,5,main]) started.
+:app:mergeDebugNativeDebugMetadata (Thread[#2543,Execution worker Thread 8,5,main]) started.
+
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+Skipping task ':app:mergeDebugNativeDebugMetadata' as it has no source files and no previous output files.
+Resolve mutations for :app:checkKotlinGradlePluginConfigurationErrors (Thread[#2543,Execution worker Thread 8,5,main]) started.
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#2543,Execution worker Thread 8,5,main]) started.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':app:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :app:dataBindingMergeDependencyArtifactsDebug (Thread[#2543,Execution worker Thread 8,5,main]) started.
+:app:dataBindingMergeDependencyArtifactsDebug (Thread[#2542,Execution worker Thread 7,5,main]) started.
+
+> Task :app:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
+Caching disabled for task ':app:dataBindingMergeDependencyArtifactsDebug' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:dataBindingMergeDependencyArtifactsDebug' as it is up-to-date.
+Resolve mutations for :app:generateDebugResValues (Thread[#2542,Execution worker Thread 7,5,main]) started.
+:app:generateDebugResValues (Thread[#2542,Execution worker Thread 7,5,main]) started.
+
+> Task :app:generateDebugResValues UP-TO-DATE
+Caching disabled for task ':app:generateDebugResValues' because:
+  Build cache is disabled
+Skipping task ':app:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :app:generateDebugResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+:app:generateDebugResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+
+> Task :app:generateDebugResources UP-TO-DATE
+Caching disabled for task ':app:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:generateDebugResources' as it is up-to-date.
+Resolve mutations for :app:mergeDebugResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+:app:mergeDebugResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+
+> Task :app:mergeDebugResources UP-TO-DATE
+Caching disabled for task ':app:mergeDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:mergeDebugResources' as it is up-to-date.
+Resolve mutations for :app:packageDebugResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+:app:packageDebugResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+
+> Task :app:packageDebugResources UP-TO-DATE
+Caching disabled for task ':app:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:packageDebugResources' as it is up-to-date.
+Resolve mutations for :app:parseDebugLocalResources (Thread[#2542,Execution worker Thread 7,5,main]) started.
+:app:parseDebugLocalResources (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:parseDebugLocalResources UP-TO-DATE
+Caching disabled for task ':app:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':app:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :app:dataBindingGenBaseClassesDebug (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:dataBindingGenBaseClassesDebug (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:dataBindingGenBaseClassesDebug UP-TO-DATE
+Caching disabled for task ':app:dataBindingGenBaseClassesDebug' because:
+  Build cache is disabled
+Skipping task ':app:dataBindingGenBaseClassesDebug' as it is up-to-date.
+Resolve mutations for :app:checkDebugAarMetadata (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:checkDebugAarMetadata (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':app:checkDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkDebugAarMetadata' as it is up-to-date.
+Resolve mutations for :app:mapDebugSourceSetPaths (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:mapDebugSourceSetPaths (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+Caching disabled for task ':app:mapDebugSourceSetPaths' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mapDebugSourceSetPaths' as it is up-to-date.
+Resolve mutations for :app:createDebugCompatibleScreenManifests (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:createDebugCompatibleScreenManifests (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+Caching disabled for task ':app:createDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createDebugCompatibleScreenManifests' as it is up-to-date.
+Resolve mutations for :app:extractDeepLinksDebug (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:extractDeepLinksDebug (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+Caching disabled for task ':app:extractDeepLinksDebug' because:
+  Build cache is disabled
+Skipping task ':app:extractDeepLinksDebug' as it is up-to-date.
+Resolve mutations for :app:processDebugMainManifest (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:processDebugMainManifest (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:processDebugMainManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugMainManifest' because:
+  Build cache is disabled
+Skipping task ':app:processDebugMainManifest' as it is up-to-date.
+Resolve mutations for :app:processDebugManifest (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:processDebugManifest (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:processDebugManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugManifest' because:
+  Build cache is disabled
+Skipping task ':app:processDebugManifest' as it is up-to-date.
+Resolve mutations for :app:processDebugManifestForPackage (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:processDebugManifestForPackage (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+Custom actions are attached to task ':app:processDebugManifestForPackage'.
+Caching disabled for task ':app:processDebugManifestForPackage' because:
+  Build cache is disabled
+Skipping task ':app:processDebugManifestForPackage' as it is up-to-date.
+Resolve mutations for :app:processDebugResources (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:processDebugResources (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:processDebugResources UP-TO-DATE
+Caching disabled for task ':app:processDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:processDebugResources' as it is up-to-date.
+Resolve mutations for :app:kspDebugKotlin (Thread[#2537,Execution worker Thread 2,5,main]) started.
+:app:kspDebugKotlin (Thread[#2537,Execution worker Thread 2,5,main]) started.
+
+> Task :app:kspDebugKotlin UP-TO-DATE
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+Caching disabled for task ':app:kspDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:kspDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:compileDebugKotlin (Thread[#2541,Execution worker Thread 6,5,main]) started.
+:app:compileDebugKotlin (Thread[#2541,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :app:javaPreCompileDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:javaPreCompileDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:javaPreCompileDebug UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileDebug' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :app:mergeDebugShaders (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:mergeDebugShaders (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeDebugShaders UP-TO-DATE
+Caching disabled for task ':app:mergeDebugShaders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeDebugShaders' as it is up-to-date.
+Resolve mutations for :app:compileDebugShaders (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:compileDebugShaders (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:compileDebugShaders NO-SOURCE
+Skipping task ':app:compileDebugShaders' as it has no source files and no previous output files.
+Resolve mutations for :app:generateDebugAssets (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:generateDebugAssets (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:generateDebugAssets UP-TO-DATE
+Skipping task ':app:generateDebugAssets' as it has no actions.
+Resolve mutations for :app:mergeDebugAssets (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:mergeDebugAssets (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeDebugAssets UP-TO-DATE
+Caching disabled for task ':app:mergeDebugAssets' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeDebugAssets' as it is up-to-date.
+Resolve mutations for :app:compressDebugAssets (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:compressDebugAssets (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:compressDebugAssets UP-TO-DATE
+Caching disabled for task ':app:compressDebugAssets' because:
+  Build cache is disabled
+Skipping task ':app:compressDebugAssets' as it is up-to-date.
+Resolve mutations for :app:checkDebugDuplicateClasses (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:checkDebugDuplicateClasses (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+Caching disabled for task ':app:checkDebugDuplicateClasses' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkDebugDuplicateClasses' as it is up-to-date.
+Resolve mutations for :app:desugarDebugFileDependencies (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:desugarDebugFileDependencies (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+Caching disabled for task ':app:desugarDebugFileDependencies' because:
+  Build cache is disabled
+Skipping task ':app:desugarDebugFileDependencies' as it is up-to-date.
+Resolve mutations for :app:mergeExtDexDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:mergeExtDexDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeExtDexDebug UP-TO-DATE
+Caching disabled for task ':app:mergeExtDexDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeExtDexDebug' as it is up-to-date.
+Resolve mutations for :app:mergeLibDexDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:mergeLibDexDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeLibDexDebug UP-TO-DATE
+Caching disabled for task ':app:mergeLibDexDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeLibDexDebug' as it is up-to-date.
+Resolve mutations for :app:mergeDebugJniLibFolders (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:mergeDebugJniLibFolders (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+Caching disabled for task ':app:mergeDebugJniLibFolders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeDebugJniLibFolders' as it is up-to-date.
+Resolve mutations for :app:mergeDebugNativeLibs (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:mergeDebugNativeLibs (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+Caching disabled for task ':app:mergeDebugNativeLibs' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mergeDebugNativeLibs' as it is up-to-date.
+Resolve mutations for :app:stripDebugDebugSymbols (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:stripDebugDebugSymbols (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+Caching disabled for task ':app:stripDebugDebugSymbols' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:stripDebugDebugSymbols' as it is up-to-date.
+Resolve mutations for :app:validateSigningDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:validateSigningDebug (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:validateSigningDebug UP-TO-DATE
+Caching disabled for task ':app:validateSigningDebug' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:validateSigningDebug' as it is up-to-date.
+Resolve mutations for :app:writeDebugAppMetadata (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:writeDebugAppMetadata (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+Caching disabled for task ':app:writeDebugAppMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:writeDebugAppMetadata' as it is up-to-date.
+Resolve mutations for :app:writeDebugSigningConfigVersions (Thread[#2544,Execution worker Thread 9,5,main]) started.
+:app:writeDebugSigningConfigVersions (Thread[#2544,Execution worker Thread 9,5,main]) started.
+
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+Caching disabled for task ':app:writeDebugSigningConfigVersions' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:writeDebugSigningConfigVersions' as it is up-to-date.
+
+> Task :app:compileDebugKotlin
+Caching disabled for task ':app:compileDebugKotlin' because:
+  Build cache is disabled
+Task ':app:compileDebugKotlin' is not up-to-date because:
+  Task has failed previously.
+The input changes require a full rebuild for incremental task ':app:compileDebugKotlin'.
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\kotlin', not found
+file or directory 'D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\debug\java', not found
+Kotlin source files: D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\AccessibilityDataModels.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\AuraAccessibilityService.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\BackendCommunicator.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\CoordinateResolver.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\GestureBuilder.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\GestureDispatcher.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\GestureErrorHandler.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\GestureInjector.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\GestureModels.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\gesture\RetryExecutor.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\ScreenCaptureManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\UIDataRequirement.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\UITreeExtractor.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\accessibility\UITreeValidator.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\agent\CommanderAgent.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\audio\WavAudioPlayer.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\AuraApplication.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\automation\AppAutomationManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\conversation\ConversationViewModel.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\ConversationAdapter.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\audio\AmplitudeAnalyzer.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\audio\AudioCaptureManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\Command.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\database\AudioDao.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\database\AuraDatabase.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\deeplink\AppMetadataCache.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\deeplink\DeepLinkManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\deeplink\DeepLinkMetadata.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\manager\ServerConfigManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\network\ApiModels.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\network\AuraApiService.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\preferences\OnboardingPreferences.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\preferences\ThemeManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\repository\AssistantRepository.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\repository\AssistantRepositoryImpl.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\repository\AudioRepository.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\repository\AudioRepositoryImpl.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\repository\SettingsRepository.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\data\repository\SettingsRepositoryImpl.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\di\AppModule.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\domain\model\VoiceSessionState.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\executor\CommandExecutor.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\MainActivity.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\network\BackendApiClient.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\AuraOverlayManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\AuraOverlayService.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\EdgeGlowOverlay.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\HITLDialogOverlay.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\HITLHandler.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\TapRippleOverlay.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\VisualFeedbackHandler.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\overlay\VisualFeedbackOverlayService.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AnimatedBorderGlow.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AuraAnimations.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AuraBlurEffects.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AuraButtons.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AuraCards.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AuraIcons.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\AuraLayout.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\EnhancedMessageBubble.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\MicroInteractions.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\ShimmerEffects.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\TypingIndicator.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\components\VoiceVisualization.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\overlay\AuraStatusCards.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\overlay\ExpandedOverlayPanel.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\overlay\FloatingMicOverlay.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\overlay\OverlayManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\overlay\OverlayState.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\FloatingAssistantBubble.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\HomeScreen.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\ServerConfigurationScreen.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\SettingsScreen.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\VoiceAssistantOverlay.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\VoiceSettingsScreen.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\screens\WelcomeScreen.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\state\AssistantUiState.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\state\Events.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\ui\components\GeminiStyleLoader.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\ui\components\HaloEffectView.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\ui\components\WaveformView.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\ui\theme\AuraColors.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\ui\theme\Dimensions.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\utils\HapticUtils.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\viewmodel\AssistantViewModel.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\presentation\viewmodel\ServerConfigViewModel.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\services\AssistantForegroundService.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\services\WakeWordListeningService.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\ui\theme\AppleColors.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\ui\theme\Color.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\ui\theme\Spacing.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\ui\theme\Theme.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\ui\theme\Type.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\utils\AgentLogger.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\utils\AppInventoryScanner.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\utils\ContactResolver.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\utils\Logger.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\utils\PermissionManager.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\voice\ListeningMode.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\voice\ListeningModeController.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\voice\VoiceCaptureController.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\voice\WakeWordDetector.kt, D:\PROJECTS\Aura_agent - Phase 2\UI\app\src\main\java\com\aura\aura_ui\VoiceConversationActivity.kt
+Java source files: D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\AuraApplication_GeneratedInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\automation\AppAutomationManager_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\audio\AmplitudeAnalyzer_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\audio\AudioCaptureManager_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\deeplink\AppMetadataCache_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\deeplink\DeepLinkManager_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\manager\ServerConfigManager_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\repository\AssistantRepositoryImpl_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\repository\AudioRepositoryImpl_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\data\repository\SettingsRepositoryImpl_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideAssistantRepositoryFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideAudioRepositoryFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideAuraApiServiceFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideAuraDatabaseFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideGsonFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideLoggerFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideOkHttpClientFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvidePermissionManagerFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideRetrofitFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideServerConfigManagerFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\di\AppModule_ProvideSettingsRepositoryFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\Hilt_MainActivity.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\MainActivity_GeneratedInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\MainActivity_MembersInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\presentation\viewmodel\AssistantViewModel_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\presentation\viewmodel\AssistantViewModel_HiltModules.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\presentation\viewmodel\AssistantViewModel_HiltModules_KeyModule_ProvideFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\presentation\viewmodel\ServerConfigViewModel_Factory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\presentation\viewmodel\ServerConfigViewModel_HiltModules.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\presentation\viewmodel\ServerConfigViewModel_HiltModules_KeyModule_ProvideFactory.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\services\AssistantForegroundService_GeneratedInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\services\AssistantForegroundService_MembersInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\com\aura\aura_ui\services\Hilt_AssistantForegroundService.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\dagger\hilt\internal\aggregatedroot\codegen\_com_aura_aura_ui_AuraApplication.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_AuraApplication_GeneratedInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_di_AppModule.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_MainActivity_GeneratedInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_presentation_viewmodel_AssistantViewModel_HiltModules_BindsModule.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_presentation_viewmodel_AssistantViewModel_HiltModules_KeyModule.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_presentation_viewmodel_ServerConfigViewModel_HiltModules_BindsModule.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_presentation_viewmodel_ServerConfigViewModel_HiltModules_KeyModule.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\ksp\debug\java\hilt_aggregated_deps\_com_aura_aura_ui_services_AssistantForegroundService_GeneratedInjector.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\data_binding_base_class_source_out\debug\out\com\aura\aura_ui\databinding\ActivityVoiceConversationBinding.java, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\generated\data_binding_base_class_source_out\debug\out\com\aura\aura_ui\databinding\ItemConversationMessageBinding.java
+Script source files: 
+Script file extensions: 
+Using Kotlin/JVM incremental compilation
+[KOTLIN] Kotlin compilation 'jdkHome' argument: null
+Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0, 3], reportSeverity=2, requestedCompilationResults=[0], kotlinScriptExtensions=[]), areFileChangesKnown=false, modifiedFiles=null, deletedFiles=null, classpathChanges=NotAvailableForNonIncrementalRun, workingDir=D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\kotlin\compileDebugKotlin\cacheable, multiModuleICSettings=MultiModuleICSettings(buildHistoryFile=D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\kotlin\compileDebugKotlin\local-state\build-history.bin, useModuleDetection=true), usePreciseJavaTracking=true, icFeatures=IncrementalCompilationFeatures(withAbiSnapshot=false, preciseCompilationResultsBackup=true, keepIncrementalCompilationCachesInMemory=true, enableUnsafeIncrementalCompilationForMultiplatform=false), outputFiles=[D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\tmp\kotlin-classes\debug, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\kotlin\compileDebugKotlin\cacheable, D:\PROJECTS\Aura_agent - Phase 2\UI\app\build\kotlin\compileDebugKotlin\local-state])
+Finished executing kotlin compiler using DAEMON strategy
+
+> Task :app:compileDebugKotlin FAILED
+31 actionable tasks: 1 executed, 30 up-to-date
+Watched directory hierarchies: [D:\PROJECTS\Aura_agent - Phase 2\UI]

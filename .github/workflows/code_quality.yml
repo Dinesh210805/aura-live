@@ -1,0 +1,67 @@
+name: Code Quality
+
+on:
+  push:
+  pull_request:
+
+# Grant write permissions for auto-commit to work
+permissions:
+  contents: write
+
+jobs:
+  lint-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+
+      ##############################
+      # 🔧 Python Setup + Cleanup  #
+      ##############################
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python lint tools
+        run: |
+          pip install ruff black isort autoflake
+
+      - name: Python Cleanup (auto-fix)
+        run: |
+          ruff check . --fix --unsafe-fixes
+          autoflake --in-place --remove-all-unused-imports -r .
+          isort .
+          black .
+
+      ##############################
+      # 🔧 Kotlin Setup + Cleanup  #
+      ##############################
+      - name: Set up Java for Kotlin tools
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Install Ktlint
+        run: |
+          curl -sSLO https://github.com/pinterest/ktlint/releases/download/1.2.1/ktlint && chmod a+x ktlint
+
+      - name: Run Kotlin Format
+        run: ./ktlint --format "UI/**/*.kt" || true
+
+      - name: Run Android Lint
+        working-directory: UI
+        run: ./gradlew app:lint --continue || true
+
+      ###############################################
+      # 🚀 Auto-commit fixes back to your branch (optional)
+      ###############################################
+      - name: Auto commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🧹 Auto-format: Code cleanup by CI"

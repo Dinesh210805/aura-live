@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#FFFFFF">
+    
+    <!-- Simple AI Brain Icon using paths instead of circles -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,25 L34,75 L42,75 L46,65 L62,65 L66,75 L74,75 L54,25 Z M48,55 L60,55 L54,40 L48,55 Z" />
+
+    <!-- Neural network connections -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="0.7"
+        android:pathData="M54,54 L42,38 M54,54 L66,38 M54,54 L32,54 M54,54 L76,54 M54,54 L42,70 M54,54 L66,70" />
+
+    <!-- Cross connections for neural network effect -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.4"
+        android:pathData="M42,38 L66,70 M66,38 L42,70 M32,54 L42,38 M76,54 L66,38" />
+
+</vector>

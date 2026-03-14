@@ -1,0 +1,5620 @@
+{
+  "devices": {
+    "OnePlus CPH2661": {
+      "apps": [
+        {
+          "package_name": "android.frameworkres.overlay",
+          "app_name": "android.frameworkres.overlay",
+          "is_system_app": true,
+          "version_name": "33",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.networkstack.tethering",
+          "app_name": "Tethering",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.calculator",
+          "app_name": "Calculator",
+          "is_system_app": true,
+          "version_name": "16.2.32",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "net.oneplus.weather",
+          "app_name": "Weather",
+          "is_system_app": true,
+          "version_name": "16.27.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.healthservice",
+          "app_name": "healthservice",
+          "is_system_app": true,
+          "version_name": "15.0.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.heytap.market.overlay",
+          "app_name": "com.heytap.market.overlay",
+          "is_system_app": true,
+          "version_name": "3.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.nextcloud.client",
+          "app_name": "Nextcloud",
+          "is_system_app": false,
+          "version_name": "33.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.cts.priv.ctsshim",
+          "app_name": "com.android.cts.priv.ctsshim",
+          "is_system_app": true,
+          "version_name": "15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.youtube",
+          "app_name": "YouTube",
+          "is_system_app": true,
+          "version_name": "21.10.496",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.connectivity.resources.overlay.oplus",
+          "app_name": "com.google.android.connectivity.resources.overlay.oplus",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.labs.language.tailwind",
+          "app_name": "NotebookLM",
+          "is_system_app": false,
+          "version_name": "1.29.11.878369932",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.internal.display.cutout.emulation.corner",
+          "app_name": "Corner cutout",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.smartengine",
+          "app_name": "SmartEngine",
+          "is_system_app": true,
+          "version_name": "12.0.142",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.tailscale.ipn",
+          "app_name": "Tailscale",
+          "is_system_app": false,
+          "version_name": "1.94.2-t0a29cf18b-g1a1b1c9ae",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.ext.services",
+          "app_name": "Android Services Library",
+          "is_system_app": true,
+          "version_name": "aml_361153320",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.internal.display.cutout.emulation.double",
+          "app_name": "Double cutout",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.appmanager",
+          "app_name": "Link to Windows",
+          "is_system_app": true,
+          "version_name": "1.26021.118.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.providers.telephony",
+          "app_name": "Phone Call/SMS Storage",
+          "is_system_app": true,
+          "version_name": "16.20.40",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.oshare",
+          "app_name": "OnePlus Share",
+          "is_system_app": true,
+          "version_name": "16.4.35",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.securitykeyboard",
+          "app_name": "Secure Keyboard",
+          "is_system_app": true,
+          "version_name": "16.0.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.dynsystem",
+          "app_name": "Dynamic System Updates",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.crashbox",
+          "app_name": "CrashBox",
+          "is_system_app": true,
+          "version_name": "16.3.14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.googlequicksearchbox",
+          "app_name": "Google",
+          "is_system_app": true,
+          "version_name": "17.8.62.ve.arm64",
+          "deep_links": [
+            "android-app",
+            "content",
+            "file"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "content"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "file"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "android-app"
+            }
+          ]
+        },
+        {
+          "package_name": "com.heytap.pictorial",
+          "app_name": "Lock Screen Magazine",
+          "is_system_app": false,
+          "version_name": "13.1.5_expp",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.cellbroadcastservice",
+          "app_name": "Cell Broadcast Service",
+          "is_system_app": true,
+          "version_name": "R-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.smartsidebar",
+          "app_name": "Smart Sidebar",
+          "is_system_app": true,
+          "version_name": "16.7.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "android.connectivity.base.overlay",
+          "app_name": "android.connectivity.base.overlay",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.sbi.lotusintouch",
+          "app_name": "YONO SBI",
+          "is_system_app": false,
+          "version_name": "2.28.06",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.providers.calendar",
+          "app_name": "Calendar storage",
+          "is_system_app": true,
+          "version_name": "16.0.6",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.googleassistant",
+          "app_name": "Assistant",
+          "is_system_app": true,
+          "version_name": "0.1.766117055",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "in.redbus.android",
+          "app_name": "redBus",
+          "is_system_app": false,
+          "version_name": "81.5.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.fy",
+          "app_name": "Stardust",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.qy",
+          "app_name": "Fizz",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.sw",
+          "app_name": "Bubble",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.xw",
+          "app_name": "Swirl",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "org.telegram.messenger",
+          "app_name": "Telegram",
+          "is_system_app": false,
+          "version_name": "12.5.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oneplus.mall",
+          "app_name": "OnePlus Store",
+          "is_system_app": false,
+          "version_name": "3.0.5.5",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oneplus.note",
+          "app_name": "Notes",
+          "is_system_app": false,
+          "version_name": "16.2.62",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.providers.media",
+          "app_name": "com.android.providers.media",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.onetimeinitializer",
+          "app_name": "Google One Time Init",
+          "is_system_app": true,
+          "version_name": "16-13928101",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.ext.shared",
+          "app_name": "Android Shared Library",
+          "is_system_app": true,
+          "version_name": "1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.heytap.cloud",
+          "app_name": "HeyTap Cloud",
+          "is_system_app": true,
+          "version_name": "10.0.26",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.qualcomm.qti.xrwifi",
+          "app_name": "XR Wifi Service",
+          "is_system_app": true,
+          "version_name": "0.1.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.virtualmachine.res",
+          "app_name": "com.android.virtualmachine.res",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.federatedcompute",
+          "app_name": "com.google.android.federatedcompute",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.account",
+          "app_name": "OnePlus Account",
+          "is_system_app": true,
+          "version_name": "EXP_9.18.0_be0674f",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.wifi.resources.overlay.oplus",
+          "app_name": "com.android.wifi.resources.overlay.oplus",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "aon.frameworkres.overlay.display.product",
+          "app_name": "aon.frameworkres.overlay.display.product",
+          "is_system_app": true,
+          "version_name": "33",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.location",
+          "app_name": "Location Service",
+          "is_system_app": true,
+          "version_name": "16.50.251103",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.soundrecorder",
+          "app_name": "Recorder",
+          "is_system_app": false,
+          "version_name": "16.11.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.mediacontroller",
+          "app_name": "OplusMediaController",
+          "is_system_app": true,
+          "version_name": "16.005.023",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.DefaultCompany.TARS",
+          "app_name": "TARS",
+          "is_system_app": false,
+          "version_name": "0.1.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.server.deviceconfig.resources",
+          "app_name": "com.google.android.server.deviceconfig.resources",
+          "is_system_app": true,
+          "version_name": "V",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.launcher",
+          "app_name": "System Launcher",
+          "is_system_app": true,
+          "version_name": "16.4.11",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.onetrace",
+          "app_name": "OneTrace",
+          "is_system_app": true,
+          "version_name": "1.3.45",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.translate",
+          "app_name": "Translate",
+          "is_system_app": false,
+          "version_name": "16.0.24",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.myairtelapp",
+          "app_name": "Airtel",
+          "is_system_app": false,
+          "version_name": "4.137.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.systemui.oplus.res.overlay",
+          "app_name": "com.android.systemui.oplus.res.overlay",
+          "is_system_app": true,
+          "version_name": "16.900.13",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.paidtasks",
+          "app_name": "Google Opinion Rewards",
+          "is_system_app": false,
+          "version_name": "2026022300",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.screenrecorder",
+          "app_name": "Screen recording",
+          "is_system_app": true,
+          "version_name": "16.4.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.providers.telephony.auto_generated_characteristics_rro",
+          "app_name": "com.android.providers.telephony.auto_generated_characteristics_rro",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.externalstorage",
+          "app_name": "External Storage",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.uimremoteclient",
+          "app_name": "com.qualcomm.uimremoteclient",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.htmlviewer",
+          "app_name": "HTML Viewer",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.lgeha.nuts",
+          "app_name": "LG ThinQ",
+          "is_system_app": false,
+          "version_name": "5.1.26410",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.whatsapp",
+          "app_name": "WhatsApp",
+          "is_system_app": false,
+          "version_name": "2.26.8.72",
+          "deep_links": [
+            "sms",
+            "smsto"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "sms"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "smsto"
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.safetycenter.resources.overlay",
+          "app_name": "com.android.safetycenter.resources.overlay",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.companiondevicemanager",
+          "app_name": "Companion Device Manager",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.weather.service",
+          "app_name": "Weather Services",
+          "is_system_app": true,
+          "version_name": "16.13.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.mms.service",
+          "app_name": "Information services",
+          "is_system_app": true,
+          "version_name": "16.20.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.docs.editors.sheets",
+          "app_name": "Sheets",
+          "is_system_app": false,
+          "version_name": "1.26.091.02.90",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.apps.docs.editors.slides",
+          "app_name": "Slides",
+          "is_system_app": false,
+          "version_name": "1.26.091.02.90",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.providers.downloads",
+          "app_name": "Download Manager",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.powermonitor",
+          "app_name": "Power Monitor",
+          "is_system_app": true,
+          "version_name": "16.0.010",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.ccyh",
+          "app_name": "Flare",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.halo",
+          "app_name": "Halo",
+          "is_system_app": true,
+          "version_name": "1.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.jslz",
+          "app_name": "Sparks",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.none",
+          "app_name": "None",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.xklc",
+          "app_name": "Ripple",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.health.connect.backuprestore",
+          "app_name": "com.google.android.health.connect.backuprestore",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.messaging",
+          "app_name": "Messages",
+          "is_system_app": true,
+          "version_name": "messages.android_20260224_00_RC00.phone_dynamic",
+          "deep_links": [
+            "content",
+            "mms",
+            "mmsto",
+            "sms",
+            "smsto"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "content"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "sms"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "smsto"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "mms"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "mmsto"
+            }
+          ]
+        },
+        {
+          "package_name": "com.cambyte.okenscan",
+          "app_name": "OKEN Scanner",
+          "is_system_app": false,
+          "version_name": "4.8.5.2310271827",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "vendor.qti.hardware.cacert.server",
+          "app_name": "CACertApp",
+          "is_system_app": true,
+          "version_name": "14.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.camerabigballconfig.overlay",
+          "app_name": "com.android.camerabigballconfig.overlay",
+          "is_system_app": true,
+          "version_name": "1.0.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.DefaultCompany.Myprojectnaalu",
+          "app_name": "My project (naalu)",
+          "is_system_app": false,
+          "version_name": "0.1.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oneplus.brickmode",
+          "app_name": "Zen Space",
+          "is_system_app": false,
+          "version_name": "16.4.5",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oneplus.deskclock",
+          "app_name": "Clock",
+          "is_system_app": true,
+          "version_name": "16.8.34",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.deepthinker",
+          "app_name": "Intelligent Services",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.openai.chatgpt",
+          "app_name": "ChatGPT",
+          "is_system_app": false,
+          "version_name": "1.2026.062",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.qualityprotect",
+          "app_name": "QualityProtect",
+          "is_system_app": true,
+          "version_name": "16.0.52",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.apprecover",
+          "app_name": "Recover system apps",
+          "is_system_app": true,
+          "version_name": "16.0.12",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.themestore",
+          "app_name": "Theme Store",
+          "is_system_app": true,
+          "version_name": "16.2.0_expt",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.mediatek.omacp",
+          "app_name": "Omacp",
+          "is_system_app": true,
+          "version_name": "16.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.telephonyservice",
+          "app_name": "com.qualcomm.qti.telephonyservice",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.bluetooth.oplus.overlay",
+          "app_name": "com.android.bluetooth.oplus.overlay",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "android.frameworkres.overlay.display.product",
+          "app_name": "android.frameworkres.overlay.display.product",
+          "is_system_app": true,
+          "version_name": "33",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.aod",
+          "app_name": "Always-On Display",
+          "is_system_app": true,
+          "version_name": "16.001.0026",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.dfs",
+          "app_name": "Cross-Device File Management",
+          "is_system_app": true,
+          "version_name": "16.0.0_05a389b_202510151740",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.dmp",
+          "app_name": "SearchService",
+          "is_system_app": true,
+          "version_name": "16.13.80_466be15_251229",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.eid",
+          "app_name": "Eid-Service",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.nas",
+          "app_name": "Network services",
+          "is_system_app": true,
+          "version_name": "16.0.38",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.nhs",
+          "app_name": "Network Health Service",
+          "is_system_app": true,
+          "version_name": "16.0.06",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.olc",
+          "app_name": "Log Service",
+          "is_system_app": true,
+          "version_name": "16.0.63",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.ota",
+          "app_name": "Software update",
+          "is_system_app": true,
+          "version_name": "16.0.21",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.pay",
+          "app_name": "Secure Payment",
+          "is_system_app": true,
+          "version_name": "7.2.7.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.sau",
+          "app_name": "System Upgrade Services",
+          "is_system_app": true,
+          "version_name": "16.0.15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.sos",
+          "app_name": "Emergency SOS",
+          "is_system_app": true,
+          "version_name": "16.20.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.vdc",
+          "app_name": "VDC Service",
+          "is_system_app": true,
+          "version_name": "16.0.12",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.heytap.market",
+          "app_name": "APP Picks",
+          "is_system_app": true,
+          "version_name": "16.5.25_IN",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "vendor.qti.iwlan",
+          "app_name": "vendor.qti.iwlan",
+          "is_system_app": true,
+          "version_name": "14.11",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.configupdater",
+          "app_name": "ConfigUpdater",
+          "is_system_app": true,
+          "version_name": "16-13928101",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.office.excel",
+          "app_name": "Microsoft Excel",
+          "is_system_app": false,
+          "version_name": "16.0.19127.20128",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.systemclone",
+          "app_name": "System Cloner",
+          "is_system_app": true,
+          "version_name": "16.1.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.backuprestore",
+          "app_name": "Clone Phone",
+          "is_system_app": false,
+          "version_name": "16.10.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.lemon.lvoverseas",
+          "app_name": "CapCut",
+          "is_system_app": false,
+          "version_name": "15.5.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "in.amazon.mShop.android.shopping",
+          "app_name": "Amazon",
+          "is_system_app": false,
+          "version_name": "32.5.0.300",
+          "deep_links": [
+            "upi"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "upi"
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.providers.media.module",
+          "app_name": "Media picker",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.permissioncontroller",
+          "app_name": "com.google.android.overlay.modules.permissioncontroller",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.github.android",
+          "app_name": "GitHub",
+          "is_system_app": false,
+          "version_name": "1.249.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.keyguard.clock.gallery",
+          "app_name": "Snapshot",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.romupdate",
+          "app_name": "Update Service",
+          "is_system_app": true,
+          "version_name": "16.0.9",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.avatarpicker",
+          "app_name": "Choose a picture",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.uimremoteserver",
+          "app_name": "com.qualcomm.uimremoteserver",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.se.overlay.target",
+          "app_name": "com.android.se.overlay.target",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.ar.core",
+          "app_name": "Google Play Services for AR",
+          "is_system_app": true,
+          "version_name": "1.52.253140493",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.ar.lens",
+          "app_name": "Lens",
+          "is_system_app": true,
+          "version_name": "1.18.250731009",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.providers.downloads.ui",
+          "app_name": "Downloads",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.hotspot2.osulogin",
+          "app_name": "OsuLogin",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.vending",
+          "app_name": "Google Play Store",
+          "is_system_app": true,
+          "version_name": "50.4.17-31 [0] [PR] 877544065",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.pacprocessor",
+          "app_name": "PacProcessor",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.simappdialog",
+          "app_name": "Sim app dialogue",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.adservices.api",
+          "app_name": "Ad privacy",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoftsdk.crossdeviceservicebroker",
+          "app_name": "com.microsoftsdk.crossdeviceservicebroker",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "android.overlay.common",
+          "app_name": "android.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.skydrive",
+          "app_name": "OneDrive",
+          "is_system_app": false,
+          "version_name": "7.50",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.scenemode",
+          "app_name": "Simple mode",
+          "is_system_app": true,
+          "version_name": "16.1.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "de.mdiener.rain.usa",
+          "app_name": "Rain Alarm",
+          "is_system_app": false,
+          "version_name": "6.1.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.cellularqoe",
+          "app_name": "CellularQoe",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.internal.display.cutout.emulation.hole",
+          "app_name": "Punch hole cutout",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.internal.display.cutout.emulation.tall",
+          "app_name": "Tall cutout",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.flipkart.android",
+          "app_name": "Flipkart",
+          "is_system_app": false,
+          "version_name": "9.0",
+          "deep_links": [
+            "flipkart"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "flipkart"
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.certinstaller",
+          "app_name": "Certificate installer",
+          "is_system_app": true,
+          "version_name": "16.0.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.framework_bluetooth.overlay",
+          "app_name": "com.oplus.framework_bluetooth.overlay",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.carrierconfig",
+          "app_name": "com.android.carrierconfig",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.marvin.talkback",
+          "app_name": "Android Accessibility Suite",
+          "is_system_app": true,
+          "version_name": "16.2.0.855052621",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.reddit.frontpage",
+          "app_name": "Reddit",
+          "is_system_app": false,
+          "version_name": "2026.09.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.wapi.wapicertmanage",
+          "app_name": "WAPI certificate",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.internal.systemui.navbar.threebutton",
+          "app_name": "3 Button Navigation Bar",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.brave.browser",
+          "app_name": "Brave",
+          "is_system_app": false,
+          "version_name": "1.87.192",
+          "deep_links": [
+            "http",
+            "https"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "http"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "https"
+            }
+          ]
+        },
+        {
+          "package_name": "us.zoom.videomeetings",
+          "app_name": "Zoom",
+          "is_system_app": false,
+          "version_name": "6.7.5.37428",
+          "deep_links": [
+            "geo",
+            "tel",
+            "zoomus"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "tel"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "zoomus"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "geo"
+            }
+          ]
+        },
+        {
+          "package_name": "com.qti.qualcomm.datastatusnotification",
+          "app_name": "com.qti.qualcomm.datastatusnotification",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.bootreg",
+          "app_name": "Startup Wizard",
+          "is_system_app": true,
+          "version_name": "16.0.140",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.phonemanager",
+          "app_name": "Phone Manager",
+          "is_system_app": true,
+          "version_name": "16.14.6",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "android",
+          "app_name": "Android System",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.hotwordenrollment.xgoogle",
+          "app_name": "Google Assistant",
+          "is_system_app": true,
+          "version_name": "15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.systemui.plugins",
+          "app_name": "SystemUIPlugin",
+          "is_system_app": true,
+          "version_name": "16.000.002",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.vasooldrive.android",
+          "app_name": "Vasool Drive",
+          "is_system_app": false,
+          "version_name": "26.3.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.qualcomm.wfd.service",
+          "app_name": "Wfd Service",
+          "is_system_app": true,
+          "version_name": "2.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.gallery",
+          "app_name": "Photos",
+          "is_system_app": true,
+          "version_name": "16.16.18",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.notificationmanager",
+          "app_name": "Manage notifications",
+          "is_system_app": true,
+          "version_name": "16.99.17.13",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.olx.southasia",
+          "app_name": "OLX India",
+          "is_system_app": false,
+          "version_name": "19.87.013",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.keyguard.personality.clocks",
+          "app_name": "Cover",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.upgradeguide",
+          "app_name": "Update Highlights",
+          "is_system_app": true,
+          "version_name": "16.0.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.gmsconfig.searchselector",
+          "app_name": "com.google.android.overlay.gmsconfig.searchselector",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.pantanal.ums",
+          "app_name": "Ubiquitous Manager Service",
+          "is_system_app": true,
+          "version_name": "16.1.74",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.sdksandbox",
+          "app_name": "com.google.android.sdksandbox",
+          "is_system_app": true,
+          "version_name": "T-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.egg",
+          "app_name": "Android Easter Egg",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.mtp",
+          "app_name": "MTP Host",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.nfc",
+          "app_name": "NFC service",
+          "is_system_app": true,
+          "version_name": "16.0.0.250924",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.ons",
+          "app_name": "com.android.ons",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.stk",
+          "app_name": "SIM Toolkit",
+          "is_system_app": true,
+          "version_name": "16.0.30",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.locationproxy",
+          "app_name": "Carrier Location Services",
+          "is_system_app": true,
+          "version_name": "12.0.20",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.backupconfirm",
+          "app_name": "com.android.backupconfirm",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.cellbroadcastreceiver.overlay",
+          "app_name": "CellBroadcastReceiverModuleOverlay",
+          "is_system_app": true,
+          "version_name": "1.0.6",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.instagram.android",
+          "app_name": "Instagram",
+          "is_system_app": false,
+          "version_name": "419.0.0.49.71",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.assistantscreen",
+          "app_name": "Shelf",
+          "is_system_app": true,
+          "version_name": "16.21.21",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.deepseek.chat",
+          "app_name": "DeepSeek",
+          "is_system_app": false,
+          "version_name": "1.6.4",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.ai.edge.gallery",
+          "app_name": "Edge Gallery",
+          "is_system_app": false,
+          "version_name": "1.0.10",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.pinterest",
+          "app_name": "Pinterest",
+          "is_system_app": false,
+          "version_name": "14.9.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "org.coursera.android",
+          "app_name": "Coursera",
+          "is_system_app": false,
+          "version_name": "5.49.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.activation",
+          "app_name": "E-warranty card",
+          "is_system_app": true,
+          "version_name": "16.1.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "org.codeaurora.ims",
+          "app_name": "org.codeaurora.ims.ImsApp",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.statementservice",
+          "app_name": "Intent Filter Verification Service",
+          "is_system_app": true,
+          "version_name": "1.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.sdt.tenpliot",
+          "app_name": "Tenpl IoT",
+          "is_system_app": false,
+          "version_name": "2.7.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.as",
+          "app_name": "Android System Intelligence",
+          "is_system_app": true,
+          "version_name": "B.22.playstore.oemfull.869087365",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.gm",
+          "app_name": "Gmail",
+          "is_system_app": true,
+          "version_name": "2026.02.16.877552150.Release",
+          "deep_links": [
+            "mailto"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "mailto"
+            }
+          ]
+        },
+        {
+          "package_name": "android.overlay.target",
+          "app_name": "android.overlay.target",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.compos.payload",
+          "app_name": "CompOS",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.tachyon",
+          "app_name": "Meet",
+          "is_system_app": true,
+          "version_name": "348.0.873925188.duo.android_20260223.02_p0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.overlay.gmsconfig.common",
+          "app_name": "com.google.android.overlay.gmsconfig.common",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.audio.effectcenter",
+          "app_name": "AudioEffectCenter",
+          "is_system_app": true,
+          "version_name": "16.0.15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.settings.intelligence",
+          "app_name": "Settings Suggestions",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.Relmtech.Remote",
+          "app_name": "Unified Remote",
+          "is_system_app": false,
+          "version_name": "3.24.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.supercell.clashofclans",
+          "app_name": "Clash of Clans",
+          "is_system_app": false,
+          "version_name": "18.200.9",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.cellbroadcastservice.overlay",
+          "app_name": "CellBroadcastServiceModuleOverlay",
+          "is_system_app": true,
+          "version_name": "1.0.5",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.fingerprint.anim.huanying",
+          "app_name": "Ring",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.accessibility.accessibilitymenu",
+          "app_name": "com.android.systemui.accessibility.accessibilitymenu",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.permissioncontroller",
+          "app_name": "Permission controller",
+          "is_system_app": true,
+          "version_name": "aml_361420000",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.tai.borderpresearch",
+          "app_name": "BorderPreSearch",
+          "is_system_app": true,
+          "version_name": "1.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.carrierconfig.oplus.overlay",
+          "app_name": "com.android.carrierconfig.oplus.overlay",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.wifi.resources.overlay.common",
+          "app_name": "com.google.android.wifi.resources.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.setupwizard",
+          "app_name": "Android Setup",
+          "is_system_app": true,
+          "version_name": "236.808841380",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.xrvd.service",
+          "app_name": "XRVD",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qcrilmsgtunnel",
+          "app_name": "com.qualcomm.qcrilmsgtunnel",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.carrierconfig.overlay.product.platform",
+          "app_name": "com.android.carrierconfig.overlay.product.platform",
+          "is_system_app": true,
+          "version_name": "33",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.providers.settings",
+          "app_name": "Settings Storage",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.cell.map",
+          "app_name": "com.oplus.cell.map",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.sharedstoragebackup",
+          "app_name": "com.android.sharedstoragebackup",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.sense.netscore",
+          "app_name": "com.oplus.sense.netscore",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.facebook.services",
+          "app_name": "Meta Services",
+          "is_system_app": true,
+          "version_name": "156.0.36",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.oemextensions",
+          "app_name": "Camera Extensions Service",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.eyeprotect",
+          "app_name": "Eye Comfort",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.apple.android.music",
+          "app_name": "Apple Music",
+          "is_system_app": false,
+          "version_name": "5.1.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "net.oneplus.forums",
+          "app_name": "Community",
+          "is_system_app": false,
+          "version_name": "4.44.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.printspooler",
+          "app_name": "Print processing service",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.hotwordenrollment.okgoogle",
+          "app_name": "Google Assistant",
+          "is_system_app": true,
+          "version_name": "15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.accessibilityassistant",
+          "app_name": "AI VoiceScribe",
+          "is_system_app": true,
+          "version_name": "16.1.32",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.example.finance_drive",
+          "app_name": "finance_drive",
+          "is_system_app": false,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.wifi.resources.overlay.common",
+          "app_name": "com.android.wifi.resources.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.aimemory",
+          "app_name": "Mind Space",
+          "is_system_app": true,
+          "version_name": "16.0.314",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.dreams.basic",
+          "app_name": "Basic Daydreams",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.callrecorder",
+          "app_name": "Call recording",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.ext.services",
+          "app_name": "com.google.android.overlay.modules.ext.services",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.as.oss",
+          "app_name": "Private Compute Services",
+          "is_system_app": true,
+          "version_name": "1.0.release.877997153",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.ocs.opencapabilityservice",
+          "app_name": "OpenCapabilityService",
+          "is_system_app": true,
+          "version_name": "16.0.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.se",
+          "app_name": "SecureElementApplication",
+          "is_system_app": true,
+          "version_name": "16.0.08",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.inputdevices",
+          "app_name": "Input Devices",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.wellbeing",
+          "app_name": "Digital Wellbeing",
+          "is_system_app": true,
+          "version_name": "1.38.862260012 (808357)",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.fido.asm",
+          "app_name": "FIDO UAF1.0 ASM",
+          "is_system_app": true,
+          "version_name": "3.18.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.android.overlay.gmsconfig.common",
+          "app_name": "com.oplus.android.overlay.gmsconfig.common",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.android.overlay.aifunction.cicletosearch",
+          "app_name": "com.oplus.android.overlay.aifunction.cicletosearch",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.instagram.barcelona",
+          "app_name": "Threads",
+          "is_system_app": false,
+          "version_name": "419.0.0.48.71",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.devicelockcontroller",
+          "app_name": "DeviceLockController",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.dialer",
+          "app_name": "Phone",
+          "is_system_app": true,
+          "version_name": "211.0.877534995",
+          "deep_links": [
+            "tel"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "tel"
+            }
+          ]
+        },
+        {
+          "package_name": "com.redteamobile.roaming",
+          "app_name": "ORoaming",
+          "is_system_app": true,
+          "version_name": "16.1.3",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.translate.engine",
+          "app_name": "Translate Service",
+          "is_system_app": true,
+          "version_name": "15.5.96",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.bips",
+          "app_name": "Default Print Service",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.intel.mde",
+          "app_name": "Intel Unison",
+          "is_system_app": false,
+          "version_name": "20.35.9472",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "musicplayer.musicapps.music.mp3player",
+          "app_name": "Music Player",
+          "is_system_app": false,
+          "version_name": "4.1.1.182",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.qti.dpmserviceapp",
+          "app_name": "com.qti.dpmserviceapp",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.virtualcomm2",
+          "app_name": "com.oplus.virtualcomm2",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.nbu.files",
+          "app_name": "Files by Google",
+          "is_system_app": true,
+          "version_name": "1.10256.867145328.0-release",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.sense.netprediction",
+          "app_name": "com.oplus.sense.netprediction",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.captiveportallogin",
+          "app_name": "Captive portal login",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.example.auth32",
+          "app_name": "auth32",
+          "is_system_app": false,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "android.auto_generated_characteristics_rro",
+          "app_name": "android.auto_generated_characteristics_rro",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.gmsconfig.comms",
+          "app_name": "com.google.android.overlay.gmsconfig.comms",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.nwestimate",
+          "app_name": "com.oplus.nwestimate",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.zoho.accounts.oneauth",
+          "app_name": "OneAuth",
+          "is_system_app": false,
+          "version_name": "4.2.4",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.bttestmode",
+          "app_name": "BTtestmode",
+          "is_system_app": true,
+          "version_name": "2.0.20150831",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.rarlab.rar",
+          "app_name": "RAR",
+          "is_system_app": false,
+          "version_name": "7.20.build131",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.twitter.android",
+          "app_name": "X",
+          "is_system_app": false,
+          "version_name": "11.71.0-release.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.appsearch.apk",
+          "app_name": "com.google.android.appsearch.apk",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.ambient.streaming",
+          "app_name": "Cross-device services",
+          "is_system_app": true,
+          "version_name": "1.0.1085.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.settings.overlay.common",
+          "app_name": "com.android.settings.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.customize.coreapp",
+          "app_name": "CustCoreApp",
+          "is_system_app": true,
+          "version_name": "16.0.5",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.bard",
+          "app_name": "Gemini",
+          "is_system_app": false,
+          "version_name": "1.0.869192867",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.apps.docs",
+          "app_name": "Drive",
+          "is_system_app": false,
+          "version_name": "2.26.097.1.all.alldpi",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.apps.maps",
+          "app_name": "Maps",
+          "is_system_app": true,
+          "version_name": "26.10.01.877073638",
+          "deep_links": [
+            "geo",
+            "google.navigation"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "geo"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "google.navigation"
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.uiengine",
+          "app_name": "Diverse engine",
+          "is_system_app": true,
+          "version_name": "13.5.17",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.modulemetadata",
+          "app_name": "Main components",
+          "is_system_app": true,
+          "version_name": "2026-01-01S+",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "vendor.qti.frameworks.utils",
+          "app_name": "FrameworksUtilsApp",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "free.vpn.unblock.proxy.turbovpn",
+          "app_name": "Turbo VPN",
+          "is_system_app": false,
+          "version_name": "4.2.9.6",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.aiwriter",
+          "app_name": "AI Writer",
+          "is_system_app": true,
+          "version_name": "16.0.70",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.mediaturbo",
+          "app_name": "MediaTurbo",
+          "is_system_app": true,
+          "version_name": "16.0.024",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.keyguard.clock.base",
+          "app_name": "Classic",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.statistics.rom",
+          "app_name": "Basic Data Services",
+          "is_system_app": true,
+          "version_name": "5.8.94.02",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.office.word",
+          "app_name": "Microsoft Word",
+          "is_system_app": false,
+          "version_name": "16.0.19127.20134",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "oplus",
+          "app_name": "Android System",
+          "is_system_app": true,
+          "version_name": "8.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "org.chromium.webapk.a91588efdf2affc86_v2",
+          "app_name": "Google Developers",
+          "is_system_app": false,
+          "version_name": "1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.lenskart.app",
+          "app_name": "Lenskart",
+          "is_system_app": false,
+          "version_name": "5.4.9",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "vendor.qti.data.ntnsatapp",
+          "app_name": "NtnSatApp",
+          "is_system_app": true,
+          "version_name": "16.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.cellbroadcastreceiver",
+          "app_name": "com.android.cellbroadcastreceiver",
+          "is_system_app": true,
+          "version_name": "R-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.pscanvas",
+          "app_name": "Multi Windows",
+          "is_system_app": true,
+          "version_name": "2.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.webview",
+          "app_name": "Android System WebView",
+          "is_system_app": true,
+          "version_name": "145.0.7632.160",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "android.frameworkres.overlay.Network",
+          "app_name": "android.frameworkres.overlay.Network",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.opera.browser",
+          "app_name": "Opera",
+          "is_system_app": false,
+          "version_name": "95.3.4982.87478",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.documentsui",
+          "app_name": "com.google.android.overlay.modules.documentsui",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.office.powerpoint",
+          "app_name": "Microsoft PowerPoint",
+          "is_system_app": false,
+          "version_name": "16.0.19127.20132",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.networkstack",
+          "app_name": "Network manager",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.rkpdapp",
+          "app_name": "RemoteProvisioner",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.contactkeys",
+          "app_name": "Android System Key Verifier",
+          "is_system_app": false,
+          "version_name": "1.323.871251543",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.SystemUIResOverlay",
+          "app_name": "com.android.SystemUIResOverlay",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.contacts",
+          "app_name": "Contacts",
+          "is_system_app": true,
+          "version_name": "4.73.27.871645217",
+          "deep_links": [
+            "tel"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "tel"
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.server.telecom",
+          "app_name": "Call Management",
+          "is_system_app": true,
+          "version_name": "16.13.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "net.oneplus.widget",
+          "app_name": "OnePlus Widget",
+          "is_system_app": false,
+          "version_name": "15.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.deviceintegrationservice",
+          "app_name": "Device Integration Service",
+          "is_system_app": true,
+          "version_name": "2.25044.5.1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.keychain",
+          "app_name": "Key Chain",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.phone.auto_generated_characteristics_rro",
+          "app_name": "com.android.phone.auto_generated_characteristics_rro",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.suntv.sunnxt",
+          "app_name": "Sun NXT",
+          "is_system_app": false,
+          "version_name": "4.1.74",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "aon.frameworkres.overlay.product",
+          "app_name": "aon.frameworkres.overlay.product",
+          "is_system_app": true,
+          "version_name": "15.0.00",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.chrome",
+          "app_name": "Chrome",
+          "is_system_app": true,
+          "version_name": "145.0.7632.159",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.healthfitness.forframework",
+          "app_name": "com.google.android.overlay.modules.healthfitness.forframework",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.compass2",
+          "app_name": "Compass",
+          "is_system_app": true,
+          "version_name": "16.1.14",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oneplus.filemanager",
+          "app_name": "My Files",
+          "is_system_app": true,
+          "version_name": "16.5.4",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.wirelesssettings",
+          "app_name": "Wireless Settings",
+          "is_system_app": true,
+          "version_name": "16.7.5",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.packageinstaller",
+          "app_name": "Package installer",
+          "is_system_app": true,
+          "version_name": "16-13928101",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.atomberg.app",
+          "app_name": "Atomberg Home",
+          "is_system_app": false,
+          "version_name": "7.4.4",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.gms",
+          "app_name": "Google Play services",
+          "is_system_app": true,
+          "version_name": "26.08.34 (260400-876566425)",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.gsf",
+          "app_name": "Google Services Framework",
+          "is_system_app": true,
+          "version_name": "16-13928101",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.tts",
+          "app_name": "Speech Recognition and Synthesis from Google",
+          "is_system_app": true,
+          "version_name": "googletts.google-speech-apk_20260202.02_p1.869429636",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.phone.overlay.common",
+          "app_name": "com.android.phone.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.carrierconfig.overlay.common",
+          "app_name": "com.android.carrierconfig.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.calllogbackup",
+          "app_name": "Call Log Backup/Restore",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.partnersetup",
+          "app_name": "Google Partner Setup",
+          "is_system_app": true,
+          "version_name": "100.773392826",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui.overlay.common",
+          "app_name": "com.android.systemui.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.cameraextensions",
+          "app_name": "CameraExtensionsProxy",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.server.telecom.overlay.common",
+          "app_name": "com.android.server.telecom.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.localtransport",
+          "app_name": "com.android.localtransport",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.vincentlee.compass",
+          "app_name": "Compass",
+          "is_system_app": false,
+          "version_name": "26.0.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.securityguard",
+          "app_name": "Security events",
+          "is_system_app": true,
+          "version_name": "16.2.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.videos",
+          "app_name": "Google TV",
+          "is_system_app": false,
+          "version_name": "4.39.4265.875078044.1-release",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.ambient.livealert",
+          "app_name": "LiveSports",
+          "is_system_app": true,
+          "version_name": "16.1.17",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.gmsconfig.asi",
+          "app_name": "com.google.android.overlay.gmsconfig.asi",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.gmsconfig.gsa",
+          "app_name": "com.google.android.overlay.gmsconfig.gsa",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.carrierdefaultapp",
+          "app_name": "Operator communications",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.aiunit.aon",
+          "app_name": "AONService",
+          "is_system_app": true,
+          "version_name": "15.0.73",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.powersavemode",
+          "app_name": "Usable Power Mode",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.uxdesign",
+          "app_name": "Wallpapers & style",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "ai.x.grok",
+          "app_name": "Grok",
+          "is_system_app": false,
+          "version_name": "1.1.38-release.14",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.credentialmanager",
+          "app_name": "Credential manager",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.lockassistant",
+          "app_name": "Assistant",
+          "is_system_app": true,
+          "version_name": "16.3.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.devicestatisticsservice",
+          "app_name": "com.qualcomm.qti.devicestatisticsservice",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.theme.font.notoserifsource",
+          "app_name": "Noto Serif / Source Sans Pro",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.DeviceAsWebcam",
+          "app_name": "Webcam service",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.proxyhandler",
+          "app_name": "ProxyHandler",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.safetycenter.resources",
+          "app_name": "Google Safety Centre resources",
+          "is_system_app": true,
+          "version_name": "33 system image",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.wifi.resources.overlay.pineapple",
+          "app_name": "com.google.android.wifi.resources.overlay.pineapple",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.granturismo.gcamator",
+          "app_name": "GCamator",
+          "is_system_app": false,
+          "version_name": "5.4.180",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.internal.display.cutout.emulation.waterfall",
+          "app_name": "Waterfall cutout",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.intentresolver",
+          "app_name": "IntentResolver",
+          "is_system_app": true,
+          "version_name": "2021-11",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.workloadclassifier",
+          "app_name": "com.qualcomm.qti.workloadclassifier",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.appplatform",
+          "app_name": "App Services",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "org.videolan.vlc",
+          "app_name": "VLC",
+          "is_system_app": false,
+          "version_name": "3.7.0",
+          "deep_links": [
+            "mms"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "mms"
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.internal.systemui.navbar.transparent",
+          "app_name": "Transparent navigation bar",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.sceneservice",
+          "app_name": "Enhanced Smart Data Service",
+          "is_system_app": true,
+          "version_name": "16.2.42",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.providers.contactkeys",
+          "app_name": "ContactsKeys Storage",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.connectivity.resources",
+          "app_name": "System connectivity resources",
+          "is_system_app": true,
+          "version_name": "S-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.permissioncontroller.forframework",
+          "app_name": "com.google.android.overlay.modules.permissioncontroller.forframework",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "tv.accedo.airtel.wynk",
+          "app_name": "Airtel Xstream Play",
+          "is_system_app": false,
+          "version_name": "1.115.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.framework.res.overlay",
+          "app_name": "com.oplus.framework.res.overlay",
+          "is_system_app": true,
+          "version_name": "15.0.12",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.jio.myjio",
+          "app_name": "MyJio",
+          "is_system_app": false,
+          "version_name": "8.0.24",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.feedback",
+          "app_name": "Market Feedback Agent",
+          "is_system_app": true,
+          "version_name": "16-13928101",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.printservice.recommendation",
+          "app_name": "Print Service Recommendation Service",
+          "is_system_app": true,
+          "version_name": "1.3.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.photos",
+          "app_name": "Photos",
+          "is_system_app": true,
+          "version_name": "7.66.0.876414181",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.calendar",
+          "app_name": "Calendar",
+          "is_system_app": true,
+          "version_name": "2026.08.1-874120202-release",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.networksense",
+          "app_name": "com.oplus.networksense",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.managedprovisioning",
+          "app_name": "Work Setup",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.spotify.music",
+          "app_name": "Spotify",
+          "is_system_app": false,
+          "version_name": "9.1.28.2252",
+          "deep_links": [
+            "spotify"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "spotify"
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.documentsui",
+          "app_name": "Files",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.office.officehubrow",
+          "app_name": "M365 Copilot",
+          "is_system_app": false,
+          "version_name": "16.0.19822.20012",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.beaconlink",
+          "app_name": "BeaconLink",
+          "is_system_app": true,
+          "version_name": "15.52.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.accessibility.switchaccess",
+          "app_name": "Switch Access",
+          "is_system_app": true,
+          "version_name": "1.16.1.798952610",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "ai.perplexity.app.android",
+          "app_name": "Perplexity",
+          "is_system_app": false,
+          "version_name": "2.78.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.mainline.telemetry",
+          "app_name": "Support components",
+          "is_system_app": true,
+          "version_name": "2026-02-01S+",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.framework.rro.oneplus",
+          "app_name": "com.oplus.framework.rro.oneplus",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.wifi.resources.overlay.pineapple",
+          "app_name": "com.android.wifi.resources.overlay.pineapple",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.tallteam.citychase",
+          "app_name": "Smash Karts",
+          "is_system_app": false,
+          "version_name": "2.12.3",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.amazon.avod.thirdpartyclient",
+          "app_name": "Prime Video",
+          "is_system_app": false,
+          "version_name": "3.0.444.1547",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.example.dum",
+          "app_name": "dum",
+          "is_system_app": false,
+          "version_name": "0.1.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.permissioncontroller.overlay.oplus",
+          "app_name": "com.google.android.permissioncontroller.overlay.oplus",
+          "is_system_app": true,
+          "version_name": "16.00.001",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.keyguard.style.widgets",
+          "app_name": "Widgets",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.bt.bms",
+          "app_name": "BookMyShow",
+          "is_system_app": false,
+          "version_name": "18.1.3",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.atlas",
+          "app_name": "atlasService",
+          "is_system_app": true,
+          "version_name": "13.1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.games",
+          "app_name": "Game Assistant",
+          "is_system_app": true,
+          "version_name": "10.27.2",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.metis",
+          "app_name": "Smart Decision-Making Service",
+          "is_system_app": true,
+          "version_name": "16.8.296",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.omoji",
+          "app_name": "Omoji",
+          "is_system_app": true,
+          "version_name": "16.0.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.devicediagnostics",
+          "app_name": "DeviceDiagnostics",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.stdid",
+          "app_name": "StdID",
+          "is_system_app": true,
+          "version_name": "2.1.5",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.stdsp",
+          "app_name": "StdSP Core",
+          "is_system_app": true,
+          "version_name": "2.18.1_9848e35_260114",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.consumerIRApp",
+          "app_name": "IR Remote",
+          "is_system_app": false,
+          "version_name": "16.2.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "org.freedownloadmanager.fdm",
+          "app_name": "Free Download Manager",
+          "is_system_app": false,
+          "version_name": "6.33.0.6626",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.providers.partnerbookmarks",
+          "app_name": "com.android.providers.partnerbookmarks",
+          "is_system_app": true,
+          "version_name": "1.0.29",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.securepay",
+          "app_name": "Payment protection",
+          "is_system_app": true,
+          "version_name": "16.2.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.role.notes.enabled",
+          "app_name": "Notes Role enabled",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.valvesoftware.android.steam.community",
+          "app_name": "Steam",
+          "is_system_app": false,
+          "version_name": "3.10.9",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.exsystemservice",
+          "app_name": "System Service",
+          "is_system_app": true,
+          "version_name": "1.4.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.fido.fido2client",
+          "app_name": "asmsdk",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.aura.aura_ui.feature.debug",
+          "app_name": "AURA Assistant",
+          "is_system_app": false,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.sauhelper",
+          "app_name": "SAUHelper",
+          "is_system_app": true,
+          "version_name": "1.16.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.wallpaper.livepicker",
+          "app_name": "Motion wallpaper selector",
+          "is_system_app": true,
+          "version_name": "16.0.46",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.cloudradius.interjet",
+          "app_name": "Interjet",
+          "is_system_app": false,
+          "version_name": "0.0.5",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.keyguard.clock.magazine",
+          "app_name": "Cover",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.sandbox.runtime",
+          "app_name": "runtime",
+          "is_system_app": true,
+          "version_name": "16.0.7",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.wallpapers",
+          "app_name": "Wallpapers",
+          "is_system_app": true,
+          "version_name": "16.04.0005_sp6",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.apps.tag",
+          "app_name": "Tags",
+          "is_system_app": true,
+          "version_name": "1.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.encryption",
+          "app_name": "Private Safe",
+          "is_system_app": true,
+          "version_name": "16.9.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.mainline.adservices",
+          "app_name": "Main components",
+          "is_system_app": true,
+          "version_name": "2025-10-01T+",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.facebook.system",
+          "app_name": "Meta App Installer",
+          "is_system_app": true,
+          "version_name": "130.0.18",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.safetycenter.styles.overlay",
+          "app_name": "com.android.safetycenter.styles.overlay",
+          "is_system_app": true,
+          "version_name": "16.00.001",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.microsoft.copilot",
+          "app_name": "Copilot",
+          "is_system_app": false,
+          "version_name": "30.0.440304002",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.chess",
+          "app_name": "Chess",
+          "is_system_app": false,
+          "version_name": "4.9.27-googleplay",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.healthconnect.controller",
+          "app_name": "Health Connect",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "org.mozilla.firefox",
+          "app_name": "Firefox",
+          "is_system_app": false,
+          "version_name": "148.0.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.keyguard.clock.graffiti",
+          "app_name": "Playful",
+          "is_system_app": true,
+          "version_name": "16.00.01",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.example.authentication",
+          "app_name": "authentication",
+          "is_system_app": false,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.gms.supervision",
+          "app_name": "System parental controls",
+          "is_system_app": true,
+          "version_name": "1.0.800961816.phone",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.adobe.psmobile",
+          "app_name": "Adobe Photoshop Express",
+          "is_system_app": false,
+          "version_name": "17.9.22",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.heytap.colorfulengine",
+          "app_name": "Colorful Engine",
+          "is_system_app": true,
+          "version_name": "16.0.57",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.trafficmonitor",
+          "app_name": "Data usage",
+          "is_system_app": true,
+          "version_name": "16.3.7",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.gpsmapcamera.geotagginglocationonphoto",
+          "app_name": "GPS Map Camera",
+          "is_system_app": false,
+          "version_name": "1.9.8",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.storagemanager",
+          "app_name": "Storage Manager",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.bookmarkprovider",
+          "app_name": "Bookmark Provider",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.linkedin.android",
+          "app_name": "LinkedIn",
+          "is_system_app": false,
+          "version_name": "4.1.1178",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.settings",
+          "app_name": "Settings",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.qualcomm.qti.cne",
+          "app_name": "CneApp",
+          "is_system_app": true,
+          "version_name": "14.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.heytap.mcs",
+          "app_name": "System Messages",
+          "is_system_app": true,
+          "version_name": "5.19.25",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.wifibackuprestore",
+          "app_name": "WifiBackupRestore",
+          "is_system_app": true,
+          "version_name": "16.0.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.nbu.paisa.user",
+          "app_name": "GPay",
+          "is_system_app": true,
+          "version_name": "322.1.2 (arm64-v8a_release_flutter)",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.fitbit.FitbitMobile",
+          "app_name": "Fitbit",
+          "is_system_app": false,
+          "version_name": "4.24.fitbit-mobile-110109423-667703126",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.heytap.browser",
+          "app_name": "Internet",
+          "is_system_app": true,
+          "version_name": "45.13.2.9",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.networkstack.overlay",
+          "app_name": "com.google.android.networkstack.overlay",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.battery",
+          "app_name": "Battery",
+          "is_system_app": true,
+          "version_name": "1.2.8",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.healthdata",
+          "app_name": "Health Connect",
+          "is_system_app": false,
+          "version_name": "2026.01.22.00.release",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.captiveportallogin.forframework",
+          "app_name": "com.google.android.overlay.modules.captiveportallogin.forframework",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.owkservice",
+          "app_name": "OwkService",
+          "is_system_app": true,
+          "version_name": "16.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.virtualcomm",
+          "app_name": "OplusVirtualComm",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.projection.gearhead",
+          "app_name": "Android Auto",
+          "is_system_app": true,
+          "version_name": "16.3.660834-release",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.multiapp",
+          "app_name": "App Cloner",
+          "is_system_app": true,
+          "version_name": "16.00.001",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.location",
+          "app_name": "EmergencyLocServices",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.engineercamera",
+          "app_name": "EngineerCamera",
+          "is_system_app": true,
+          "version_name": "V4.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.postmanservice",
+          "app_name": "Diagnostics",
+          "is_system_app": true,
+          "version_name": "16.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.anthropic.claude",
+          "app_name": "Claude",
+          "is_system_app": false,
+          "version_name": "1.260309.17",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.safetycore",
+          "app_name": "Android System SafetyCore",
+          "is_system_app": false,
+          "version_name": "1.0.871251620",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.uwb.resources",
+          "app_name": "System UWB Resources",
+          "is_system_app": true,
+          "version_name": "T-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.chromecast.app",
+          "app_name": "Home",
+          "is_system_app": false,
+          "version_name": "4.10.57.1",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.cts.ctsshim",
+          "app_name": "com.android.cts.ctsshim",
+          "is_system_app": true,
+          "version_name": "15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.wifi.resources",
+          "app_name": "System Wi-Fi resources",
+          "is_system_app": true,
+          "version_name": "R-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.nic.mparivahan",
+          "app_name": "NextGen mParivahan",
+          "is_system_app": false,
+          "version_name": "2.0.135",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.relax",
+          "app_name": "O Relax",
+          "is_system_app": false,
+          "version_name": "2.2.32",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.video",
+          "app_name": "Videos (System)",
+          "is_system_app": true,
+          "version_name": "9.22.1.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.nearcomm",
+          "app_name": "OplusNearComm",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.overlay.modules.modulemetadata.forframework",
+          "app_name": "com.google.android.overlay.modules.modulemetadata.forframework",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.wifi.dialog",
+          "app_name": "com.google.android.wifi.dialog",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.cromptoncoin.mycrompton",
+          "app_name": "MyCrompton",
+          "is_system_app": false,
+          "version_name": "1.0.7",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.rapido.passenger",
+          "app_name": "Rapido",
+          "is_system_app": false,
+          "version_name": "8.98.0",
+          "deep_links": [
+            "geo"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "geo"
+            }
+          ]
+        },
+        {
+          "package_name": "com.heytap.accessory",
+          "app_name": "Quick Connect",
+          "is_system_app": true,
+          "version_name": "16.12.15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.motionsense",
+          "app_name": "com.oplus.motionsense",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.digilocker.android",
+          "app_name": "Digilocker",
+          "is_system_app": false,
+          "version_name": "9.2.7",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.qualcomm.qti.uimGbaApp",
+          "app_name": "com.qualcomm.qti.uimGbaApp",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "android.autoinstalls.config.oneplus",
+          "app_name": "Device configuration",
+          "is_system_app": true,
+          "version_name": "1001",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.riderMode",
+          "app_name": "Outdoor mode",
+          "is_system_app": false,
+          "version_name": "1.1.12",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.microdroid.empty_payload",
+          "app_name": "com.android.microdroid.empty_payload",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.tai.wifiqoe",
+          "app_name": "WifiQoe",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.gesture",
+          "app_name": "Gestures & motions",
+          "is_system_app": true,
+          "version_name": "8.5.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "android.framework.res.rro.oneplus",
+          "app_name": "android.framework.res.rro.oneplus",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.securitypermission",
+          "app_name": "Permission manager",
+          "is_system_app": true,
+          "version_name": "16.03.001",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.vpndialogs",
+          "app_name": "VpnDialogs",
+          "is_system_app": true,
+          "version_name": "16.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.mm.android.direct.g_CMOB_XU",
+          "app_name": "gCMOB",
+          "is_system_app": false,
+          "version_name": "3.3.4",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.bloombyte.smvec",
+          "app_name": "SMVEC",
+          "is_system_app": false,
+          "version_name": "1.0.52",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.fido.uafclient",
+          "app_name": "FIDO UAF1.0 Client",
+          "is_system_app": true,
+          "version_name": "3.7.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.ocrscanner",
+          "app_name": "Scan",
+          "is_system_app": true,
+          "version_name": "16.1.9",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.keep",
+          "app_name": "Keep notes",
+          "is_system_app": false,
+          "version_name": "5.26.091.00.90",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.nearme.instant.platform",
+          "app_name": "InstantWeb Service Framework",
+          "is_system_app": true,
+          "version_name": "10.2.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.aiunit",
+          "app_name": "AI Service Engine",
+          "is_system_app": true,
+          "version_name": "16.0.23",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.phone",
+          "app_name": "Phone Services",
+          "is_system_app": true,
+          "version_name": "16.17.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.shell",
+          "app_name": "Shell",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.blur",
+          "app_name": "PostEffect",
+          "is_system_app": true,
+          "version_name": "15.1.41",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.cast",
+          "app_name": "Screencast",
+          "is_system_app": true,
+          "version_name": "16.0.022",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.cosa",
+          "app_name": "App Enhancement Services",
+          "is_system_app": true,
+          "version_name": "16.0.104",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.cota",
+          "app_name": "Configuration Update",
+          "is_system_app": true,
+          "version_name": "2.1.8",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.lfeh",
+          "app_name": "OplusLFEHer",
+          "is_system_app": true,
+          "version_name": "16.0.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.ndsf",
+          "app_name": "DSF",
+          "is_system_app": true,
+          "version_name": "16.0.07",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.athena",
+          "app_name": "Athena",
+          "is_system_app": true,
+          "version_name": "6.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.wallpaperbackup",
+          "app_name": "com.android.wallpaperbackup",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.providers.blockednumber",
+          "app_name": "Blocked Numbers Storage",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.email.partnerprovider",
+          "app_name": "EmailPartnerProvider",
+          "is_system_app": true,
+          "version_name": "1.0.17",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.work.clouddpc",
+          "app_name": "Device Policy",
+          "is_system_app": true,
+          "version_name": "152.26.5 (10604700)",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.contentportal",
+          "app_name": "Content Portal",
+          "is_system_app": true,
+          "version_name": "16.1.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.providers.userdictionary",
+          "app_name": "User Dictionary",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.camera",
+          "app_name": "Camera",
+          "is_system_app": true,
+          "version_name": "6.020.618",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.apps.setupwizard.searchselector",
+          "app_name": "Search engine selector",
+          "is_system_app": true,
+          "version_name": "1.36.839559840",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.dialer",
+          "app_name": "ODialer",
+          "is_system_app": false,
+          "version_name": "16.0.0",
+          "deep_links": [
+            "tel"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "tel"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "tel"
+            }
+          ]
+        },
+        {
+          "package_name": "com.oppo.quicksearchbox",
+          "app_name": "Global Search",
+          "is_system_app": true,
+          "version_name": "16.8.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "in.swiggy.android",
+          "app_name": "Swiggy",
+          "is_system_app": false,
+          "version_name": "4.104.0",
+          "deep_links": [
+            "swiggy"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "swiggy"
+            }
+          ]
+        },
+        {
+          "package_name": "com.azure.authenticator",
+          "app_name": "Authenticator",
+          "is_system_app": false,
+          "version_name": "6.2602.0889",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.companiondevicemanager.auto_generated_characteristics_rro",
+          "app_name": "com.android.companiondevicemanager.auto_generated_characteristics_rro",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.xrcb",
+          "app_name": "XRCB",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.gms.location.history",
+          "app_name": "Google Location History",
+          "is_system_app": true,
+          "version_name": "1.2",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.internal.systemui.navbar.gestural",
+          "app_name": "Gestural Navigation Bar",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.location.fused",
+          "app_name": "Fused Location",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.systemui",
+          "app_name": "System UI",
+          "is_system_app": true,
+          "version_name": "16.00.09",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.ondevicepersonalization.services",
+          "app_name": "com.android.ondevicepersonalization.services.OnDevicePersonalizationApplication",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.bluetoothmidiservice",
+          "app_name": "Bluetooth MIDI Service",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.heytap.mydevices",
+          "app_name": "My Devices",
+          "is_system_app": true,
+          "version_name": "16.5.25",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.facebook.appmanager",
+          "app_name": "Meta App Manager",
+          "is_system_app": true,
+          "version_name": "130.0.18",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.appsense",
+          "app_name": "com.oplus.appsense",
+          "is_system_app": true,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.asus.glidex",
+          "app_name": "GlideX",
+          "is_system_app": false,
+          "version_name": "4.0.6.0.2602.06",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.coloros.operationManual",
+          "app_name": "Help & feedback",
+          "is_system_app": true,
+          "version_name": "16.60.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.adobe.lrmobile",
+          "app_name": "Lightroom",
+          "is_system_app": false,
+          "version_name": "9.2.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.android.overlay.aifunction.common",
+          "app_name": "com.oplus.android.overlay.aifunction.common",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.eco.global.app",
+          "app_name": "ECOVACS HOME",
+          "is_system_app": false,
+          "version_name": "3.11.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "vendor.qti.imsdatachannel",
+          "app_name": "vendor.qti.imsdatachannel",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.floatassistant",
+          "app_name": "Assistive Ball",
+          "is_system_app": true,
+          "version_name": "16.1.8",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.safecenter",
+          "app_name": "Security Centre",
+          "is_system_app": true,
+          "version_name": "16.1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.childrenspace",
+          "app_name": "Kids mode",
+          "is_system_app": true,
+          "version_name": "16.1.3",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.traceur",
+          "app_name": "System Tracing",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.cellbroadcastreceiver",
+          "app_name": "Wireless emergency alerts",
+          "is_system_app": true,
+          "version_name": "R-initial",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.linker",
+          "app_name": "Device Connect",
+          "is_system_app": true,
+          "version_name": "16.7.25",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.logkit",
+          "app_name": "Feedback",
+          "is_system_app": true,
+          "version_name": "16.0.49",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.qms.service.trustzoneaccess",
+          "app_name": "com.qualcomm.qti.qms.service.trustzoneaccess",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.heytap.htms",
+          "app_name": "Mobile Services",
+          "is_system_app": true,
+          "version_name": "2.3.6_473100f_260122_OS15Oversea_sea",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.melody",
+          "app_name": "Wireless Earphones",
+          "is_system_app": true,
+          "version_name": "16.4.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qti.dcf",
+          "app_name": "dcf",
+          "is_system_app": true,
+          "version_name": "1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qti.qcc",
+          "app_name": "QCC",
+          "is_system_app": true,
+          "version_name": "QCC16.0-20250629-3722a4b",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.play.games",
+          "app_name": "Google Play Games",
+          "is_system_app": false,
+          "version_name": "2025.09.62452 (827342201.827342201-190400)",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "notion.id",
+          "app_name": "Notion",
+          "is_system_app": false,
+          "version_name": "0.6.3684",
+          "deep_links": [
+            "notion"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "notion"
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.nrMode",
+          "app_name": "OplusNrModeControl",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.qti.gpudrivers.pineapple.api34",
+          "app_name": "Adreno Graphics Drivers",
+          "is_system_app": true,
+          "version_name": "0.1.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.obrain",
+          "app_name": "OBrain",
+          "is_system_app": true,
+          "version_name": "16.0.16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.adm",
+          "app_name": "Find Hub",
+          "is_system_app": false,
+          "version_name": "3.1.532-3",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.android.bluetooth",
+          "app_name": "Bluetooth",
+          "is_system_app": true,
+          "version_name": "15.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.colorx",
+          "app_name": "Graphics Enhancement Service",
+          "is_system_app": true,
+          "version_name": "16.0.42",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.timeservice",
+          "app_name": "com.qualcomm.timeservice",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.engineermode",
+          "app_name": "CommercialEngineerMode",
+          "is_system_app": true,
+          "version_name": "16.0.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oneplus.membership",
+          "app_name": "OnePlus Membership",
+          "is_system_app": true,
+          "version_name": "20.2.7",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.appbooster",
+          "app_name": "App Booster",
+          "is_system_app": true,
+          "version_name": "16.0.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.qualcomm.atfwd",
+          "app_name": "com.qualcomm.atfwd",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.plugin",
+          "app_name": "com.oplus.plugin",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.providers.contacts",
+          "app_name": "Contacts Storage",
+          "is_system_app": true,
+          "version_name": "16.10.10",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.screenshot",
+          "app_name": "Screenshot",
+          "is_system_app": true,
+          "version_name": "16.5.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.coloros.colordirectservice",
+          "app_name": "Screen recognition",
+          "is_system_app": true,
+          "version_name": "16.4.4",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.cellbroadcastreceiver.overlay.common",
+          "app_name": "com.android.cellbroadcastreceiver.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.photopicker",
+          "app_name": "Photos and videos",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.subsys",
+          "app_name": "Subsystem Service",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.oplus.nfcengineertest",
+          "app_name": "NfcEngineerTest",
+          "is_system_app": true,
+          "version_name": "15",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.canva.editor",
+          "app_name": "Canva",
+          "is_system_app": false,
+          "version_name": "2.351.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.microsoft.teams",
+          "app_name": "Teams",
+          "is_system_app": false,
+          "version_name": "1416/1.0.0.2026033106",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.microsoft.todos",
+          "app_name": "To Do",
+          "is_system_app": false,
+          "version_name": "2.146.965.02",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.oplus.engineernetwork",
+          "app_name": "EngineerNetwork",
+          "is_system_app": true,
+          "version_name": "15.0.1",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.example.notification",
+          "app_name": "notification",
+          "is_system_app": false,
+          "version_name": "1.0.0",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
+          "package_name": "com.snapchat.android",
+          "app_name": "Snapchat",
+          "is_system_app": false,
+          "version_name": "13.82.2.0",
+          "deep_links": [
+            "snapchat"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "snapchat"
+            }
+          ]
+        },
+        {
+          "package_name": "com.google.android.inputmethod.latin",
+          "app_name": "Gboard",
+          "is_system_app": true,
+          "version_name": "16.8.2.867538971-release-arm64-v8a",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.google.android.apps.restore",
+          "app_name": "Android Switch",
+          "is_system_app": true,
+          "version_name": "1.0.872357473",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        }
+      ],
+      "last_updated": 1773298898514,
+      "app_count": 534
+    }
+  },
+  "_metadata": {
+    "last_updated": 1773298898514
+  }
+}

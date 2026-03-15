@@ -1,0 +1,60 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Secrets — NEVER bake API keys into the image
+.env
+.env.local
+.env.*.local
+# Keep .env.example (documents required vars for judges)
+!.env.example
+
+# Local logs and failure screenshots (mount as volumes in production)
+logs/
+data/failure_screenshots/
+data/screenshots/
+
+# Android source (not needed in backend container)
+UI/
+
+# Code reference helpers (not production code)
+code helpers/
+
+# Git history
+.git/
+.gitignore
+.github/
+
+# Documentation
+*.md
+docs/
+
+# Editor / OS artifacts
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+
+# Test artefacts
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+
+# CI/CD
+cloudbuild.yaml

@@ -103,12 +103,25 @@ class VLMService:
                 logger.warning(f"Failed to initialize NVIDIA NIM VLM client: {e}")
 
     def _build_provider_models(self) -> dict:
-        """Map providers to the correct models based on the default provider."""
-        models = {
-            "nvidia": self.settings.default_vlm_model if self.settings.default_vlm_provider == "nvidia" else self.settings.vlm_secondary_model,
-            "gemini": self.settings.fallback_vlm_model if self.settings.default_vlm_provider != "gemini" else self.settings.default_vlm_model,
-            "groq": self.settings.fallback_vlm_model if self.settings.default_vlm_provider != "groq" else self.settings.default_vlm_model,
-        }
+        """
+        Map each provider to its correct model.
+
+        The primary provider always uses default_vlm_model.
+        Non-primary providers use fallback_vlm_model so that each provider
+        calls a model it actually supports, regardless of which is primary.
+        The vlm_secondary_model is reserved for NVIDIA NIM (not Groq/Gemini).
+        """
+        primary = self.settings.default_vlm_provider
+        models: dict[str, str] = {}
+        for provider in ("gemini", "groq", "nvidia"):
+            if provider == primary:
+                models[provider] = self.settings.default_vlm_model
+            elif provider == "nvidia":
+                # NVIDIA always uses vlm_secondary_model (its own model family)
+                models[provider] = self.settings.vlm_secondary_model
+            else:
+                # The other non-primary provider (groq or gemini) uses fallback_vlm_model
+                models[provider] = self.settings.fallback_vlm_model
         return models
 
     def analyze_image(
@@ -330,6 +343,11 @@ class VLMService:
             )
 
         _caller_agent = kwargs.pop("_caller_agent", None)
+        # Strip kwargs that Gemini generate_content() does not accept
+        system_prompt = kwargs.pop("system_prompt", "")
+        # temperature / max_tokens must go into GenerateContentConfig, not as top-level kwargs
+        _temperature = kwargs.pop("temperature", None)
+        _max_tokens = kwargs.pop("max_tokens", None)
 
         try:
             # Convert image data to PIL Image if needed
@@ -343,9 +361,8 @@ class VLMService:
                 if isinstance(image_data, bytes):
                     _vlm_screenshot_path = _cmd.log_screenshot("vlm_input_gemini", _b64.b64encode(image_data).decode())
                 elif isinstance(image_data, str):
-                    from pathlib import Path as _Path
-                    _p = _Path(image_data)
-                    _vlm_screenshot_path = str(_p) if _p.exists() else ""
+                    # image_data is base64 — log it directly (not a file path)
+                    _vlm_screenshot_path = _cmd.log_screenshot("vlm_input_gemini", image_data)
                 elif hasattr(image_data, "width"):
                     from io import BytesIO as _BIO
                     _buf = _BIO()
@@ -358,8 +375,27 @@ class VLMService:
 
             # Generate content with image and prompt
             # The new Google GenAI SDK accepts PIL Images directly
+            # Build optional GenerateContentConfig for supported params
+            _gen_config = None
+            if _temperature is not None or _max_tokens is not None or system_prompt:
+                try:
+                    from google.genai import types as _gtypes
+                    _cfg_kwargs: dict = {}
+                    if _temperature is not None:
+                        _cfg_kwargs["temperature"] = _temperature
+                    if _max_tokens is not None:
+                        _cfg_kwargs["max_output_tokens"] = _max_tokens
+                    if system_prompt:
+                        _cfg_kwargs["system_instruction"] = system_prompt
+                    _gen_config = _gtypes.GenerateContentConfig(**_cfg_kwargs)
+                except Exception:
+                    pass  # Config construction is best-effort
+
             response = self.gemini_client.models.generate_content(
-                model=model, contents=[prompt, image], **kwargs
+                model=model,
+                contents=[prompt, image],
+                config=_gen_config,
+                **{k: v for k, v in kwargs.items() if k not in ("config",)},
             )
 
             # Log token usage (Gemini uses usage_metadata)
@@ -391,7 +427,7 @@ class VLMService:
             cmd_logger = get_command_logger()
             cmd_logger.log_llm_call(
                 prompt=prompt,
-                response=response.text,
+                response=response.text or "",
                 provider="gemini",
                 model=model,
                 agent=_caller_agent,
@@ -407,7 +443,7 @@ class VLMService:
                 }
             )
 
-            return response.text
+            return response.text or ""
         except Exception as e:
             raise ModelProviderError(
                 f"Gemini VLM API call failed: {str(e)}",

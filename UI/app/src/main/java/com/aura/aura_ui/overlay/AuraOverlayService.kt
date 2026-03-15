@@ -296,8 +296,20 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var connectionJob: Job? = null
 
-    // Voice capture controller
+    // Voice capture controller (always connected for device control / gesture execution)
     private var voiceCaptureController: VoiceCaptureController? = null
+
+    // Gemini Live controller — active when use_gemini_live preference is true.
+    // Handles bidirectional audio with Gemini Live; VoiceCaptureController stays
+    // connected in parallel to keep the device control pipe (gestures, UI tree) alive.
+    private var geminiLiveController: com.aura.aura_ui.voice.GeminiLiveController? = null
+
+    /** True when the Gemini Live audio layer is active. */
+    private val useGeminiLive: Boolean
+        get() {
+            val prefs = getSharedPreferences("aura_settings", Context.MODE_PRIVATE)
+            return prefs.getBoolean("use_gemini_live", false)
+        }
 
     // ViewModel for conversation state (service-scoped)
     private val conversationViewModel = ConversationViewModel()
@@ -348,8 +360,15 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             }
             ACTION_CANCEL_TASK -> {
                 Log.i(TAG, "🚫 Cancel task requested from notification")
-                voiceCaptureController?.sendCancelTask()
+                if (geminiLiveController != null) {
+                    // Terminate entire Gemini Live bidirectional session
+                    geminiLiveController?.cancelCapture()
+                    geminiLiveController?.sendCancelTask()
+                } else {
+                    voiceCaptureController?.sendCancelTask()
+                }
                 restoreOverlay()
+                conversationViewModel.resetToIdle()
             }
             else -> {
                 // Default action: show overlay
@@ -473,18 +492,21 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
         
         // Wait for voice controller to be ready, then start capture
         serviceScope.launch {
-            // Give the voice controller time to initialize and connect
+            // Give the voice controller(s) time to initialise and connect
             var attempts = 0
             while (voiceCaptureController == null && attempts < 20) {
                 kotlinx.coroutines.delay(100)
                 attempts++
             }
-            
-            if (voiceCaptureController != null) {
-                Log.i(TAG, "🎙️ Auto-starting voice capture after wake word")
+
+            if (geminiLiveController != null) {
+                Log.i(TAG, "🎙️ Auto-starting Gemini Live capture after wake word")
+                geminiLiveController?.startCapture()
+            } else if (voiceCaptureController != null) {
+                Log.i(TAG, "🎙️ Auto-starting VoiceCaptureController after wake word")
                 voiceCaptureController?.startCapture()
             } else {
-                Log.e(TAG, "❌ Voice controller not ready for auto-capture")
+                Log.e(TAG, "❌ No voice controller ready for auto-capture")
             }
         }
     }
@@ -1182,6 +1204,7 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             agentOutputs = agentOutputs,
             latestAgentOutput = latestAgentOutput,
             taskProgress = taskProgress,
+            isGeminiLiveSession = geminiLiveController?.isSessionActive == true,
         )
 
         // Create callbacks
@@ -1190,7 +1213,7 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
                 // Cancel any ongoing operation and hide
                 when (conversationState.conversationState) {
                     ConversationPhase.LISTENING -> {
-                        voiceCaptureController?.cancelCapture()
+                        geminiLiveController?.cancelCapture() ?: voiceCaptureController?.cancelCapture()
                         conversationViewModel.resetToIdle()
                     }
                     ConversationPhase.THINKING, ConversationPhase.RESPONDING -> {
@@ -1203,10 +1226,20 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             onMicClick = {
                 when (conversationState.conversationState) {
                     ConversationPhase.IDLE -> {
-                        voiceCaptureController?.startCapture()
+                        // Prefer Gemini Live controller when connected, else fall back to VCC
+                        if (geminiLiveController != null) {
+                            geminiLiveController?.startCapture()
+                        } else {
+                            voiceCaptureController?.startCapture()
+                        }
                     }
                     ConversationPhase.LISTENING -> {
-                        voiceCaptureController?.stopCapture()
+                        if (geminiLiveController != null) {
+                            // In bidirectional mode: mic press while listening = END session
+                            geminiLiveController?.cancelCapture()
+                        } else {
+                            voiceCaptureController?.stopCapture()
+                        }
                     }
                     else -> { }
                 }
@@ -1221,7 +1254,12 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             },
             onTextSubmit = { text ->
                 conversationViewModel.addRecentCommand(text)
-                voiceCaptureController?.sendTextCommand(text)
+                // Text commands go to whichever voice layer is active
+                if (geminiLiveController != null) {
+                    geminiLiveController?.sendTextCommand(text)
+                } else {
+                    voiceCaptureController?.sendTextCommand(text)
+                }
             },
             onMessageCopy = { text ->
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -1229,7 +1267,11 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
                 clipboard.setPrimaryClip(clip)
             },
             onMessageRetry = { message ->
-                voiceCaptureController?.sendTextCommand(message.text)
+                if (geminiLiveController != null) {
+                    geminiLiveController?.sendTextCommand(message.text)
+                } else {
+                    voiceCaptureController?.sendTextCommand(message.text)
+                }
             },
             onMessageShare = { text ->
                 val shareIntent = Intent().apply {
@@ -1247,7 +1289,11 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             },
             onSuggestionClick = { suggestion ->
                 conversationViewModel.addRecentCommand(suggestion)
-                voiceCaptureController?.sendTextCommand(suggestion)
+                if (geminiLiveController != null) {
+                    geminiLiveController?.sendTextCommand(suggestion)
+                } else {
+                    voiceCaptureController?.sendTextCommand(suggestion)
+                }
             },
             onClearChat = {
                 conversationViewModel.clearAllMessages()
@@ -1304,30 +1350,109 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
                 // Discover server URL
                 serverUrl = discoverServerUrl()
 
-                voiceCaptureController = VoiceCaptureController(
-                    context = this@AuraOverlayService,
-                    serverUrl = serverUrl,
-                    viewModel = conversationViewModel,
-                    scope = serviceScope,
-                    onAmplitudeUpdate = { amplitude ->
-                        audioAmplitude.floatValue = amplitude
-                    },
-                    functionGemmaManager = try {
-                        EntryPointAccessors.fromApplication(
-                            applicationContext,
-                            FunctionGemmaEntryPoint::class.java
-                        ).functionGemmaManager()
-                    } catch (e: Exception) {
-                        Log.w(TAG, "FunctionGemmaManager not available", e)
-                        null
-                    }
-                )
+                if (useGeminiLive) {
+                    // ── Gemini Live mode ──────────────────────────────────────────
+                    // GeminiLiveController handles ALL voice I/O (mic → Gemini → audio).
+                    // VoiceCaptureController connects to /ws/conversation as a silent
+                    // gesture-execution pipe only (no mic, no TTS).
+                    Log.i(TAG, "🌟 Gemini Live mode — voice fully replaced by Gemini Live")
 
-                // Connect to WebSocket
-                val connected = voiceCaptureController?.connect() ?: false
-                if (!connected) {
-                    Log.w(TAG, "Failed to connect to server, will retry on user interaction")
+                    voiceCaptureController = VoiceCaptureController(
+                        context = this@AuraOverlayService,
+                        serverUrl = serverUrl,
+                        viewModel = conversationViewModel,
+                        scope = serviceScope,
+                        onAmplitudeUpdate = null,          // waveform driven by GLC
+                        functionGemmaManager = null,       // not needed in Live mode
+                        deviceControlOnly = true,          // silence mic + TTS
+                    )
+                    val vccConnected = voiceCaptureController?.connect() ?: false
+                    Log.i(TAG, if (vccConnected) "✅ Gesture pipe /ws/conversation connected"
+                               else "⚠️ Gesture pipe failed to connect (gestures may not work)")
+
+                    geminiLiveController = com.aura.aura_ui.voice.GeminiLiveController(
+                        context = this@AuraOverlayService,
+                        serverUrl = serverUrl,
+                        viewModel = conversationViewModel,
+                        scope = serviceScope,
+                        onAmplitudeUpdate = { amplitude ->
+                            audioAmplitude.floatValue = amplitude
+                        }
+                    )
+                    val liveConnected = geminiLiveController?.connect() ?: false
+                    if (!liveConnected) {
+                        Log.w(TAG, "⚠️ GeminiLiveController failed to connect — voice unavailable")
+                        geminiLiveController?.cleanup()
+                        geminiLiveController = null
+                    } else {
+                        Log.i(TAG, "✅ GeminiLiveController connected — Gemini Live is the voice pipeline")
+
+                    // ── Phase → Live Alert observer ──────────────────────────────
+                    // Keep the notch chip updated for every conversation phase,
+                    // not just during automation tasks.
+                    serviceScope.launch {
+                        conversationViewModel.state.collect { state ->
+                            if (!_isOverlayVisible.value) return@collect
+                            val isAutomation = _isMinimized.value
+                            if (!isAutomation) {
+                                // Show conversational verbs in the Live Alert
+                                when (state.conversationState) {
+                                    ConversationPhase.LISTENING -> {
+                                        updateNotificationForAutomation(
+                                            statusText = "AURA is listening…",
+                                            chipText = "Listening 🎤",
+                                        )
+                                    }
+                                    ConversationPhase.THINKING -> {
+                                        updateNotificationForAutomation(
+                                            statusText = "AURA is thinking…",
+                                            chipText = "Thinking…",
+                                        )
+                                    }
+                                    ConversationPhase.RESPONDING -> {
+                                        updateNotificationForAutomation(
+                                            statusText = "AURA is speaking…",
+                                            chipText = "Speaking…",
+                                        )
+                                    }
+                                    ConversationPhase.IDLE, ConversationPhase.ERROR -> {
+                                        updateNotification(true)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    }
+
+                } else {
+                    // ── Classic STT/TTS mode ──────────────────────────────────────
+                    // VoiceCaptureController owns mic + TTS + gesture pipe.
+                    Log.i(TAG, "🎙️ Classic mode — using Groq STT + Edge-TTS pipeline")
+
+                    voiceCaptureController = VoiceCaptureController(
+                        context = this@AuraOverlayService,
+                        serverUrl = serverUrl,
+                        viewModel = conversationViewModel,
+                        scope = serviceScope,
+                        onAmplitudeUpdate = { amplitude ->
+                            audioAmplitude.floatValue = amplitude
+                        },
+                        functionGemmaManager = try {
+                            EntryPointAccessors.fromApplication(
+                                applicationContext,
+                                FunctionGemmaEntryPoint::class.java
+                            ).functionGemmaManager()
+                        } catch (e: Exception) {
+                            Log.w(TAG, "FunctionGemmaManager not available", e)
+                            null
+                        }
+                    )
+                    val vccConnected = voiceCaptureController?.connect() ?: false
+                    if (!vccConnected) {
+                        Log.w(TAG, "VoiceCaptureController: failed to connect (will retry on interaction)")
+                    }
                 }
+
             } catch (e: Exception) {
                 Log.e(TAG, "Error initializing voice controller", e)
             }
@@ -1340,6 +1465,8 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     private fun cleanupVoiceController() {
         connectionJob?.cancel()
         connectionJob = null
+        geminiLiveController?.cleanup()
+        geminiLiveController = null
         voiceCaptureController?.cleanup()
         voiceCaptureController = null
     }

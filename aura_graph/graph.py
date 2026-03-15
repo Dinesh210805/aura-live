@@ -10,6 +10,7 @@ TRI-PROVIDER PARALLEL ARCHITECTURE:
 - Model routing: Groq for speed, vision/reasoning, Gemini as fallback
 """
 
+import asyncio
 import time
 from typing import Any, Dict
 
@@ -130,11 +131,11 @@ def create_aura_graph() -> StateGraph:
         graph.add_node("parse_intent", parse_intent_node)
         graph.add_node("validate_intent", validate_intent_node)  # New validation node
         graph.add_node("perception", perception_node)  # New Perception Controller node
-        graph.add_node("analyze_ui", analyze_ui_node)  # Legacy - kept for backward compatibility
+        graph.add_node("analyze_ui", analyze_ui_node)  # VESTIGIAL: FIX-016 — no active edges route here. Remove after confirming no edge cases.
         graph.add_node(
             "parallel_processing", parallel_ui_and_validation_node
-        )  # Parallel fan-out/fan-in
-        graph.add_node("create_plan", plan_node)
+        )  # VESTIGIAL: FIX-016 — no active edges route here. Remove after confirming no edge cases.
+        graph.add_node("create_plan", plan_node)  # VESTIGIAL: FIX-016 — no active edges route here. Remove after confirming no edge cases.
         graph.add_node("execute", execute_node)
         graph.add_node("speak", speak_node)
         graph.add_node("error_handler", error_handler_node)
@@ -455,6 +456,8 @@ def compile_aura_graph(checkpointer: Any = None) -> Any:
         # Create and compile graph
         graph = create_aura_graph()
 
+        # FIXED: FIX-001 — add recursion_limit to prevent GraphRecursionError on retried tasks
+        # Formula: 4 nodes/step × 10 steps × 2.5x retry buffer = 100
         if checkpointer:
             app = graph.compile(checkpointer=checkpointer)
         else:
@@ -555,10 +558,12 @@ async def execute_aura_task_from_streaming(
         start_time = time.time()
 
         # Configure execution
+        from config.settings import get_settings as _get_settings
+        _settings = _get_settings()
         exec_config = {
             "thread_id": thread_id,
             "checkpoint_id": None,
-            "recursion_limit": 50,
+            "recursion_limit": _settings.graph_recursion_limit,
             "configurable": {
                 "user_id": initial_state.get("user_id"),
                 "task_id": initial_state.get("task_id"),
@@ -609,6 +614,17 @@ async def execute_aura_task_from_streaming(
             cmd_logger.finalize(status=final_status)
         except Exception as finalize_err:
             logger.error(f"Failed to finalize command log: {finalize_err}")
+
+        # Upload execution log to GCS (non-blocking, non-fatal)
+        try:
+            from gcs_log_uploader import upload_log_to_gcs_async
+            log_path = cmd_logger.get_log_file_path()
+            log_url = await upload_log_to_gcs_async(log_path, task_id)
+            if log_url:
+                result["log_url"] = log_url
+                logger.info(f"Execution log available at: {log_url}")
+        except Exception as gcs_err:
+            logger.warning(f"GCS log upload skipped: {gcs_err}")
         finally:
             clear_execution_logger()
 
@@ -691,12 +707,14 @@ async def execute_aura_task_from_text(
         start_time = time.time()
 
         # Use thread_id for checkpointing if provided
+        from config.settings import get_settings as _get_settings
+        _rl = _get_settings().graph_recursion_limit
         if thread_id:
             final_state = await app.ainvoke(
-                initial_state, config={"configurable": {"thread_id": thread_id}, "recursion_limit": 50}
+                initial_state, config={"configurable": {"thread_id": thread_id}, "recursion_limit": _rl}
             )
         else:
-            final_state = await app.ainvoke(initial_state, config={"recursion_limit": 50})
+            final_state = await app.ainvoke(initial_state, config={"recursion_limit": _rl})
 
         end_time = time.time()
         execution_time = end_time - start_time
@@ -748,6 +766,17 @@ async def execute_aura_task_from_text(
             cmd_logger.finalize(status=status)
         except Exception as finalize_err:
             logger.error(f"Failed to finalize command log: {finalize_err}")
+
+        # Upload execution log to GCS (non-blocking, non-fatal)
+        try:
+            from gcs_log_uploader import upload_log_to_gcs_async
+            log_path = cmd_logger.get_log_file_path()
+            log_url = await upload_log_to_gcs_async(log_path, task_id)
+            if log_url:
+                final_state["log_url"] = log_url
+                logger.info(f"Execution log available at: {log_url}")
+        except Exception as gcs_err:
+            logger.warning(f"GCS log upload skipped: {gcs_err}")
         finally:
             clear_execution_logger()
 
@@ -951,3 +980,25 @@ def get_graph_info() -> Dict[str, Any]:
         "supports_streaming": True,
         "version": "2.0.0",
     }
+
+
+async def run_aura_task(app: Any, initial_state: dict, config: dict = None) -> dict:
+    """
+    Run the AURA LangGraph with a hard timeout.
+
+    # FIXED: FIX-015 — previously no timeout; stuck device calls blocked forever
+    """
+    from config.settings import get_settings
+    from exceptions_module import AuraTimeoutError
+
+    settings = get_settings()
+    timeout = settings.graph_timeout_seconds
+    try:
+        result = await asyncio.wait_for(
+            app.ainvoke(initial_state, config=config or {}),
+            timeout=timeout
+        )
+        return result
+    except asyncio.TimeoutError:
+        logger.error(f"Graph execution timed out after {timeout}s")
+        raise AuraTimeoutError(f"Task timed out after {timeout} seconds")

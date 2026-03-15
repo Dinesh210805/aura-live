@@ -70,6 +70,13 @@ async def coordinator_node(state: TaskState) -> Dict[str, Any]:
 
     logger.info(f"🤖 Coordinator executing: {transcript}")
 
+    # FIXED: FIX-006 — reset AgentState counters before each new user command so
+    # retry budget is not depleted by a prior command's failures.
+    from aura_graph.agent_state import AgentState as _AgentState
+    _agent_state_obj = state.get("agent_state")
+    if isinstance(_agent_state_obj, _AgentState):
+        _agent_state_obj.reset_for_new_task()
+
     try:
         perception_bundle = state.get("perception_bundle")
         result = await _coordinator.execute(

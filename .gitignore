@@ -40,7 +40,7 @@ htmlcov/
 Thumbs.db
 
 # Project runtime artifacts
-logs/
+
 terminal_logs/
 data/failure_screenshots/
 

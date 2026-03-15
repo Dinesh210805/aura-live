@@ -1,0 +1,424 @@
+17:54:28 │ INFO  │ services.command_logger │ 📋 Logged command: go to youtube...
+17:54:28 │ INFO  │ utils.unified_logger │ [17:54:28.904] ℹ️ [command_log] Command: go to youtube
+  🔖 Trace: text_1773577468898
+17:54:28 │ INFO  │ aura_graph.graph │ Executing graph with initial state
+17:54:28 │ INFO  │ aura_graph.edges │ Text/streaming input detected, routing to parse_intent
+17:54:28 │ INFO  │ aura_graph.core_nodes │ Parse Intent node: Analyzing user intent
+17:54:28 │ INFO  │ aura_graph.core_nodes │ Agent commander added to execution workflow
+17:54:29 │ WARNING │ services.prompt_guard │ PromptGuard unknown response: '0.0007107729325070977', defaulting to safe
+17:54:29 │ INFO  │ services.conversation_session │ Creating new conversation session: 1058e858
+17:54:29 │ DEBUG │ aura_graph.core_nodes │ No entity resolution needed
+17:54:29 │ INFO  │ services.task_progress │ 🤖 Agent status: Commander: Parsing: 'go to youtube...'...
+17:54:29 │ INFO  │ services.llm │ Running LLM with provider: groq, model: llama-3.1-8b-instant
+17:54:29 │ INFO  │ services.llm │ 📊 LLM Token Usage - Prompt: 594, Completion: 26, Total: 620
+17:54:29 │ DEBUG │ utils.token_tracker │ 📊 Tracked: llm_service (llm/groq) - 620 tokens
+17:54:29 │ INFO  │ services.command_logger │ 🤖 Logged LLM call #1: unknown via groq
+17:54:29 │ DEBUG │ services.command_logger │ 🔗 LangSmith: https://smith.langchain.com/public/016712e1-5584-46e7-a3c8-0a7ab6a6a5ac/r/35091265-711e-43ee-aaa8-22fdf8c40441
+17:54:29 │ INFO  │ utils.unified_logger │ [17:54:29.282] ℹ️ [llm] LLM call #1: llama-3.1-8b-instant
+  🔗 LangSmith: https://smith.langchain.com/public/016712e1-5584-46e7-a3c8-0a7ab6a6a5ac/r/35091265-711e-43ee-aaa8-22fdf8c40441
+  🔖 Trace: text_1773577468898
+17:54:29 │ DEBUG │ services.llm │ LLM response generated successfully using groq
+17:54:29 │ DEBUG │ agents.commander │ Parsed intent: action=open_app, recipient=youtube, content=None, parameters=None
+17:54:29 │ INFO  │ aura_graph.core_nodes │ Normalized intent: action=open_app, recipient=youtube
+17:54:29 │ INFO  │ aura_graph.core_nodes │ â†’ Intent parsed & normalized: open_app -> youtube
+17:54:29 │ INFO  │ aura_graph.edges │ NO_UI action 'open_app' - skipping perception, routing to coordinator
+17:54:29 │ INFO  │ aura_graph.nodes.coordinator_node │ 🤖 Coordinator executing: go to youtube
+17:54:29 │ INFO  │ services.task_progress │ 🤖 Agent status: Planner: Planning: go to youtube...
+17:54:29 │ INFO  │ services.goal_decomposer │ 🎯 Decomposing goal: go to youtube
+17:54:29 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:54:29 │ INFO  │ services.llm │ Running LLM with provider: groq, model: meta-llama/llama-4-scout-17b-16e-instruct
+17:54:29 │ INFO  │ services.llm │ 📊 LLM Token Usage - Prompt: 916, Completion: 41, Total: 957
+17:54:29 │ DEBUG │ utils.token_tracker │ 📊 Tracked: llm_service (llm/groq) - 957 tokens
+17:54:29 │ INFO  │ services.command_logger │ 🤖 Logged LLM call #2: unknown via groq
+17:54:29 │ DEBUG │ services.command_logger │ 🔗 LangSmith: https://smith.langchain.com/public/016712e1-5584-46e7-a3c8-0a7ab6a6a5ac/r/135e2802-4112-46e7-9264-d90cba1c251b
+17:54:29 │ INFO  │ utils.unified_logger │ [17:54:29.506] ℹ️ [llm] LLM call #2: meta-llama/llama-4-scout-17b-16e-instruct
+  🔗 LangSmith: https://smith.langchain.com/public/016712e1-5584-46e7-a3c8-0a7ab6a6a5ac/r/135e2802-4112-46e7-9264-d90cba1c251b
+  🔖 Trace: text_1773577468898
+17:54:29 │ DEBUG │ services.llm │ LLM response generated successfully using groq
+17:54:29 │ INFO  │ services.goal_decomposer │ 📋 Skeleton plan: 2 phases, commits=[]
+17:54:29 │ INFO  │ services.goal_decomposer │    Phase 1: Open YouTube
+17:54:29 │ INFO  │ services.goal_decomposer │    Phase 2: Navigate to YouTube homepage
+17:54:29 │ INFO  │ agents.coordinator │ Coordinator: skeleton plan — Open YouTube (2 phases, commits=[])
+17:54:29 │ INFO  │ services.task_progress │ 🤖 Agent status: Planner: Plan ready: 2 phases...
+17:54:29 │ INFO  │ services.task_progress │ 📋 Task started: Open YouTube (2 steps)
+17:54:29 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:29 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:54:29 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=8d6e181f, modality=ui_tree, reason=Action: verify
+17:54:29 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=8d6e181f, reason=Action: verify
+17:54:29 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=8d6e181f, elements=19, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:29 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=8d6e181f, pending=['8d6e181f']
+17:54:29 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 8d6e181f, setting result with 19 elements
+17:54:29 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:29 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=8d6e181f
+17:54:29 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:29 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:29 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=2285bac9-ad66-49b3-ac30-b4f068e55d38, modality=ui_tree
+17:54:29 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:54:29 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:54:29 │ INFO  │ agents.coordinator │ Coordinator: short-circuit open_app for 'YouTube' (no VLM needed)
+17:54:29 │ INFO  │ agents.coordinator │ Coordinator: subgoal 1/1 — Open YouTube
+17:54:29 │ INFO  │ services.task_progress │ 🤖 Agent status: Aura: [1/1] Open YouTube...
+17:54:29 │ DEBUG │ agents.coordinator │ Coordinator: skipping perception for no-target action 'open_app'
+17:54:29 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:29 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:54:29 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=49683f4b, modality=ui_tree, reason=Action: verify
+17:54:29 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=49683f4b, reason=Action: verify
+17:54:29 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=49683f4b, elements=19, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:29 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=49683f4b, pending=['49683f4b']
+17:54:29 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 49683f4b, setting result with 19 elements
+17:54:29 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:29 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=49683f4b
+17:54:29 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:29 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:29 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=d8e2450d-0397-403f-9144-ac874353962e, modality=ui_tree
+17:54:29 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:54:29 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:54:29 │ INFO  │ services.real_accessibility │ 🚀 Sending app launch command via WebSocket: com.google.android.youtube
+17:54:29 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:54:30 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:54:30 │ INFO  │ services.real_accessibility │ Using 2 package candidates for 'youtube' from inventory
+17:54:30 │ INFO  │ services.real_accessibility │ ✅ App launch command sent via WebSocket: 088aa5d8 for com.google.android.youtube
+17:54:33 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:33 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:54:33 │ INFO  │ services.perception_controller │ 📸 Force screenshot requested for VLM fallback
+17:54:33 │ INFO  │ perception.selectors │ 🎯 Both screenshot and UI tree available → defaulting to HYBRID mode
+17:54:33 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=f4f60187, modality=hybrid, reason=Action: verify
+17:54:33 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=f4f60187, reason=Action: verify
+17:54:33 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=f4f60187, elements=51, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:33 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=f4f60187, pending=['f4f60187']
+17:54:33 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request f4f60187, setting result with 51 elements
+17:54:33 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:33 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=f4f60187
+17:54:33 │ INFO  │ services.screenshot_service │ 📸 Requesting screenshot: request_id=f4f60187, reason=Action: verify
+17:54:33 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=f4f60187, size=0 bytes
+17:54:33 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=f4f60187, pending=['f4f60187']
+17:54:33 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request f4f60187
+17:54:33 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:33 │ INFO  │ services.screenshot_service │ ✅ Screenshot received: request_id=f4f60187
+17:54:33 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:33 │ INFO  │ services.screenshot_service │ 📸 Screenshot empty (attempt 1), retrying after 1.5s... (consecutive empties: 5)
+17:54:35 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=f4f60187_retry, size=0 bytes
+17:54:35 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=f4f60187_retry, pending=['f4f60187_retry']
+17:54:35 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request f4f60187_retry
+17:54:35 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:35 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:35 │ WARNING │ services.screenshot_service │ 📸 5 consecutive empty screenshots - likely missing permission
+17:54:35 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:35 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:35 │ WARNING │ perception.validators │ ⚠️ Screenshot invalid in hybrid mode: Screenshot is None, falling back to UI-tree-only
+17:54:35 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=3765034c-31d4-4791-8e59-a4fa803531e4, modality=hybrid
+17:54:35 │ INFO  │ agents.coordinator │ Coordinator: subgoal verified (launch confirmed) — Open YouTube
+17:54:35 │ INFO  │ agents.coordinator │ Coordinator: waiting 3s for app to settle after launch
+17:54:35 │ DEBUG │ services.screenshot_service │ 📸 Permission dialog in progress (58.6s), waiting...
+17:54:38 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:38 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:54:38 │ INFO  │ services.perception_controller │ 📸 Force screenshot requested for VLM fallback
+17:54:38 │ INFO  │ perception.selectors │ 🎯 Both screenshot and UI tree available → defaulting to HYBRID mode
+17:54:38 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=46daa5ae, modality=hybrid, reason=Action: verify
+17:54:38 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=46daa5ae, reason=Action: verify
+17:54:39 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=46daa5ae, elements=51, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:39 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=46daa5ae, pending=['46daa5ae']
+17:54:39 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 46daa5ae, setting result with 51 elements
+17:54:39 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:39 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=46daa5ae
+17:54:39 │ INFO  │ services.screenshot_service │ 📸 Requesting screenshot: request_id=46daa5ae, reason=Action: verify
+17:54:39 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=46daa5ae, size=0 bytes
+17:54:39 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=46daa5ae, pending=['46daa5ae']
+17:54:39 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 46daa5ae
+17:54:39 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:39 │ INFO  │ services.screenshot_service │ ✅ Screenshot received: request_id=46daa5ae
+17:54:39 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:39 │ INFO  │ services.screenshot_service │ 📸 Screenshot empty (attempt 1), retrying after 1.5s... (consecutive empties: 6)
+17:54:42 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+17:54:42 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+17:54:42 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+17:54:42 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+17:54:42 │ INFO  │ api_handlers.real_accessibility_api │ Device connected: OnePlus CPH2661
+17:54:42 │ INFO  │ middleware.request_id │ [5jskp_zG] POST /accessibility/connect → 200 (3ms)
+17:54:42 │ INFO  │ utils.unified_logger │ [17:54:42.555] ℹ️ [http] POST /accessibility/connect → 200 (3ms)
+17:54:42 │ INFO  │ uvicorn.access │ 100.123.167.96:55874 - "POST /accessibility/connect HTTP/1.1" 200
+17:54:42 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=46daa5ae_retry, size=0 bytes
+17:54:42 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=46daa5ae_retry, pending=['46daa5ae_retry']
+17:54:42 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 46daa5ae_retry
+17:54:42 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:42 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:42 │ WARNING │ services.screenshot_service │ 📸 6 consecutive empty screenshots - likely missing permission
+17:54:42 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:42 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:42 │ WARNING │ perception.validators │ ⚠️ Screenshot invalid in hybrid mode: Screenshot is None, falling back to UI-tree-only
+17:54:42 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=fbfc9cc0-1955-4824-b461-d3d3309c593b, modality=hybrid
+17:54:42 │ INFO  │ agents.coordinator │ Coordinator: post-launch screen context refreshed: 
+17:54:42 │ INFO  │ agents.coordinator │ Coordinator: phase complete (open_app) → Navigate to YouTube homepage
+17:54:42 │ INFO  │ services.task_progress │ ✅ Step 1/2 complete
+17:54:42 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:42 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:54:42 │ INFO  │ services.perception_controller │ 📸 Force screenshot requested for VLM fallback
+17:54:42 │ INFO  │ perception.selectors │ 🎯 Both screenshot and UI tree available → defaulting to HYBRID mode
+17:54:42 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=d0a2c3c5, modality=hybrid, reason=Action: verify
+17:54:42 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=d0a2c3c5, reason=Action: verify
+17:54:42 │ INFO  │ services.screenshot_service │ 📸 Requesting screen capture permission from Android...
+17:54:42 │ INFO  │ services.real_accessibility │ 📸 Screen capture permission request sent: command_id=503c8205
+17:54:42 │ INFO  │ services.screenshot_service │ 📸 Permission request sent! User should see a dialog on their device. Tap 'Start now' or 'Allow' to enable screen capture.
+17:54:42 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+17:54:42 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+17:54:42 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+17:54:42 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+17:54:42 │ INFO  │ api_handlers.real_accessibility_api │ Device connected: OnePlus CPH2661
+17:54:42 │ INFO  │ middleware.request_id │ [Q8F8c_0P] POST /accessibility/connect → 200 (2ms)
+17:54:42 │ INFO  │ utils.unified_logger │ [17:54:42.911] ℹ️ [http] POST /accessibility/connect → 200 (2ms)
+17:54:42 │ INFO  │ uvicorn.access │ 100.123.167.96:55890 - "POST /accessibility/connect HTTP/1.1" 200
+17:54:42 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=d0a2c3c5, elements=44, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:42 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=d0a2c3c5, pending=['d0a2c3c5']
+17:54:42 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request d0a2c3c5, setting result with 44 elements
+17:54:42 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:42 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=d0a2c3c5
+17:54:42 │ INFO  │ services.screenshot_service │ 📸 Requesting screenshot: request_id=d0a2c3c5, reason=Action: verify
+17:54:43 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=d0a2c3c5, size=0 bytes
+17:54:43 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=d0a2c3c5, pending=['d0a2c3c5']
+17:54:43 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request d0a2c3c5
+17:54:43 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:43 │ INFO  │ services.screenshot_service │ ✅ Screenshot received: request_id=d0a2c3c5
+17:54:43 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:43 │ INFO  │ services.screenshot_service │ 📸 Screenshot empty (attempt 1), retrying after 1.5s... (consecutive empties: 7)
+17:54:44 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+17:54:44 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+17:54:44 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+17:54:44 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+17:54:44 │ INFO  │ api_handlers.real_accessibility_api │ Device connected: OnePlus CPH2661
+17:54:44 │ INFO  │ middleware.request_id │ [3lsjt8W1] POST /accessibility/connect → 200 (2ms)
+17:54:44 │ INFO  │ utils.unified_logger │ [17:54:44.609] ℹ️ [http] POST /accessibility/connect → 200 (2ms)
+17:54:44 │ INFO  │ uvicorn.access │ 100.123.167.96:55896 - "POST /accessibility/connect HTTP/1.1" 200
+17:54:45 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+17:54:45 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+17:54:45 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+17:54:45 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+17:54:45 │ INFO  │ api_handlers.real_accessibility_api │ Device connected: OnePlus CPH2661
+17:54:45 │ INFO  │ middleware.request_id │ [glDQ94BX] POST /accessibility/connect → 200 (2ms)
+17:54:45 │ INFO  │ utils.unified_logger │ [17:54:45.922] ℹ️ [http] POST /accessibility/connect → 200 (2ms)
+17:54:45 │ INFO  │ uvicorn.access │ 100.123.167.96:55904 - "POST /accessibility/connect HTTP/1.1" 200
+17:54:46 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=d0a2c3c5_retry, size=0 bytes
+17:54:46 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=d0a2c3c5_retry, pending=['d0a2c3c5_retry']
+17:54:46 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request d0a2c3c5_retry
+17:54:46 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:46 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:46 │ WARNING │ services.screenshot_service │ 📸 7 consecutive empty screenshots - likely missing permission
+17:54:46 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:46 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:46 │ WARNING │ perception.validators │ ⚠️ Screenshot invalid in hybrid mode: Screenshot is None, falling back to UI-tree-only
+17:54:46 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=af42fee1-3a45-4ef3-90bd-1d804c2f5c40, modality=hybrid
+17:54:46 │ INFO  │ services.task_progress │ 🤖 Agent status: Reactive: Generating next step for phase: Navigate to YouTub...
+17:54:46 │ INFO  │ services.llm │ Running LLM with provider: groq, model: meta-llama/llama-4-scout-17b-16e-instruct
+17:54:46 │ DEBUG │ services.screenshot_service │ 📸 Permission dialog in progress (3.5s), waiting...
+17:54:46 │ INFO  │ services.llm │ 📊 LLM Token Usage - Prompt: 4218, Completion: 138, Total: 4356
+17:54:46 │ DEBUG │ utils.token_tracker │ 📊 Tracked: llm_service (llm/groq) - 4356 tokens
+17:54:46 │ INFO  │ services.command_logger │ 🤖 Logged LLM call #3: unknown via groq
+17:54:46 │ INFO  │ utils.unified_logger │ [17:54:46.773] ℹ️ [llm] LLM call #3: meta-llama/llama-4-scout-17b-16e-instruct
+  🔖 Trace: text_1773577468898
+17:54:46 │ DEBUG │ services.llm │ LLM response generated successfully using groq
+17:54:46 │ INFO  │ services.reactive_step_generator │ 🧠 Thinking: ① Verify prev: None (first step). ② Blockers: No modal blockers. ③ Read UI tree: No YouTube app icon visible on home screen. ④ Decide: Launch YouTube app.
+17:54:46 │ INFO  │ services.reactive_step_generator │ 🗂️ Memory: Home screen open. No app icons match YouTube.
+17:54:46 │ INFO  │ services.reactive_step_generator │ 🦭 Reactive step [open_app] 'YouTube' (phase_complete=False, goal_complete=False, verification_passed=True)
+17:54:46 │ INFO  │ agents.coordinator │ Coordinator: subgoal 2/2 — Launch YouTube app
+17:54:46 │ INFO  │ services.task_progress │ 🤖 Agent status: Aura: [2/2] Launch YouTube app...
+17:54:46 │ DEBUG │ agents.coordinator │ Coordinator: skipping perception for no-target action 'open_app'
+17:54:46 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:46 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:54:46 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:54:46 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=e20e0d41, modality=ui_tree, reason=Action: verify
+17:54:46 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=e20e0d41, reason=Action: verify
+17:54:47 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=e20e0d41, elements=22, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:47 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=e20e0d41, pending=['e20e0d41']
+17:54:47 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request e20e0d41, setting result with 22 elements
+17:54:47 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:47 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=e20e0d41
+17:54:47 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:47 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:47 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=35b12c0d-0a49-4f89-b0e0-0eb0881ea6ad, modality=ui_tree
+17:54:47 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:54:47 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:54:47 │ INFO  │ services.real_accessibility │ 🚀 Sending app launch command via WebSocket: com.google.android.youtube
+17:54:47 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:54:47 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:54:47 │ INFO  │ services.real_accessibility │ Using 2 package candidates for 'youtube' from inventory
+17:54:47 │ INFO  │ services.real_accessibility │ ✅ App launch command sent via WebSocket: 4cf13bd2 for com.google.android.youtube
+17:54:50 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:50 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:54:50 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:54:50 │ INFO  │ services.perception_controller │ 📸 Force screenshot requested for VLM fallback
+17:54:50 │ INFO  │ perception.selectors │ 🎯 Both screenshot and UI tree available → defaulting to HYBRID mode
+17:54:50 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=6e3bb2aa, modality=hybrid, reason=Action: verify
+17:54:50 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=6e3bb2aa, reason=Action: verify
+17:54:50 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=6e3bb2aa, elements=13, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:50 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=6e3bb2aa, pending=['6e3bb2aa']
+17:54:50 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 6e3bb2aa, setting result with 13 elements
+17:54:50 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:50 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=6e3bb2aa
+17:54:50 │ INFO  │ services.screenshot_service │ 📸 Requesting screenshot: request_id=6e3bb2aa, reason=Action: verify
+17:54:50 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=6e3bb2aa, size=0 bytes
+17:54:50 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=6e3bb2aa, pending=['6e3bb2aa']
+17:54:50 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 6e3bb2aa
+17:54:50 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:50 │ INFO  │ services.screenshot_service │ ✅ Screenshot received: request_id=6e3bb2aa
+17:54:50 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:50 │ INFO  │ services.screenshot_service │ 📸 Screenshot empty (attempt 1), retrying after 1.5s... (consecutive empties: 8)
+17:54:50 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+17:54:50 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+17:54:50 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+17:54:50 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+17:54:50 │ INFO  │ api_handlers.real_accessibility_api │ Device connected: OnePlus CPH2661
+17:54:50 │ INFO  │ middleware.request_id │ [mdCr6f23] POST /accessibility/connect → 200 (3ms)
+17:54:50 │ INFO  │ utils.unified_logger │ [17:54:50.892] ℹ️ [http] POST /accessibility/connect → 200 (3ms)
+17:54:50 │ INFO  │ uvicorn.access │ 100.123.167.96:39576 - "POST /accessibility/connect HTTP/1.1" 200
+17:54:53 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=6e3bb2aa_retry, size=0 bytes
+17:54:53 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=6e3bb2aa_retry, pending=['6e3bb2aa_retry']
+17:54:53 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 6e3bb2aa_retry
+17:54:53 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:53 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:53 │ WARNING │ services.screenshot_service │ 📸 8 consecutive empty screenshots - likely missing permission
+17:54:53 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:54:53 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:54:53 │ WARNING │ perception.validators │ ⚠️ Screenshot invalid in hybrid mode: Screenshot is None, falling back to UI-tree-only
+17:54:53 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=ab8bcdd6-13b0-4032-91f5-245c488e524e, modality=hybrid
+17:54:53 │ INFO  │ agents.coordinator │ Coordinator: subgoal verified (launch confirmed) — Launch YouTube app
+17:54:53 │ INFO  │ agents.coordinator │ Coordinator: waiting 3s for app to settle after launch
+17:54:53 │ DEBUG │ services.screenshot_service │ 📸 Permission dialog in progress (10.5s), waiting...
+17:54:56 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:54:56 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:54:56 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:54:56 │ INFO  │ services.perception_controller │ 📸 Force screenshot requested for VLM fallback
+17:54:56 │ INFO  │ perception.selectors │ 🎯 Both screenshot and UI tree available → defaulting to HYBRID mode
+17:54:56 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=8317b2ae, modality=hybrid, reason=Action: verify
+17:54:56 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=8317b2ae, reason=Action: verify
+17:54:57 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=8317b2ae, elements=67, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:54:57 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=8317b2ae, pending=['8317b2ae']
+17:54:57 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 8317b2ae, setting result with 67 elements
+17:54:57 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:54:57 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=8317b2ae
+17:54:57 │ INFO  │ services.screenshot_service │ 📸 Requesting screenshot: request_id=8317b2ae, reason=Action: verify
+17:54:57 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=8317b2ae, size=0 bytes
+17:54:57 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=8317b2ae, pending=['8317b2ae']
+17:54:57 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 8317b2ae
+17:54:57 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:54:57 │ INFO  │ services.screenshot_service │ ✅ Screenshot received: request_id=8317b2ae
+17:54:57 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:54:57 │ INFO  │ services.screenshot_service │ 📸 Screenshot empty (attempt 1), retrying after 1.5s... (consecutive empties: 9)
+17:54:59 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+17:54:59 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+17:54:59 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+17:54:59 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+17:54:59 │ INFO  │ api_handlers.real_accessibility_api │ Device connected: OnePlus CPH2661
+17:54:59 │ INFO  │ middleware.request_id │ [ISi_quFD] POST /accessibility/connect → 200 (3ms)
+17:54:59 │ INFO  │ utils.unified_logger │ [17:54:59.379] ℹ️ [http] POST /accessibility/connect → 200 (3ms)
+17:54:59 │ INFO  │ uvicorn.access │ 100.123.167.96:53734 - "POST /accessibility/connect HTTP/1.1" 200
+17:55:00 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=8317b2ae_retry, size=0 bytes
+17:55:00 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=8317b2ae_retry, pending=['8317b2ae_retry']
+17:55:00 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 8317b2ae_retry
+17:55:00 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:55:00 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:55:00 │ WARNING │ services.screenshot_service │ 📸 9 consecutive empty screenshots - likely missing permission
+17:55:00 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:55:00 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:55:00 │ WARNING │ perception.validators │ ⚠️ Screenshot invalid in hybrid mode: Screenshot is None, falling back to UI-tree-only
+17:55:00 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=77e7d66d-6769-45f8-af58-058a19ce8d4c, modality=hybrid
+17:55:00 │ INFO  │ agents.coordinator │ Coordinator: post-launch screen context refreshed: •; AURA Assistant; Just now
+17:55:00 │ INFO  │ services.task_progress │ ✅ Step 2/2 complete
+17:55:00 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:55:00 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:55:00 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:55:00 │ INFO  │ services.perception_controller │ 📸 Force screenshot requested for VLM fallback
+17:55:00 │ INFO  │ perception.selectors │ 🎯 Both screenshot and UI tree available → defaulting to HYBRID mode
+17:55:00 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=0c10df0d, modality=hybrid, reason=Action: verify
+17:55:00 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=0c10df0d, reason=Action: verify
+17:55:00 │ DEBUG │ services.screenshot_service │ 📸 Permission dialog in progress (17.5s), waiting...
+17:55:00 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=0c10df0d, elements=22, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:55:00 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=0c10df0d, pending=['0c10df0d']
+17:55:00 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 0c10df0d, setting result with 22 elements
+17:55:00 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:55:00 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=0c10df0d
+17:55:00 │ INFO  │ services.screenshot_service │ 📸 Requesting screenshot: request_id=0c10df0d, reason=Action: verify
+17:55:00 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=0c10df0d, size=0 bytes
+17:55:00 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=0c10df0d, pending=['0c10df0d']
+17:55:00 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 0c10df0d
+17:55:00 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:55:00 │ INFO  │ services.screenshot_service │ ✅ Screenshot received: request_id=0c10df0d
+17:55:00 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:55:00 │ INFO  │ services.screenshot_service │ 📸 Screenshot empty (attempt 1), retrying after 1.5s... (consecutive empties: 10)
+17:55:01 │ INFO  │ adk_streaming_server │ [/ws/live] cancel_task received for session e0abca79-a6a7-4e46-a6ad-bcb8004a5946
+17:55:03 │ INFO  │ api_handlers.websocket_router │ 📸 Received screenshot response: request_id=0c10df0d_retry, size=0 bytes
+17:55:03 │ INFO  │ services.screenshot_service │ 📥 Received screenshot response: request_id=0c10df0d_retry, pending=['0c10df0d_retry']
+17:55:03 │ INFO  │ services.screenshot_service │ ✅ Matched screenshot request 0c10df0d_retry
+17:55:03 │ INFO  │ api_handlers.websocket_router │ 📸 Screenshot response handled: True
+17:55:03 │ WARNING │ services.screenshot_service │ ⚠️ Screenshot data is empty (no frames available or permission missing)
+17:55:03 │ WARNING │ services.screenshot_service │ 📸 10 consecutive empty screenshots - likely missing permission
+17:55:03 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:55:03 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:55:03 │ WARNING │ perception.validators │ ⚠️ Screenshot invalid in hybrid mode: Screenshot is None, falling back to UI-tree-only
+17:55:03 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=210123b2-76da-4031-b8ec-c5da70348fc7, modality=hybrid
+17:55:03 │ INFO  │ services.task_progress │ 🤖 Agent status: Reactive: Generating next step for phase: Navigate to YouTub...
+17:55:03 │ INFO  │ services.llm │ Running LLM with provider: groq, model: meta-llama/llama-4-scout-17b-16e-instruct
+17:55:03 │ DEBUG │ services.screenshot_service │ 📸 Permission dialog in progress (20.9s), waiting...
+17:55:04 │ INFO  │ services.llm │ 📊 LLM Token Usage - Prompt: 3597, Completion: 172, Total: 3769
+17:55:04 │ DEBUG │ utils.token_tracker │ 📊 Tracked: llm_service (llm/groq) - 3769 tokens
+17:55:04 │ INFO  │ services.command_logger │ 🤖 Logged LLM call #4: unknown via groq
+17:55:04 │ INFO  │ utils.unified_logger │ [17:55:04.236] ℹ️ [llm] LLM call #4: meta-llama/llama-4-scout-17b-16e-instruct
+  🔖 Trace: text_1773577468898
+17:55:04 │ DEBUG │ services.llm │ LLM response generated successfully using groq
+17:55:04 │ INFO  │ services.reactive_step_generator │ 🧠 Thinking: ① Prev: None (first step). ② No blockers. ③ UI tree: No YouTube app icon visible directly. [11]-[14] show Gmail, Photos, Brave, WhatsApp icons — not YouTube. ④ Tap open_app YouTube to launch it direct
+17:55:04 │ INFO  │ services.reactive_step_generator │ 🗂️ Memory: On home screen. Need to launch YouTube app.
+17:55:04 │ INFO  │ services.reactive_step_generator │ 🦭 Reactive step [open_app] 'YouTube' (phase_complete=False, goal_complete=False, verification_passed=True)
+17:55:04 │ INFO  │ agents.coordinator │ Coordinator: subgoal 3/3 — Launch YouTube app
+17:55:04 │ INFO  │ services.task_progress │ 🤖 Agent status: Aura: [3/3] Launch YouTube app...
+17:55:04 │ DEBUG │ agents.coordinator │ Coordinator: skipping perception for no-target action 'open_app'
+17:55:04 │ DEBUG │ services.perception_controller │ 📊 Perception availability check: device_connected=True, ws_available=True, ui_tree_available=True
+17:55:04 │ INFO  │ services.perception_controller │ 📸 Permission dialog in progress - skipping screenshot capture
+17:55:04 │ WARNING │ services.perception_controller │ 📸 Screenshot capture recently failed (empty). Treating as unavailable for ~15s (likely missing screen capture permission).
+17:55:04 │ INFO  │ services.perception_controller │ 🎯 Perception request: request_id=7c31df27, modality=ui_tree, reason=Action: verify
+17:55:04 │ INFO  │ services.ui_tree_service │ 📋 Requesting UI tree: request_id=7c31df27, reason=Action: verify
+17:55:04 │ INFO  │ api_handlers.websocket_router │ 📋 Received UI tree response: request_id=7c31df27, elements=35, keys=['validation_failed', 'elements_count', 'clickable_count', 'scrollable_count', 'editable_count']
+17:55:04 │ INFO  │ services.ui_tree_service │ 📥 Received UI tree response: request_id=7c31df27, pending=['7c31df27']
+17:55:04 │ INFO  │ services.ui_tree_service │ ✅ Matched pending request 7c31df27, setting result with 35 elements
+17:55:04 │ INFO  │ api_handlers.websocket_router │ 📋 UI tree response handled: True
+17:55:04 │ INFO  │ services.ui_tree_service │ ✅ UI tree received: request_id=7c31df27
+17:55:04 │ INFO  │ services.perception_controller │ 📐 Screen meta from UI tree root: 1240x2772
+17:55:04 │ DEBUG │ services.perception_controller │ ⏭️ Skipping screen description (skip_description=True)
+17:55:04 │ INFO  │ services.perception_controller │ ✅ Perception bundle created: snapshot_id=912a52dd-5ddd-4aaf-a9f1-344234c3f031, modality=ui_tree
+17:55:04 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:55:04 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:55:04 │ INFO  │ services.real_accessibility │ 🚀 Sending app launch command via WebSocket: com.google.android.youtube
+17:55:04 │ DEBUG │ utils.app_inventory_utils │ Using first available device: OnePlus CPH2661
+17:55:04 │ INFO  │ utils.app_inventory_utils │ App 'youtube' matched: [(1.0, 'YouTube'), (0.85, 'HeyTap Cloud')]
+17:55:04 │ INFO  │ services.real_accessibility │ Using 2 package candidates for 'youtube' from inventory
+17:55:04 │ INFO  │ services.real_accessibility │ ✅ App launch command sent via WebSocket: bc2a5c6a for com.google.android.youtube
+17:55:05 │ INFO  │ adk_streaming_server │ [/ws/live] cancel_task received for session e0abca79-a6a7-4e46-a6ad-bcb8004a5946
+17:55:07 │ INFO  │ adk_streaming_server │ [/ws/live] Client disconnected: e0abca79-a6a7-4e46-a6ad-bcb8004a5946
+17:55:07 │ INFO  │ uvicorn.error │ connection closed
+17:55:07 │ INFO  │ uvicorn.error │ connection closed
+17:55:07 │ ERROR │ api_handlers.websocket_router │ Conversation error occurred: Cannot call "receive" once a disconnect message has been received.
+Traceback (most recent call last):
+  File "D:\PROJECTS\Gemini Live Hackathon\aura-live\api_handlers\websocket_router.py", line 889, in websocket_conversation
+    message = await asyncio.wait_for(websocket.receive(), timeout=10.0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINESHKUMAR C\AppData\Local\Programs\Python\Python312\Lib\asyncio\tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "C:\Users\DINESHKUMAR C\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 57, in receive
+    raise RuntimeError('Cannot call "receive" once a disconnect message has been received.')
+RuntimeError: Cannot call "receive" once a disconnect message has been received.
+17:55:07 │ INFO  │ services.real_accessibility │ 🔌 WebSocket disconnected
+17:55:07 │ INFO  │ services.real_accessibility │ 🔌 Device disconnected: OnePlus CPH2661
+17:55:07 │ INFO  │ services.visual_feedback │ ✨ Visual feedback WebSocket disconnected
+17:55:07 │ INFO  │ api_handlers.websocket_router │ 🔌 Device disconnected (WebSocket closed)
+17:55:07 │ INFO  │ api_handlers.websocket_router │ Conversation WebSocket closed
+17:55:07 │ INFO  │ uvicorn.error │ connection closed
+17:55:07 │ INFO  │ uvicorn.error │ connection closed
+17:55:07 │ INFO  │ adk_streaming_server │ [/ws/live] Session closed: e0abca79-a6a7-4e46-a6ad-bcb8004a5946
+17:57:02 │ INFO  │ uvicorn.error │ Shutting down
+17:57:02 │ INFO  │ uvicorn.error │ Shutting down
+17:57:02 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+17:57:02 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+17:57:02 │ INFO  │ main     │ Shutting down AURA backend server
+17:57:02 │ INFO  │ main     │ Device disconnected on shutdown
+17:57:02 │ INFO  │ uvicorn.error │ Application shutdown complete.
+17:57:02 │ INFO  │ uvicorn.error │ Application shutdown complete.
+17:57:02 │ INFO  │ uvicorn.error │ Finished server process [19672]
+17:57:02 │ INFO  │ uvicorn.error │ Finished server process [19672]

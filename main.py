@@ -21,7 +21,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from api import config_api, device, graph, health, tasks, websocket, workflow  # noqa: E402
+from api import config_api, demo, device, graph, health, tasks, websocket, workflow  # noqa: E402
 from config.settings import get_settings  # noqa: E402
 from constants import API_PREFIX, REQUEST_ID_HEADER  # noqa: E402
 from exceptions.handlers import register_exception_handlers  # noqa: E402
@@ -108,6 +108,14 @@ async def lifespan(app: FastAPI):
         app.state.graph_app = graph_app
         logger.info("LangGraph application compiled")
 
+        # Register compiled graph with ADK agent so FunctionTool calls work
+        try:
+            from adk_agent import set_compiled_graph
+            set_compiled_graph(graph_app)
+            logger.info("ADK agent: compiled graph registered")
+        except Exception as _adk_err:
+            logger.warning(f"ADK agent graph registration skipped: {_adk_err}")
+
         # Initialize accessibility service (singleton, already created)
         from services.real_accessibility import real_accessibility_service
 
@@ -192,6 +200,7 @@ app.include_router(tasks.router, prefix=API_PREFIX, tags=["Tasks"])
 app.include_router(device.router, prefix=API_PREFIX, tags=["Device"])
 app.include_router(config_api.router, prefix=API_PREFIX, tags=["Config"])
 app.include_router(workflow.router)  # Already has prefix
+app.include_router(demo.router)  # /demo judging dashboard
 app.include_router(websocket.router, tags=["WebSocket"])
 
 # Debug router — only available in development (exposes internal state)
@@ -253,6 +262,29 @@ except ImportError as e:
 
 # Register exception handlers
 register_exception_handlers(app)
+
+# ─── Gemini Live bidirectional streaming endpoint ─────────────────────────────
+# Only registered when GEMINI_LIVE_ENABLED=true.  Coexists with /ws/audio and
+# /ws/device — does NOT replace them.
+if settings.gemini_live_enabled:
+    from adk_streaming_server import handle_live_websocket
+    from fastapi import WebSocket as _WS
+
+    @app.websocket("/ws/live")
+    async def live_websocket_endpoint(
+        websocket: _WS,
+        session_id: str = "default",
+    ):
+        """Gemini Live bidirectional audio + vision session endpoint."""
+        await handle_live_websocket(websocket, session_id)
+
+    logger.info("Gemini Live /ws/live endpoint registered")
+else:
+    logger.info(
+        "Gemini Live /ws/live endpoint disabled "
+        "(set GEMINI_LIVE_ENABLED=true to enable)"
+    )
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 @app.get("/")

@@ -146,9 +146,16 @@ class ResponderAgent:
 
         # Prior conversation turns for multi-turn grounding
         if conversation_history:
-            recent_turns = conversation_history[-3:]
-            turn_snippets = [m.get("content", "")[:60] for m in recent_turns]
-            parts.append(f"Prior turns: {turn_snippets}")
+            if isinstance(conversation_history, str):
+                # format_history() returns a plain string — include it directly
+                parts.append(f"Prior turns:\n{conversation_history[-500:]}")
+            else:
+                recent_turns = conversation_history[-3:]
+                turn_snippets = [
+                    m.get("content", "")[:60] if isinstance(m, dict) else str(m)[:60]
+                    for m in recent_turns
+                ]
+                parts.append(f"Prior turns: {turn_snippets}")
 
         # Emotion guidance
         if emotion and emotion in EMOTIONAL_RESPONSES:

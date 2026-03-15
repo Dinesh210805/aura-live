@@ -53,3 +53,19 @@ pytest-asyncio==0.21.1
 # Utilities
 typing-extensions==4.8.0
 python-multipart==0.0.6
+
+# ──────────────────────────────────────────────────────────────
+# Google Cloud Platform — Gemini Live Agent Challenge (required)
+# ──────────────────────────────────────────────────────────────
+# ADK (Agent Development Kit) — satisfies "use Google ADK" requirement
+google-adk>=1.0.0
+
+# GenAI SDK — unified Gemini API client (already listed above as google-genai)
+# google-genai is pinned above; listed here for clarity
+# google-genai>=1.0.0  ← already present
+
+# Cloud Storage — execution log uploads for judges
+google-cloud-storage>=2.10.0
+
+# Cloud AI Platform / Vertex AI (optional second GCP service for scoring)
+google-cloud-aiplatform>=1.50.0

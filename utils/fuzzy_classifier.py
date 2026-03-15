@@ -29,6 +29,7 @@ except ImportError:
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+CLASSIFIER_MODEL_TIMEOUT_S = 8.0
 
 
 class RequiredAgents(Enum):
@@ -235,7 +236,18 @@ Respond ONLY with valid JSON:
                 settings = Settings()
                 model = settings.default_llm_model
 
-                response = self.groq_client.chat.completions.create(
+                request_client = self.groq_client
+                if hasattr(self.groq_client, "with_options"):
+                    try:
+                        request_client = self.groq_client.with_options(
+                            timeout=CLASSIFIER_MODEL_TIMEOUT_S
+                        )
+                    except Exception as timeout_opt_error:
+                        logger.debug(
+                            f"Could not apply Groq timeout options: {timeout_opt_error}"
+                        )
+
+                response = request_client.chat.completions.create(
                     model=model,
                     messages=[
                         {"role": "system", "content": self.classification_prompt},
@@ -259,7 +271,10 @@ Respond ONLY with valid JSON:
         if self.gemini_model:
             try:
                 full_prompt = f"{self.classification_prompt}\n\nUser Request:\n{user_message}\n\nRespond with JSON only."
-                response = self.gemini_model.generate_content(full_prompt)
+                response = self.gemini_model.generate_content(
+                    full_prompt,
+                    request_options={"timeout": CLASSIFIER_MODEL_TIMEOUT_S},
+                )
 
                 # Extract JSON from response
                 text = response.text.strip()

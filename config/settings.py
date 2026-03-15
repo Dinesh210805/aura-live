@@ -69,6 +69,11 @@ class Settings(BaseSettings):
         env="LANGCHAIN_PROJECT",
         description="LangChain Smith project name",
     )
+    langchain_project_id: Optional[str] = Field(
+        default=None,
+        env="LANGCHAIN_PROJECT_ID",
+        description="LangChain Smith project UUID (optional, used for public trace links)",
+    )
 
     # Default Provider Selection (Tri-Provider Architecture)
     default_llm_provider: Literal["groq", "gemini", "nvidia"] = Field(
@@ -77,9 +82,9 @@ class Settings(BaseSettings):
         description="Default LLM provider (fast tasks)",
     )
     default_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
-        default="groq",
+        default="gemini",
         env="DEFAULT_VLM_PROVIDER",
-        description="Default VLM provider (vision tasks — Groq Llama 4 Maverick primary)",
+        description="Default VLM provider (vision tasks — Gemini 2.5 Flash primary per competition requirement)",
     )
     default_stt_provider: Literal["groq", "gemini"] = Field(
         default="groq", env="DEFAULT_STT_PROVIDER", description="Default STT provider"
@@ -151,25 +156,25 @@ class Settings(BaseSettings):
         description="Fallback LLM model for low-confidence intent parsing",
     )
     default_vlm_model: str = Field(
-        default="meta-llama/llama-4-scout-17b-16e-instruct",
+        default="gemini-2.5-flash",
         env="DEFAULT_VLM_MODEL",
-        description="Default VLM model (vision/UI analysis via Groq Scout - 750 tps)",
+        description="Default VLM model (Gemini 2.5 Flash primary per competition requirement)",
     )
     vlm_secondary_model: str = Field(
         default="meta-llama/llama-4-scout-17b-16e-instruct",
         env="VLM_SECONDARY_MODEL",
         description="Secondary VLM model (Scout 16 experts, higher quality fallback)",
     )
-    # Fallback VLM model for the non-default provider
+    # Fallback VLM model for the non-default provider (Groq when Gemini is primary)
     fallback_vlm_model: str = Field(
-        default="gemini-2.5-flash",
+        default="meta-llama/llama-4-scout-17b-16e-instruct",
         env="FALLBACK_VLM_MODEL",
-        description="Fallback VLM model (Gemini 2.5 Flash when Groq fails)",
+        description="Fallback VLM model (Groq Llama 4 Scout when Gemini fails)",
     )
     fallback_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
-        default="gemini",
+        default="groq",
         env="FALLBACK_VLM_PROVIDER",
-        description="Provider for fallback VLM model",
+        description="Provider for fallback VLM model (Groq when Gemini is primary)",
     )
     default_stt_model: str = Field(
         default="whisper-large-v3-turbo",
@@ -312,6 +317,97 @@ class Settings(BaseSettings):
     )
     environment: Literal["development", "production"] = Field(
         default="development", env="ENVIRONMENT", description="Application environment"
+    )
+
+    # ------------------------------------------------------------------ #
+    # Google Cloud Platform — required for Gemini Live Agent Challenge   #
+    # ------------------------------------------------------------------ #
+    # GOOGLE_API_KEY is the canonical key for the google-genai SDK.
+    # GEMINI_API_KEY (above) is kept for backward-compatibility with the
+    # existing Groq-fallback path; both are accepted.
+    google_api_key: str = Field(
+        default="",
+        env="GOOGLE_API_KEY",
+        description="Google AI Studio API key for GenAI SDK / ADK (competition requirement)",
+    )
+    google_cloud_project: str = Field(
+        default="",
+        env="GOOGLE_CLOUD_PROJECT",
+        description="GCP project ID (Cloud Run deployment + optional Vertex AI routing)",
+    )
+    google_cloud_region: str = Field(
+        default="us-central1",
+        env="GOOGLE_CLOUD_REGION",
+        description="GCP region for Cloud Run and Vertex AI",
+    )
+
+    # Cloud Storage — execution log upload
+    gcs_logs_bucket: str = Field(
+        default="aura-execution-logs",
+        env="GCS_LOGS_BUCKET",
+        description="GCS bucket name for uploading HTML execution logs",
+    )
+    gcs_logs_enabled: bool = Field(
+        default=False,
+        env="GCS_LOGS_ENABLED",
+        description="Enable automatic upload of execution logs to Cloud Storage",
+    )
+
+    # ADK application name
+    adk_app_name: str = Field(
+        default="AURA",
+        env="ADK_APP_NAME",
+        description="Application name registered with Google ADK session service",
+    )
+
+    # Gemini Live bidirectional audio+vision streaming
+    gemini_live_model: str = Field(
+        default="gemini-2.0-flash-live-001",
+        env="GEMINI_LIVE_MODEL",
+        description="Gemini Live model for bidirectional audio+vision streaming",
+    )
+    gemini_live_enabled: bool = Field(
+        default=False,
+        env="GEMINI_LIVE_ENABLED",
+        description="Enable /ws/live endpoint with Gemini Live bidi streaming (Phase 2)",
+    )
+
+    # Vertex AI routing (optional second GCP service for scoring)
+    use_vertex_ai: bool = Field(
+        default=False,
+        env="USE_VERTEX_AI",
+        description="Route VLM calls through Vertex AI instead of AI Studio",
+    )
+
+    # LangGraph execution limits
+    graph_recursion_limit: int = Field(
+        default=100,
+        env="GRAPH_RECURSION_LIMIT",
+        description="LangGraph max node transitions per run. Formula: 4 nodes/step × 10 steps × 2.5x retry buffer",
+    )
+    graph_timeout_seconds: float = Field(
+        default=120.0,
+        env="GRAPH_TIMEOUT_SECONDS",
+        description="Hard timeout for LangGraph execution per user command",
+    )
+
+    # Perception tuning
+    ui_tree_max_retries: int = Field(
+        default=1,
+        env="UI_TREE_MAX_RETRIES",
+        description="Max retries for empty UI tree before escalating to VISION",
+    )
+    ui_tree_retry_delay_seconds: float = Field(
+        default=0.3,
+        env="UI_TREE_RETRY_DELAY_SECONDS",
+        description="Delay between UI tree retries in seconds",
+    )
+
+    # Reactive step generator history window
+    step_history_window: int = Field(
+        default=6,
+        env="STEP_HISTORY_WINDOW",
+        description="Number of recent steps to show in full; older steps are summarized",
     )
 
     class Config:

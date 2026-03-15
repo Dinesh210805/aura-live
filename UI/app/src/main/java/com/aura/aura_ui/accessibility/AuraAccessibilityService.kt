@@ -128,8 +128,8 @@ class AuraAccessibilityService : AccessibilityService() {
         }
     }
 
-    private lateinit var screenCaptureManager: ScreenCaptureManager
-    private lateinit var uiTreeExtractor: UITreeExtractor
+    internal lateinit var screenCaptureManager: ScreenCaptureManager
+    internal lateinit var uiTreeExtractor: UITreeExtractor
     private lateinit var backendCommunicator: BackendCommunicator
     // Command polling removed - all commands now use WebSocket
 

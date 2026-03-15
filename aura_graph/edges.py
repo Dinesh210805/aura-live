@@ -21,6 +21,11 @@ from .state import TaskState
 
 logger = get_logger(__name__)
 
+# FIXED: FIX-012 — cache settings at import time to avoid Pydantic overhead
+# on every graph transition. Settings are read-only after startup.
+from config.settings import get_settings as _get_settings
+_SETTINGS = _get_settings()
+
 
 def route_from_start(state: TaskState) -> Literal["stt", "parse_intent", "error_handler"]:
     """
@@ -127,18 +132,16 @@ def should_continue_after_intent_parsing(
     # Gate: low-confidence or general_interaction → always use full planner via coordinator
     # This prevents the single-subgoal shortcut from mishandling ambiguous/multi-step commands
     if confidence < 0.6 or action == "general_interaction":
-        from config.settings import get_settings
-        if get_settings().use_universal_agent:
+        if _SETTINGS.use_universal_agent:
             logger.info(f"Low confidence ({confidence}) or general_interaction — routing to coordinator for full planning")
             return "coordinator"
-    
+
     # INTELLIGENT ROUTING: Check for complex parameters first
     intent_params = intent.get("parameters", {})
     has_complex_params = any(key in intent_params for key in ["goal", "target_section", "type", "content_type", "visual_reference"])
-    
+
     # Check if UniversalAgent is enabled for complex goal routing
-    from config.settings import get_settings
-    settings = get_settings()
+    settings = _SETTINGS
     use_universal_agent = settings.use_universal_agent
     
     # MULTI-STEP DETECTION: Commands with "and" typically need multiple actions
@@ -245,10 +248,7 @@ def should_continue_after_perception(
         return "speak"
 
     # Check if UniversalAgent migration is enabled
-    from config.settings import get_settings
-    settings = get_settings()
-    
-    if settings.use_universal_agent:
+    if _SETTINGS.use_universal_agent:
         # Route coordinate-requiring actions through UniversalAgent
         if action in COORDINATE_REQUIRING_ACTIONS:
             logger.info(f"🤖 Coordinator: routing '{action}' (session={session_id})")

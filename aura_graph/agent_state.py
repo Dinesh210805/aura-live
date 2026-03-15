@@ -5,9 +5,12 @@ This module provides the core state model for long-horizon task execution,
 including goal/subgoal hierarchies, retry strategies, and abort conditions.
 """
 
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 class RetryStrategy(Enum):
@@ -177,24 +180,33 @@ class Goal:
 class AgentState:
     """
     Persistent state for goal-driven execution.
-    
+
     This tracks the agent's progress through a goal hierarchy,
     retry attempts, and UI state signatures for loop detection.
     """
     goal: Optional[Goal] = None
-    
+
     # UI state tracking for loop detection
     ui_signature_history: list[str] = field(default_factory=list)
     last_ui_signature: Optional[str] = None
-    
+
     # Retry tracking
     total_attempts: int = 0
     consecutive_same_screen: int = 0
-    
+
     # Safety limits
     max_total_attempts: int = 15
     max_same_screen: int = 3
     max_subgoal_attempts: int = 5
+
+    # Current screen identity (populated from UI tree)
+    # FIXED: FIX-003 — added for target_screen_reached validation
+    current_package_name: str = ""
+    current_activity_name: str = ""
+
+    # Scroll tracking for dynamic direction (FIX-010)
+    scroll_attempts_for_current_target: int = 0
+    scroll_target: str = ""
 
     def record_ui_signature(self, signature: str) -> None:
         """Record a UI signature and update loop detection counters."""
@@ -222,6 +234,19 @@ class AgentState:
                 return AbortCondition.MAX_RETRIES_EXCEEDED
         
         return None
+
+    def reset_for_new_task(self) -> None:
+        """Reset all per-task counters. Call at start of every new user command.
+
+        # FIXED: FIX-006 — counters persisted across independent tasks, causing
+        # second command to start with depleted retry budget and abort immediately.
+        """
+        self.total_attempts = 0
+        self.consecutive_same_screen = 0
+        self.last_ui_signature = None
+        self.scroll_attempts_for_current_target = 0
+        self.scroll_target = ""
+        logger.debug("AgentState reset for new task")
 
     def reset_for_new_goal(self, goal: Goal) -> None:
         """Reset state for a new goal."""

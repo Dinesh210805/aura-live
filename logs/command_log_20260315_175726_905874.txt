@@ -1,0 +1,7 @@
+================================================================================
+AURA EXECUTION LOG  20260315_175726_905874
+Started: 2026-03-15 17:57:26
+================================================================================
+
+[WARN] 2026-03-15 17:57:27.274 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 17:57:29.931 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.

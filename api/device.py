@@ -1,9 +1,10 @@
 """Device registration endpoint."""
 
+import base64
 import time
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
 from constants import API_VERSION
 from middleware.auth import verify_api_key
@@ -104,6 +105,44 @@ async def get_device_status(request: Request) -> Dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get device status",
+        )
+
+
+@router.get("/device/screenshot")
+@limiter.limit("30/minute")
+async def get_device_screenshot(request: Request) -> Response:
+    """
+    Return the latest screenshot from the Android device as a JPEG image.
+
+    Used by the demo dashboard to display a live preview.
+    Returns the raw JPEG bytes with content-type image/jpeg,
+    or a 204 No Content if no screenshot is available yet.
+    """
+    try:
+        from services.real_accessibility import real_accessibility_service
+
+        screenshot_data = real_accessibility_service.last_screenshot
+        if screenshot_data is None:
+            return Response(status_code=204)
+
+        raw = screenshot_data.screenshot if hasattr(screenshot_data, "screenshot") else screenshot_data
+        if not raw or len(raw) < 100:
+            return Response(status_code=204)
+
+        # raw may already be bytes (JPEG) or base64-encoded string
+        if isinstance(raw, str):
+            try:
+                raw = base64.b64decode(raw)
+            except Exception:
+                return Response(status_code=204)
+
+        return Response(content=raw, media_type="image/jpeg")
+
+    except Exception as e:
+        logger.error(f"Error fetching device screenshot: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch screenshot",
         )
 
 

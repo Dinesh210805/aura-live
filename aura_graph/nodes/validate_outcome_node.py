@@ -3,6 +3,12 @@ Validate outcome node - Post-action validation for goal-driven execution.
 
 This is the CRITICAL node that closes the observation-action-validation loop.
 It checks if an action actually succeeded by comparing UI state before/after.
+
+# RETRY SYSTEM: This is retry system 2 of 3 (LangGraph validate_outcome path).
+# System 1: coordinator._handle_target_not_found() — DISABLED by FIX-007
+# System 2: THIS FILE — validate_outcome → retry_router
+# System 3: error_handler_node — catches exceptions from all systems
+# See docs/AURA_RETRY_ARCHITECTURE.md for full picture.
 """
 
 import logging
@@ -48,10 +54,22 @@ def validate_outcome_node(state: TaskState) -> dict[str, Any]:
     
     current_signature = compute_ui_signature(ui_tree)
     pre_action_signature = agent_state.last_ui_signature
-    
+
+    # FIXED: FIX-003 — populate package/activity from UI tree for target_screen_reached validation
+    if ui_tree:
+        root = ui_tree[0] if isinstance(ui_tree, list) and ui_tree else {}
+        if isinstance(root, dict):
+            pkg = root.get("packageName", "") or ""
+            if pkg:
+                agent_state.current_package_name = pkg
+            # Some trees expose activityName on the root element
+            act = root.get("activityName", "") or root.get("className", "") or ""
+            if act:
+                agent_state.current_activity_name = act
+
     # Get success criteria for this action type
     criteria = get_success_criteria(action_type)
-    
+
     # Validate based on criteria
     validation_result = _validate_against_criteria(
         criteria=criteria,
@@ -59,6 +77,7 @@ def validate_outcome_node(state: TaskState) -> dict[str, Any]:
         post_signature=current_signature,
         ui_tree=ui_tree,
         last_action=last_action,
+        agent_state=agent_state,
     )
     
     # Update agent state
@@ -136,6 +155,7 @@ def _validate_against_criteria(
     post_signature: str,
     ui_tree: dict | None,
     last_action: dict | None,
+    agent_state: Any = None,
 ) -> dict[str, Any]:
     """
     Check if action outcome matches success criteria.
@@ -186,11 +206,35 @@ def _validate_against_criteria(
             result["reason"] = f"Expected text '{criteria.text_appeared}' did not appear"
             return result
     
-    # Check for target screen (activity/package check would go here)
+    # Check for target screen — validates actual package/activity name
+    # FIXED: FIX-003 — was always "not_implemented", now validates actual package/activity
     if criteria.target_screen_reached:
-        result["details"]["target_screen_check"] = "not_implemented"
-        # Future: compare current activity with expected
-    
+        target = criteria.target_screen_reached.lower().strip()
+        current_package = getattr(agent_state, 'current_package_name', '') or ""
+        current_activity = getattr(agent_state, 'current_activity_name', '') or ""
+
+        package_match = bool(target and target in current_package.lower())
+        activity_match = bool(target and target in current_activity.lower())
+        screen_reached = package_match or activity_match
+
+        result["details"]["target_screen_check"] = {
+            "target": target,
+            "current_package": current_package,
+            "current_activity": current_activity,
+            "matched": screen_reached,
+        }
+
+        if not screen_reached:
+            result["success"] = False
+            result["reason"] = (
+                f"Target screen '{target}' not reached. "
+                f"Current: {current_package}/{current_activity}"
+            )
+            logger.warning(
+                f"target_screen_reached validation failed: target={target}, "
+                f"current={current_package}/{current_activity}"
+            )
+
     return result
 
 

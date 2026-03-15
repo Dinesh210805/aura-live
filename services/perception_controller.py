@@ -197,8 +197,11 @@ class PerceptionController:
                 
                 # RETRY LOGIC: If UI tree is empty (0 elements), wait and retry
                 # This handles transient states like screen transitions
-                max_retries = 3
-                retry_delay = 0.5  # seconds
+                # FIXED: FIX-005 — was 3 retries × 0.5s = 1.5s; now configurable, default 1 × 0.3s = 0.3s
+                from config.settings import get_settings as _get_settings
+                _perc_settings = _get_settings()
+                max_retries = _perc_settings.ui_tree_max_retries
+                retry_delay = _perc_settings.ui_tree_retry_delay_seconds
                 retry_count = 0
                 
                 while ui_tree is not None and not ui_tree.elements and retry_count < max_retries:
@@ -234,21 +237,15 @@ class PerceptionController:
             if modality in (PerceptionModality.VISION, PerceptionModality.HYBRID):
                 screenshot = await self.screenshot_service.request_screenshot(request_id, reason)
                 if screenshot is None and modality == PerceptionModality.VISION:
-                    # Non-fatal fallback: if screenshot capture fails (often missing MediaProjection permission),
-                    # degrade to UI tree so tasks can still proceed.
-                    logger.warning(
-                        "📸 Screenshot capture failed in VISION mode → falling back to UI_TREE"
+                    # FIXED: FIX-008 — do not silently fall back to UI_TREE.
+                    # Caller selected VISION because UI_TREE was insufficient for this screen.
+                    # Raise so the retry/error system can make an informed decision.
+                    from exceptions_module import PerceptionFailureError
+                    raise PerceptionFailureError(
+                        "Screenshot capture failed in VISION mode. "
+                        "Caller selected VISION for a reason — UI_TREE fallback rejected.",
+                        modality=PerceptionModality.VISION
                     )
-                    modality = PerceptionModality.UI_TREE
-                    if ui_tree is None:
-                        ui_tree = await self.ui_tree_service.request_ui_tree(
-                            request_id, "Fallback to UI tree after screenshot failure"
-                        )
-                    if ui_tree is None:
-                        raise ValueError(
-                            "Screenshot requested but capture failed (empty). "
-                            "UI tree fallback also failed. Likely missing screen capture permission or device not ready."
-                        )
 
             # Get screen metadata - prefer UI tree root bounds (most accurate)
             if ui_tree is not None:
@@ -271,7 +268,10 @@ class PerceptionController:
             elif screenshot and self.screen_vlm and modality in [PerceptionModality.VISION, PerceptionModality.HYBRID]:
                 # Check cache first using screenshot hash
                 import hashlib
-                screenshot_hash = hashlib.md5(screenshot.screenshot_base64[:1000].encode()).hexdigest()
+                # FIXED: FIX-004 — previous [:1000] only captured JPEG header, not pixel data
+                # Sample every 4th char across 32KB window to capture pixel variation
+                _hash_sample = screenshot.screenshot_base64[::4][:8000]
+                screenshot_hash = hashlib.sha256(_hash_sample.encode()).hexdigest()
                 
                 if screenshot_hash in self._description_cache:
                     visual_description = self._description_cache[screenshot_hash]
@@ -447,14 +447,21 @@ class PerceptionController:
     def escalate(self, failure_reason: str = "perception failed") -> bool:
         """
         Escalate to next modality level after failure.
-        
+
         Implements: Tree → Vision → Hybrid → Abort
-        
+
         Args:
             failure_reason: Why escalation is needed
-        
+
         Returns:
             True if escalation successful, False if should abort
+
+        TODO(FIX-009): This method is not yet wired into request_perception().
+        The escalation state fields (escalation_level, retries_at_level,
+        consecutive_failures) are currently unused — modality escalation happens
+        inline in request_perception() instead. Wire this up in the next sprint
+        to unify escalation state tracking.
+        # FIXED: FIX-009 — added TODO marker; dead code is now documented
         """
         self.consecutive_failures += 1
         self.retries_at_level += 1
@@ -515,16 +522,30 @@ class PerceptionController:
 _perception_controller: Optional[PerceptionController] = None
 
 
-def get_perception_controller(screen_vlm: Optional["ScreenVLM"] = None) -> PerceptionController:
-    """Get the global perception controller instance.
-    
-    Args:
-        screen_vlm: Optional ScreenVLM agent (only used on first call)
-        
-    Returns:
-        Global PerceptionController singleton
+def get_perception_controller(screen_vlm: Optional["ScreenVLM"] = None) -> "PerceptionController":
+    """Get the global PerceptionController singleton.
+
+    Must be called with screen_vlm on first invocation.
+    Subsequent calls without screen_vlm return the existing singleton.
+    Late VLM injection (screen_vlm provided after initialization) updates the singleton.
+
+    # FIXED: FIX-017 — previously silently created without VLM if called before VLM ready
     """
     global _perception_controller
+
     if _perception_controller is None:
+        if screen_vlm is None:
+            logger.warning(
+                "PerceptionController created without screen_vlm. "
+                "VLM-based descriptions will not be available. "
+                "Call get_perception_controller(screen_vlm=vlm) at startup."
+                # Note: Raising here would break backward compat; log warning instead
+            )
         _perception_controller = PerceptionController(screen_vlm=screen_vlm)
+        logger.info(f"PerceptionController singleton initialized (vlm={'yes' if screen_vlm else 'no'})")
+    elif screen_vlm is not None and _perception_controller.screen_vlm is None:
+        # Late VLM injection — update the existing singleton
+        _perception_controller.screen_vlm = screen_vlm
+        logger.info("PerceptionController VLM updated on existing singleton")
+
     return _perception_controller

@@ -175,6 +175,8 @@ async def _ensure_screen_capture_ready(websocket: WebSocket) -> bool:
 # OpenRouter client for intent classification (lazy initialization)
 _openrouter_client = None
 _groq_client = None
+CLASSIFIER_REQUEST_TIMEOUT_S = 8.0
+CLASSIFIER_TOTAL_TIMEOUT_S = 12.0
 
 def _get_openrouter_client():
     """Lazy initialize OpenRouter client."""
@@ -280,7 +282,18 @@ Answer:"""
             if "glm" in model.lower():
                 request_params["extra_body"] = {"reasoning": {"enabled": False}}
             
-            response = client.chat.completions.create(**request_params)
+            request_client = client
+            if hasattr(client, "with_options"):
+                try:
+                    request_client = client.with_options(
+                        timeout=CLASSIFIER_REQUEST_TIMEOUT_S
+                    )
+                except Exception as timeout_opt_error:
+                    logger.debug(
+                        f"Could not apply classifier timeout options: {timeout_opt_error}"
+                    )
+
+            response = request_client.chat.completions.create(**request_params)
             
             result = response.choices[0].message.content.strip().upper()
             
@@ -400,6 +413,25 @@ def classify_simple_intent(transcript: str) -> str:
         result = _classify_with_patterns(transcript)
         logger.info(f"📝 Pattern fallback classification: {result}")
         return result
+
+
+async def _classify_intent_with_timeout(transcript: str) -> str:
+    """Run intent classification with a hard timeout to avoid stuck websocket tasks."""
+    try:
+        return await asyncio.wait_for(
+            asyncio.to_thread(classify_simple_intent, transcript),
+            timeout=CLASSIFIER_TOTAL_TIMEOUT_S,
+        )
+    except asyncio.TimeoutError:
+        logger.warning(
+            f"⏱️ Intent classification timed out after {CLASSIFIER_TOTAL_TIMEOUT_S}s; using pattern fallback"
+        )
+        return _classify_with_patterns(transcript)
+    except Exception as e:
+        logger.warning(
+            f"⚠️ Intent classification failed unexpectedly, using pattern fallback: {e}"
+        )
+        return _classify_with_patterns(transcript)
 
 
 class AudioBuffer:
@@ -960,7 +992,7 @@ async def websocket_conversation(websocket: WebSocket):
                             history = conversation_manager.format_history(session_id)
                             
                             # Classify intent (run in thread pool - makes blocking HTTP API calls)
-                            intent_class = await asyncio.to_thread(classify_simple_intent, text_command)
+                            intent_class = await _classify_intent_with_timeout(text_command)
                             logger.info(f"🎯 Text command intent: {intent_class}")
                             
                             response_text = ""
@@ -1091,7 +1123,7 @@ async def websocket_conversation(websocket: WebSocket):
                                 )
 
                                 # Check if conversational or actionable (run in thread pool - makes blocking HTTP API calls)
-                                intent_class = await asyncio.to_thread(classify_simple_intent, transcript)
+                                intent_class = await _classify_intent_with_timeout(transcript)
                                 logger.info(f"🎯 Intent classification: {intent_class}")
 
                                 response_text = ""

@@ -104,6 +104,10 @@ fun AuraSettingsScreen(
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     
+    // Gemini Live mode preference (stored in aura_settings SharedPreferences)
+    val auraPrefs = remember { context.getSharedPreferences("aura_settings", android.content.Context.MODE_PRIVATE) }
+    var geminiLiveEnabled by remember { mutableStateOf(auraPrefs.getBoolean("use_gemini_live", false)) }
+
     // Selected voice state - read from SharedPreferences
     val voicePrefs = remember { context.getSharedPreferences("aura_voice_settings", android.content.Context.MODE_PRIVATE) }
     var selectedVoiceName by remember {
@@ -277,7 +281,23 @@ fun AuraSettingsScreen(
                     },
                     isDark = isDark,
                 )
-                
+
+                SettingsDivider(isDark)
+
+                // Gemini Live toggle — routes mic through /ws/live bidirectional stream
+                SettingsToggleRow(
+                    icon = Icons.Default.AutoAwesome,
+                    iconTint = if (isDark) Color(0xFF4285F4) else Color(0xFF1A73E8),
+                    title = "Gemini Live Mode",
+                    subtitle = "Bidirectional audio via Gemini 2.0",
+                    isEnabled = geminiLiveEnabled,
+                    onToggle = { enabled ->
+                        geminiLiveEnabled = enabled
+                        auraPrefs.edit().putBoolean("use_gemini_live", enabled).apply()
+                    },
+                    isDark = isDark,
+                )
+
                 SettingsDivider(isDark)
                 
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {

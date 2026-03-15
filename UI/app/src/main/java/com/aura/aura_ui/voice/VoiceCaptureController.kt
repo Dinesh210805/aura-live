@@ -56,6 +56,12 @@ class VoiceCaptureController(
     private val scope: CoroutineScope,
     private val onAmplitudeUpdate: ((Float) -> Unit)? = null,
     private val functionGemmaManager: FunctionGemmaManager? = null,
+    /**
+     * When true, this controller acts as a silent gesture-execution pipe only.
+     * Microphone capture and TTS playback are completely disabled.
+     * Set to true when GeminiLiveController is handling all voice I/O.
+     */
+    val deviceControlOnly: Boolean = false,
 ) {
     private var webSocket: WebSocket? = null
     private var audioRecord: AudioRecord? = null
@@ -181,9 +187,14 @@ class VoiceCaptureController(
         }
 
     /**
-     * Start voice capture with VAD auto-stop
+     * Start voice capture with VAD auto-stop.
+     * No-op when deviceControlOnly=true (Gemini Live owns the mic).
      */
     fun startCapture() {
+        if (deviceControlOnly) {
+            Log.d(TAG, "🔇 startCapture ignored — deviceControlOnly mode (Gemini Live active)")
+            return
+        }
         Log.i(TAG, "🎤 START CAPTURE CALLED")
         if (isRecording.get()) {
             Log.w(TAG, "Already recording")
@@ -597,13 +608,21 @@ class VoiceCaptureController(
                         AuraOverlayService.restore(context)
                     }
 
-                    // Speak response on-device using Android TTS (no server audio needed)
-                    val voicePrefs = context.getSharedPreferences("aura_voice_settings", Context.MODE_PRIVATE)
-                    val voiceId = voicePrefs.getString("selected_voice_id", "en-US-AriaNeural") ?: "en-US-AriaNeural"
-                    ttsManager.speak(responseText, voiceId) {
+                    // Speak response — suppressed when Gemini Live owns voice I/O
+                    if (deviceControlOnly) {
+                        Log.d(TAG, "🔇 TTS suppressed — deviceControlOnly mode (Gemini Live speaks)")
                         if (readyForNext) {
                             viewModel.resetToIdle()
                             listeningModeController.onCommandComplete()
+                        }
+                    } else {
+                        val voicePrefs = context.getSharedPreferences("aura_voice_settings", Context.MODE_PRIVATE)
+                        val voiceId = voicePrefs.getString("selected_voice_id", "en-US-AriaNeural") ?: "en-US-AriaNeural"
+                        ttsManager.speak(responseText, voiceId) {
+                            if (readyForNext) {
+                                viewModel.resetToIdle()
+                                listeningModeController.onCommandComplete()
+                            }
                         }
                     }
                 }

@@ -60,6 +60,7 @@ class CommandLogger:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         self.execution_id = execution_id or timestamp
         self.log_file = self.log_dir / f"command_log_{timestamp}.html"
+        self.txt_log_file = self.log_dir / f"command_log_{timestamp}.txt"
         self._screenshot_dir = self.log_dir / f"screenshots_{timestamp}"
         
         # Counters for tracking calls
@@ -82,6 +83,7 @@ class CommandLogger:
         
         # Write header (placeholder for counts - will be updated at end)
         self._write_header()
+        self._write_txt_header()
         
         # Start terminal log capture for this request
         self._terminal_log_file = None
@@ -1104,10 +1106,197 @@ class CommandLogger:
                     f'</div>\n'
                     f'</div>\n'
                 )
+            self._write_txt_entry(entry)
 
         except Exception as e:
             logger.error(f"Failed to write HTML log entry: {e}")
-    
+
+    def _write_txt_header(self):
+        """Write the plain-text log file header (LLM-friendly)."""
+        sep = "=" * 80
+        try:
+            with open(self.txt_log_file, "w", encoding="utf-8") as f:
+                f.write(f"{sep}\n")
+                f.write(f"AURA EXECUTION LOG  {self.execution_id}\n")
+                f.write(f"Started: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"{sep}\n\n")
+        except Exception as e:
+            logger.warning(f"Could not write txt log header: {e}")
+
+    def _write_txt_entry(self, entry: Dict[str, Any]):
+        """Write a clean, LLM-friendly plain-text representation of a log entry."""
+        entry_type = entry.get("type", "")
+        ts = entry.get("timestamp", "")
+        sep = "-" * 80
+        try:
+            elapsed_str = ""
+            try:
+                entry_dt = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f")
+                elapsed_sec = (entry_dt - self.start_time).total_seconds()
+                elapsed_str = f" +{elapsed_sec:.1f}s"
+            except Exception:
+                pass
+
+            lines = []
+            if entry_type == "COMMAND":
+                lines.append(f"[COMMAND]{elapsed_str} | {ts}")
+                lines.append(f"  Input: {entry.get('input_type', '')}")
+                lines.append(f"  Command: {entry.get('command', '')}")
+                if entry.get("session_id"):
+                    lines.append(f"  Session: {entry['session_id']}")
+
+            elif entry_type in ("LLM", "VLM"):
+                n = entry.get("call_number", "?")
+                agent = entry.get("agent") or ""
+                lines.append(f"[{entry_type} #{n}]{elapsed_str} | {ts}")
+                if agent:
+                    lines.append(f"  Agent: {agent}")
+                lines.append(f"  Provider: {entry.get('provider', '')} | Model: {entry.get('model', '')}")
+                prompt = entry.get("prompt") or ""
+                if prompt:
+                    lines.append("  --- PROMPT ---")
+                    for pline in prompt.splitlines():
+                        lines.append(f"  {pline}")
+                resp = entry.get("response") or ""
+                if resp:
+                    lines.append("  --- RESPONSE ---")
+                    for rline in resp.splitlines():
+                        lines.append(f"  {rline}")
+                tu = entry.get("token_usage") or {}
+                if tu:
+                    lines.append(
+                        f"  Tokens: prompt={tu.get('prompt_tokens', '?')} "
+                        f"completion={tu.get('completion_tokens', '?')} "
+                        f"total={tu.get('total_tokens', '?')}"
+                    )
+
+            elif entry_type == "GESTURE":
+                n = entry.get("gesture_number", "?")
+                gtype = entry.get("gesture_type", "").upper()
+                success = (entry.get("result") or {}).get("success", False)
+                lines.append(f"[GESTURE #{n}]{elapsed_str} | {ts}")
+                lines.append(f"  Type: {gtype}")
+                gdata = entry.get("gesture_data") or {}
+                if gdata:
+                    lines.append(f"  Data: {json.dumps(gdata, ensure_ascii=False)}")
+                lines.append(f"  Result: {'SUCCESS' if success else 'FAILED'}")
+                lines.append(f"  Duration: {entry.get('execution_time', 0) * 1000:.1f}ms")
+                err = (entry.get("result") or {}).get("error")
+                if err:
+                    lines.append(f"  Error: {err}")
+
+            elif entry_type == "AGENT_DECISION":
+                dt = entry.get("decision_type", "")
+                agent_name = entry.get("agent_name") or ""
+                details = entry.get("details") or {}
+                lines.append(f"[AGENT_DECISION: {dt}]{elapsed_str} | {ts}")
+                if agent_name:
+                    lines.append(f"  Agent: {agent_name}")
+                if dt == "PERCEPTION_RESULT":
+                    lines.append(f"  Screen type: {details.get('screen_type', '')}")
+                    lines.append(f"  Elements: {details.get('element_count', 0)}")
+                    tm = details.get("target_match")
+                    if tm:
+                        lines.append(
+                            f"  Target: FOUND at ({tm.get('x')}, {tm.get('y')}) "
+                            f"via {tm.get('source', 'ui_tree')}"
+                        )
+                    else:
+                        lines.append("  Target: NOT FOUND")
+                    if details.get("screen_description"):
+                        lines.append(f"  VLM description: {details['screen_description']}")
+                    elems = details.get("elements_summary") or []
+                    if elems:
+                        lines.append(f"  UI Elements ({len(elems)}):")
+                        for i, e in enumerate(elems[:30]):
+                            text = (e.get("text") or "").strip()
+                            desc = (e.get("content_desc") or "").strip()
+                            cls = (e.get("class") or "").split(".")[-1]
+                            b = e.get("bounds") or {}
+                            if isinstance(b, dict):
+                                cx = (b.get("left", 0) + b.get("right", 0)) // 2
+                                cy = (b.get("top", 0) + b.get("bottom", 0)) // 2
+                            else:
+                                cx, cy = 0, 0
+                            flags = [
+                                fn for fn in ("clickable", "scrollable", "editable")
+                                if e.get(fn)
+                            ]
+                            flags_str = f" [{', '.join(flags)}]" if flags else ""
+                            label = text or desc or "(no label)"
+                            lines.append(f"    {i + 1}. {label!r} ({cls}) @ ({cx},{cy}){flags_str}")
+                        if len(elems) > 30:
+                            lines.append(f"    ... and {len(elems) - 30} more elements")
+                elif dt == "POST_ACTION_SCREENSHOT":
+                    lines.append(f"  Subgoal: {details.get('subgoal', '')}")
+                    lines.append(f"  Action: {details.get('action_type', '')}")
+                else:
+                    for k, v in details.items():
+                        if k.endswith(("_path", "_b64", "_screenshot")):
+                            continue
+                        if isinstance(v, (dict, list)):
+                            try:
+                                lines.append(f"  {k}: {json.dumps(v, ensure_ascii=False)}")
+                            except Exception:
+                                lines.append(f"  {k}: {v}")
+                        else:
+                            lines.append(f"  {k}: {v}")
+
+            elif entry_type == "GRAPH_EXECUTION":
+                lines.append(f"[GRAPH_EXECUTION]{elapsed_str} | {ts}")
+                lines.append(f"  Task ID: {entry.get('task_id', '')}")
+                lines.append(f"  Status: {entry.get('status', '').upper()}")
+                lines.append(f"  Duration: {entry.get('execution_time', 0):.3f}s")
+
+            elif entry_type == "ERROR":
+                lines.append(f"[ERROR]{elapsed_str} | {ts}")
+                lines.append(f"  Source: {entry.get('source', '')}")
+                lines.append(f"  Error: {entry.get('error', '')}")
+                details = entry.get("details")
+                if details:
+                    try:
+                        lines.append(f"  Details: {json.dumps(details, ensure_ascii=False)}")
+                    except Exception:
+                        lines.append(f"  Details: {details}")
+
+            elif entry_type == "LOGCAT":
+                log_lines = entry.get("lines") or []
+                lines.append(f"[LOGCAT]{elapsed_str} | {ts}")
+                lines.append(f"  Context: {entry.get('label', '')}")
+                lines.append(f"  Lines: {len(log_lines)}")
+                for ll in log_lines[:50]:
+                    lines.append(f"  {ll}")
+                if len(log_lines) > 50:
+                    lines.append(f"  ... and {len(log_lines) - 50} more lines")
+
+            else:
+                lines.append(f"[{entry_type}]{elapsed_str} | {ts}")
+
+            lines.append(sep)
+            with open(self.txt_log_file, "a", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+
+        except Exception as e:
+            logger.error(f"Failed to write txt log entry: {e}")
+
+    def _finalize_txt(self, status: str, total_time: float):
+        """Write summary footer to the plain-text log."""
+        sep = "=" * 80
+        try:
+            with open(self.txt_log_file, "a", encoding="utf-8") as f:
+                f.write(f"\n{sep}\n")
+                f.write("SUMMARY\n")
+                f.write(f"  Status:        {status.upper()}\n")
+                f.write(f"  Duration:      {total_time:.2f}s\n")
+                f.write(f"  LLM Calls:     {self.llm_call_count}\n")
+                f.write(f"  VLM Calls:     {self.vlm_call_count}\n")
+                f.write(f"  Tokens:        {self.total_llm_tokens:,}\n")
+                f.write(f"  Gestures:      {self.gesture_count}\n")
+                f.write(f"  Gesture time:  {self.total_execution_time * 1000:.0f}ms\n")
+                f.write(f"{sep}\n")
+        except Exception as e:
+            logger.error(f"Failed to write txt log summary: {e}")
+
     def _format_json_block(self, data: Dict[str, Any], indent: int = 2) -> str:
         """Format a JSON object for readable logging."""
         try:
@@ -1206,6 +1395,7 @@ class CommandLogger:
         except Exception as e:
             logger.error(f"Failed to finalize log {self.log_file}: {e}", exc_info=True)
         finally:
+            self._finalize_txt(status, total_time)
             self._stop_terminal_log_capture()
     
     def get_log_file_path(self) -> str:
@@ -1233,6 +1423,11 @@ class CommandLogger:
             module_str = f"[{_html.escape(module)}] " if module else ""
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(f'<div class="debug-line">{level_indicator} {_html.escape(timestamp)} {module_str}{_html.escape(message)}</div>\n')
+            if level in ("WARNING", "ERROR") and hasattr(self, "txt_log_file"):
+                prefix = "WARN" if level == "WARNING" else "ERROR"
+                mod_str = f"[{module}] " if module else ""
+                with open(self.txt_log_file, "a", encoding="utf-8") as f:
+                    f.write(f"[{prefix}] {timestamp} {mod_str}{message}\n")
         except Exception:
             pass  # Don't fail on logging errors
 

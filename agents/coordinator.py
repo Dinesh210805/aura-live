@@ -421,7 +421,7 @@ class Coordinator:
                     pass
 
                 self.task_progress.emit_agent_status("Reactive", f"Generating next step for phase: {goal.current_phase.description[:35] if goal.current_phase else 'final'}")
-                next_step = self.reactive_gen.generate_next_step(
+                next_step = await self.reactive_gen.generate_next_step(
                     goal, running_screen_context, step_memory,
                     screenshot_b64=_latest_b64, ui_hints="",
                     ui_elements=_elements,
@@ -1344,7 +1344,7 @@ class Coordinator:
             verification_reason = "action succeeded"
             if self.reactive_gen:
                 self.task_progress.emit_agent_status("Reactive", "Verifying + next step")
-                next_step = self.reactive_gen.generate_next_step(
+                next_step = await self.reactive_gen.generate_next_step(
                     goal, running_screen_context, step_memory,
                     screenshot_b64=_post_b64, ui_hints="",
                     ui_elements=post_elements,
@@ -1776,6 +1776,13 @@ class Coordinator:
             "found" if target located after retry,
             "replan" if should replan,
             "abort" if should abort.
+
+        # RETRY SYSTEM: This is coordinator's internal retry system (system 1 of 3).
+        # FIXED: FIX-007 — internal scroll/replan retry loop kept for backward compat
+        # with non-reactive (static subgoal) execution path. In reactive mode this
+        # method is not called. All retries in reactive mode flow through
+        # LangGraph validate_outcome→retry_router pipeline (system 2 of 3).
+        # TODO: When static subgoal path is removed, remove this method too.
         """
         strategy = subgoal.current_strategy
         _utterance = goal.original_utterance

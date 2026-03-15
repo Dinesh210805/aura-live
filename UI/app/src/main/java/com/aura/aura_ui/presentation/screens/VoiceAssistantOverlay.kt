@@ -179,6 +179,8 @@ data class VoiceAssistantState(
     val latestAgentOutput: com.aura.aura_ui.conversation.AgentOutput? = null,
     // Task progress skeleton steps
     val taskProgress: com.aura.aura_ui.conversation.TaskProgress? = null,
+    // True when a Gemini Live bidirectional session is active (session persists across turns)
+    val isGeminiLiveSession: Boolean = false,
 )
 
 /**
@@ -1119,9 +1121,12 @@ private fun InputBar(
             }
             
             // Voice waveform or text input field
-            if (state.isListening) {
+            // In Gemini Live session: show wave for all active phases (listening/thinking/responding)
+            val showWave = state.isListening ||
+                (state.isGeminiLiveSession && (state.isProcessing || state.isResponding))
+            if (showWave) {
                 VoiceWaveformVisualizer(
-                    amplitude = state.audioAmplitude,
+                    amplitude = if (state.isListening) state.audioAmplitude else 0f,
                     colors = colors,
                     modifier = Modifier.weight(1f)
                 )
@@ -1156,8 +1161,8 @@ private fun InputBar(
             Box(
                 contentAlignment = Alignment.Center
             ) {
-                // Multiple pulsating rings when listening
-                if (state.isListening) {
+                // Multiple pulsating rings when listening or during active Gemini Live session
+                if (state.isListening || (state.isGeminiLiveSession && (state.isProcessing || state.isResponding))) {
                     // Outer ring 1
                     val ring1Scale by infiniteTransition.animateFloat(
                         initialValue = 1f,
@@ -1313,9 +1318,13 @@ private fun InputBar(
                     label = "idle_scale"
                 )
                 
+                // In Gemini Live session: button is always "End Session" (red stop)
+                // Outside session: mic button (white) when idle, blue/purple stop when listening
+                val isSessionActive = state.isGeminiLiveSession
+                val isAnyActive = state.isListening || state.isProcessing || state.isResponding
                 IconButton(
                     onClick = {
-                        if (state.isListening) {
+                        if (isSessionActive || state.isListening) {
                             hapticFeedback(AuraHapticType.RECORDING_STOP)
                         } else {
                             hapticFeedback(AuraHapticType.RECORDING_START)
@@ -1325,31 +1334,36 @@ private fun InputBar(
                     modifier = Modifier
                         .size(44.dp)
                         .graphicsLayer {
-                            if (!state.isListening) {
+                            if (!isAnyActive && !isSessionActive) {
                                 scaleX = idleScale
                                 scaleY = idleScale
                             }
                         }
                         .clip(CircleShape)
                         .background(
-                            if (state.isListening) {
-                                Brush.linearGradient(
+                            when {
+                                isSessionActive -> Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFFE53935), // red — end session
+                                        Color(0xFFB71C1C)
+                                    )
+                                )
+                                state.isListening -> Brush.linearGradient(
                                     colors = listOf(
                                         colors.accentBlue,
                                         colors.accentPurple
                                     )
                                 )
-                            } else {
-                                Brush.linearGradient(
+                                else -> Brush.linearGradient(
                                     colors = listOf(Color.White, Color.White)
                                 )
                             }
                         )
                 ) {
                     Icon(
-                        imageVector = if (state.isListening) Icons.Default.Stop else Icons.Default.Mic,
-                        contentDescription = if (state.isListening) "Stop" else "Speak",
-                        tint = if (state.isListening) Color.White else Color.Black,
+                        imageVector = if (isSessionActive || state.isListening) Icons.Default.Stop else Icons.Default.Mic,
+                        contentDescription = if (isSessionActive) "End Session" else if (state.isListening) "Stop" else "Speak",
+                        tint = if (isSessionActive || state.isListening) Color.White else Color.Black,
                         modifier = Modifier.size(22.dp)
                     )
                 }

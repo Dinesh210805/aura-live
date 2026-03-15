@@ -199,7 +199,10 @@ class GestureExecutor:
                 result = await self._execute_swipe(action)
             elif action_type == "long_press":
                 result = await self._execute_long_press(action)
-            elif action_type == "scroll":
+            elif action_type in ("scroll", "scroll_up", "scroll_down", "scroll_left", "scroll_right"):
+                # Normalise directional variants: scroll_down → direction=down, etc.
+                if action_type != "scroll" and "direction" not in action:
+                    action = {**action, "direction": action_type.split("_", 1)[1]}
                 result = await self._execute_scroll(action)
             elif action_type in ["type", "input", "type_text"]:
                 result = await self._execute_type(action)

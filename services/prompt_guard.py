@@ -12,6 +12,7 @@ from typing import Optional, Tuple
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+PROMPT_GUARD_TIMEOUT_S = 8.0
 
 
 class PromptGuard:
@@ -41,7 +42,18 @@ class PromptGuard:
             return True, 0.5
 
         try:
-            response = self.client.chat.completions.create(
+            request_client = self.client
+            if hasattr(self.client, "with_options"):
+                try:
+                    request_client = self.client.with_options(
+                        timeout=PROMPT_GUARD_TIMEOUT_S
+                    )
+                except Exception as timeout_opt_error:
+                    logger.debug(
+                        f"Could not apply PromptGuard timeout options: {timeout_opt_error}"
+                    )
+
+            response = request_client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": user_input}],
                 max_tokens=20,

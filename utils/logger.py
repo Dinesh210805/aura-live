@@ -342,7 +342,7 @@ def log_agent_output(agent_name: str, output: str, provider: str = None, model: 
     print(f"{AGENT_COLOR}{TOP_LEFT}{HORIZONTAL}{agent_header}{HORIZONTAL * header_padding}{TOP_RIGHT}{RESET}")
     
     # Print output lines
-    lines = output.split('\n')
+    lines = (output or "").split('\n')
     for line in lines[:30]:  # Limit to 30 lines
         # Truncate long lines
         display_line = line[:BOX_WIDTH - 4] if len(line) > BOX_WIDTH - 4 else line

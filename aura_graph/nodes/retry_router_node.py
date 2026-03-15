@@ -3,6 +3,9 @@ Retry router node - Implements retry strategy escalation.
 
 Routes failed actions through different retry strategies based on
 the current escalation level in the retry ladder.
+
+# RETRY SYSTEM: This is the escalation router for retry system 2 of 3.
+# Routes validated failures through the 5-stage retry ladder.
 """
 
 import logging
@@ -13,6 +16,24 @@ from aura_graph.agent_state import AgentState, RetryStrategy
 
 
 logger = logging.getLogger(__name__)
+
+
+def _determine_scroll_direction(agent_state: AgentState, subgoal_target: str) -> str:
+    """
+    Determine scroll direction for SCROLL_AND_RETRY.
+    # FIXED: FIX-010 — was hardcoded 'down'; now switches to 'up' after 2 attempts
+    After 2 down-scrolls without finding target, try up.
+    """
+    if hasattr(agent_state, 'scroll_target') and agent_state.scroll_target != subgoal_target:
+        agent_state.scroll_attempts_for_current_target = 0
+        agent_state.scroll_target = subgoal_target
+
+    attempts = getattr(agent_state, 'scroll_attempts_for_current_target', 0)
+    if attempts >= 2:
+        return "up"
+    if hasattr(agent_state, 'scroll_attempts_for_current_target'):
+        agent_state.scroll_attempts_for_current_target += 1
+    return "down"
 
 
 def retry_router_node(state: TaskState) -> dict[str, Any]:
@@ -42,25 +63,47 @@ def retry_router_node(state: TaskState) -> dict[str, Any]:
         strategy = RetryStrategy.SAME_ACTION
     
     logger.info(f"Retry router processing with strategy: {strategy.value}")
-    
+
     # Determine retry action based on strategy
-    retry_action = _get_retry_action(strategy, state)
-    
+    retry_action = _get_retry_action(strategy, state, agent_state=agent_state)
+
+    # FIXED: FIX-014 — generate reflexion lesson on abort for next attempt
+    if retry_action.get("type") == "abort":
+        try:
+            from services.reflexion_service import get_reflexion_service
+            reflexion = get_reflexion_service()
+            if reflexion:
+                import asyncio
+                goal_str = ""
+                if agent_state and agent_state.goal:
+                    goal_str = getattr(agent_state.goal, 'original_utterance', '') or ""
+                abort_reason = state.get("validation_result", {}).get("abort_reason", "unknown")
+                # Fire and forget — don't block abort on lesson generation
+                asyncio.create_task(
+                    reflexion.generate_lesson(
+                        goal=goal_str,
+                        step_history=state.get("step_history", []),
+                        failure_reason=abort_reason or "unknown"
+                    )
+                )
+        except Exception as _e:
+            logger.debug(f"Reflexion lesson generation skipped: {_e}")
+
     return {
         "retry_action": retry_action,
         "retry_strategy": strategy.value,
     }
 
 
-def _get_retry_action(strategy: RetryStrategy, state: TaskState) -> dict[str, Any]:
+def _get_retry_action(strategy: RetryStrategy, state: TaskState, agent_state: AgentState = None) -> dict[str, Any]:
     """
     Generate the appropriate retry action based on strategy.
-    
+
     Returns a dict describing what to do next.
     """
     executed_steps = state.get("executed_steps", [])
     last_action = executed_steps[-1] if executed_steps else {}
-    
+
     if isinstance(last_action, str):
         # Handle legacy string format
         last_action = {"action_type": "unknown", "description": last_action}
@@ -86,11 +129,13 @@ def _get_retry_action(strategy: RetryStrategy, state: TaskState) -> dict[str, An
         }
     
     elif strategy == RetryStrategy.SCROLL_AND_RETRY:
+        subgoal_target = last_action.get("target", "") if isinstance(last_action, dict) else ""
+        scroll_dir = _determine_scroll_direction(agent_state, subgoal_target) if agent_state else "down"
         return {
             "type": "scroll_then_retry",
-            "scroll_direction": "down",  # Default, could be smarter
+            "scroll_direction": scroll_dir,
             "action": last_action,
-            "reason": "Element may be off-screen, scrolling to find it",
+            "reason": f"Element may be off-screen, scrolling {scroll_dir} to find it",
         }
     
     elif strategy == RetryStrategy.VISION_FALLBACK:

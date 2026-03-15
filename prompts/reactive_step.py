@@ -157,6 +157,24 @@ OUTPUT:
   "verification_reason": "Library tab is SELECTED and playlists including Liked Songs are visible"
 }
 
+Example 5 — Body FOCUSED does NOT mean recipient is confirmed; autocomplete still wins:
+UI TREE: [1] EditText 'dinesh' | id=to | EDIT FOCUSED | [2] TextView 'Dinesh Kumar dinesh@gmail.com' | CLICK | [3] EditTextCompatMultiline hint='Compose email' | id=body | EDIT FOCUSED
+INPUT: goal="email dinesh about the meeting" | phase="compose email" | prev="type dinesh into To field" | screen="Gmail | Compose | KEYBOARD: Visible"
+OUTPUT:
+{
+  "thinking": "① Prev: type succeeded — 'dinesh' showing in To field. ② BLOCKER CHECK: [2] 'Dinesh Kumar dinesh@gmail.com' is CLICK and visible under the To field. That is an autocomplete suggestion — BLOCKING regardless of what else has focus. The fact that [3] body has EDIT+FOCUSED is Android auto-advancing focus, NOT confirmation that the recipient was accepted. Recipient is only confirmed when I tap the suggestion chip. ③ [1] To is EDIT+FOCUSED, [2] suggestion is CLICK (must tap), [3] body is EDIT+FOCUSED but irrelevant while blocker exists. ④ Tap [2] now.",
+  "memory": "Gmail compose open. 'dinesh' typed into To. Autocomplete suggestion visible — must tap to confirm before moving to Subject.",
+  "action_type": "tap",
+  "target": "Dinesh Kumar",
+  "field_hint": "",
+  "description": "Tap autocomplete suggestion to confirm recipient (body focus is misleading)",
+  "screen_context": "Gmail | Compose | To autocomplete visible | KEYBOARD: Visible",
+  "phase_complete": false,
+  "goal_complete": false,
+  "verification_passed": true,
+  "verification_reason": "To field shows 'dinesh' — type action succeeded; autocomplete still pending"
+}
+
 Example 4 — SCROLL flag reveals hidden element; failure escalation after 2 retries:
 UI TREE: [1] RecyclerView | id=contact_list | SCROLL | [2] TextView 'Alice' | CLICK | [3] TextView 'Bob' | CLICK
 INPUT: goal="open WhatsApp chat with Mum" | phase="find Mum in chat list" | last_failure="tap('Mum') failed twice — element not found" | screen="WhatsApp | Chats | Alice and Bob visible, Mum not visible"

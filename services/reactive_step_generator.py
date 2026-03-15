@@ -341,6 +341,98 @@ class ReactiveStepGenerator:
             logger.warning(f"History compression failed, using truncated history: {e}")
             return "", recent_steps
 
+    # ── Recipient-field autocomplete detection ────────────────────────────────
+
+    _RECIPIENT_FIELD_KEYWORDS = frozenset({"to", "recipient", "contact", "send to", "cc", "bcc"})
+
+    def _detect_autocomplete_suggestion(
+        self,
+        prev_subgoal: Optional[Subgoal],
+        ui_elements,
+    ) -> Optional[Subgoal]:
+        """
+        Deterministic pre-VLM check.
+
+        If the previous action was a `type` into a recipient / contact field
+        AND a clickable element matching the typed text is now visible in the
+        current UI tree, return a tap-suggestion Subgoal immediately without
+        calling the VLM.
+
+        This handles the Gmail pattern where Android auto-advances focus to the
+        body field while the 'To' autocomplete dropdown is still showing — the
+        VLM sees EDIT+FOCUSED on body and says "no blockers", skipping the
+        mandatory tap.
+        """
+        if prev_subgoal is None:
+            return None
+        if prev_subgoal.action_type not in (
+            "type", "type_text", "enter_text", "set_text", "input_text"
+        ):
+            return None
+
+        field_hint = (prev_subgoal.parameters.get("__field_hint__") or "").lower().strip()
+        typed_text = (prev_subgoal.target or "").lower().strip()
+
+        if not any(kw in field_hint for kw in self._RECIPIENT_FIELD_KEYWORDS):
+            return None
+        if not typed_text:
+            return None
+        if not ui_elements:
+            return None
+
+        # Scan for a clickable element whose text starts with or contains
+        # the typed value (first match wins — suggestions are ranked by relevance).
+        for el in ui_elements:
+            if not self._el_clickable(el):
+                continue
+            el_text = self._el_text(el).strip()
+            if not el_text:
+                continue
+            if el_text.lower().startswith(typed_text) or typed_text in el_text.lower():
+                from config.success_criteria import get_success_criteria
+                logger.info(
+                    f"🎯 Autocomplete override: tapping '{el_text}' "
+                    f"(typed='{typed_text}' in field='{field_hint}') — VLM bypassed"
+                )
+                subgoal = Subgoal(
+                    description=f"Tap autocomplete suggestion '{el_text}' to confirm recipient",
+                    action_type="tap",
+                    target=el_text,
+                    success_criteria=get_success_criteria("tap"),
+                )
+                subgoal.parameters["__autocomplete_override__"] = True
+                subgoal.parameters["__verification_passed__"] = True
+                subgoal.parameters["__verification_reason__"] = (
+                    f"Deterministic autocomplete: '{el_text}' matched typed '{typed_text}'"
+                )
+                return subgoal
+
+        return None
+
+    @staticmethod
+    def _el_clickable(el) -> bool:
+        if isinstance(el, dict):
+            return bool(el.get("isClickable") or el.get("clickable"))
+        return bool(getattr(el, "clickable", False))
+
+    @staticmethod
+    def _el_text(el) -> str:
+        if isinstance(el, dict):
+            return (
+                el.get("text")
+                or el.get("contentDescription")
+                or el.get("content_description")
+                or ""
+            )
+        return (
+            getattr(el, "text", None)
+            or getattr(el, "content_description", None)
+            or getattr(el, "contentDescription", None)
+            or ""
+        )
+
+    # ─────────────────────────────────────────────────────────────────────────
+
     def _parse_json(self, text: Optional[str]) -> Optional[dict]:
         if not text:
             return None

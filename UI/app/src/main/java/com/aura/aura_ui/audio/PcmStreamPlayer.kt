@@ -53,10 +53,12 @@ class PcmStreamPlayer {
             audioTrack = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
-                        // USAGE_VOICE_COMMUNICATION pairs with MODE_IN_COMMUNICATION
-                        // to activate hardware echo cancellation at the driver level,
-                        // preventing Gemini from hearing its own voice through the mic.
-                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                        // USAGE_MEDIA routes audio to the loudspeaker (what the user hears).
+                        // USAGE_VOICE_COMMUNICATION routed to the earpiece (tiny call speaker)
+                        // which made audio inaudible unless the phone was held to the ear.
+                        // AEC is handled by AudioManager.MODE_IN_COMMUNICATION on the mic side,
+                        // not by the playback usage type.
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )

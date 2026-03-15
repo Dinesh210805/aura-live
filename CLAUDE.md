@@ -88,8 +88,17 @@ OPA Rego policies gate every gesture execution. Prompt Guard 2 screens all voice
 - `ws://localhost:8000/ws/audio` — voice streaming
 - `ws://localhost:8000/ws/device` — device control / UI tree responses
 - `ws://localhost:8000/api/v1/tasks/ws` — task execution streaming
+- `ws://localhost:8000/ws/live` — Gemini Live bidi audio+vision (gated by `GEMINI_LIVE_ENABLED=true`)
 
-These endpoints must not change signature or path — the Android companion app (`UI/`) depends on them.
+`/ws/audio` and `/ws/device` must not change signature or path — the Android companion app (`UI/`) depends on them. `/ws/live` is an addition.
+
+### Google Cloud / ADK layer (Hackathon additions)
+- `adk_agent.py` — ADK `root_agent` (gemini-2.5-flash) wrapping `execute_aura_task_from_text()` as a `FunctionTool`. Lazy graph init: call `set_compiled_graph(app)` from `main.py` lifespan before any tool invocation.
+- `adk_streaming_server.py` — Gemini Live bidi WebSocket handler for `/ws/live`. Full VAD config (`RealtimeInputConfig`), transcript accumulation, barge-in support. Guarded behind `GEMINI_LIVE_ENABLED`.
+- `gcs_log_uploader.py` — uploads HTML execution logs to GCS after each task; returns public URL stored in `TaskState.log_url`. Non-fatal: failures are warnings only.
+- `Dockerfile` — Cloud Run deployment. Reads `$PORT` via Pydantic Settings. Pre-warms YOLOv8 at build time.
+- `.dockerignore` — excludes `.env`, `logs/`, `UI/`, `.git/`, `venv/`
+- `api/demo.py` — `/demo` judging dashboard: live screenshot (2 s refresh), health status, recent commands, GCS log links, architecture diagram.
 
 ---
 
@@ -105,11 +114,38 @@ These endpoints must not change signature or path — the Android companion app 
 
 ---
 
-## Gemini Live Hackathon — Mandatory Tasks
+## Gemini Live Hackathon — Implementation Status
 
-Three requirements for eligibility (none yet complete):
-1. **Gemini as primary VLM** — swap `DEFAULT_VLM_PROVIDER` to `"gemini"` in `services/vlm.py` and `config/settings.py`
-2. **Google ADK agent wrapper** — create `adk_agent.py` wrapping `run_aura_task()` as an ADK FunctionTool with a `gemini-2.5-flash` root agent
-3. **Cloud Run deployment** — create `Dockerfile` (expose `$PORT`, pre-warm YOLOv8 weights)
+Deadline: **March 16, 2026 @ 5:00 PM PT**
 
-Phase 2 additions (scoring, not eligibility): `adk_streaming_server.py` (Gemini Live bidirectional audio+vision), `gcs_log_uploader.py` (Cloud Storage).
+### Phase 1 — Eligibility
+
+| # | Task | Status |
+|---|------|--------|
+| 1 | ADK root agent (`adk_agent.py`) | ✅ Done |
+| 2 | Gemini as primary VLM (`DEFAULT_VLM_PROVIDER=gemini`) | ⚠️ Partial — `services/vlm.py` supports Gemini first-class, but `settings.py` still defaults to `"groq"` and `.env.example` still sets `DEFAULT_VLM_PROVIDER=groq`. Change both to `"gemini"` to satisfy the checklist. |
+| 3 | `Dockerfile` for Cloud Run | ✅ Done |
+| 4 | New env vars in `settings.py` + `.env.example` | ✅ Done |
+
+### Phase 2 — Scoring
+
+| # | Task | Status |
+|---|------|--------|
+| 5 | `adk_streaming_server.py` (Gemini Live bidi) | ✅ Done |
+| 6 | `gcs_log_uploader.py` (Cloud Storage) | ✅ Done |
+| 7 | Android app WebSocket URL → `BuildConfig` | ❌ Not done — `MainActivity.kt` still hardcodes `192.168.1.41:8000`; `build.gradle.kts` has no `buildConfigField` |
+| 8 | Vertex AI as second GCP service (optional) | ❌ Not done |
+
+### Phase 3 — Aspirational
+
+| # | Task | Status |
+|---|------|--------|
+| 9 | `/demo` judging dashboard (`api/demo.py`) | ✅ Done |
+| 10 | README `## Google Cloud Architecture` section | ❌ Not done |
+
+### Remaining checklist items before submission
+1. Set `default_vlm_provider = "gemini"` default in `config/settings.py` and `DEFAULT_VLM_PROVIDER=gemini` in `.env.example`
+2. Add `## Google Cloud Architecture` section to `README.md` (architecture diagram, `adk_agent.py` snippet, `gcs_log_uploader.py` snippet, Cloud Run deploy command)
+3. Deploy to Cloud Run and verify `/health` returns 200
+4. (Optional) Android `BuildConfig` for release WebSocket URL (Task 7)
+5. Make GitHub repo public before submitting to Devpost

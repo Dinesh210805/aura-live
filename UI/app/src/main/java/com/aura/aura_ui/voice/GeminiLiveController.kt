@@ -129,6 +129,11 @@ class GeminiLiveController(
     // restarts listening instead of going IDLE.
     private val isTurnComplete = AtomicBoolean(false)
 
+    // True while server has an automation task in flight (task_progress:executing received
+    // but task_progress:idle not yet received). Guards restore() calls so the overlay
+    // never expands mid-task and hides the screen being automated.
+    private val automationInProgress = AtomicBoolean(false)
+
     // ── Transcript accumulation ───────────────────────────────────────────────
     // Buffer user speech fragments received during a turn; flushed as ONE
     // chat message when the AI starts responding (mic muted for playback).
@@ -251,6 +256,13 @@ class GeminiLiveController(
         if (isRecording.get()) return
         if (!isConnected.get()) return
 
+        // Reset turn-completion flag and any stale audio from the previous turn.
+        // If the previous turn had no audio (Gemini was silent), isTurnComplete is
+        // still true from task_progress:idle — leaving it true causes the next turn's
+        // drain loop to exit immediately before playing any audio chunks.
+        isTurnComplete.set(false)
+        audioQueue.clear()
+
         try {
             // Use VOICE_COMMUNICATION mode: enables hardware AEC, noise suppression,
             // and automatic gain control at the driver level on most devices.
@@ -331,6 +343,7 @@ class GeminiLiveController(
      */
     fun cancelCapture() {
         sessionActive.set(false)
+        automationInProgress.set(false)
         cancelPostResponseSilenceTimer()
         isRecording.set(false)
         recordingJob?.cancel()
@@ -346,7 +359,8 @@ class GeminiLiveController(
         audioQueue.clear()
         pendingUserTranscript.clear()
         onAmplitudeUpdate?.invoke(0f)
-        audioManager.mode = AudioManager.MODE_NORMAL  // restore normal audio routing
+        audioManager.isSpeakerphoneOn = false  // restore default routing
+        audioManager.mode = AudioManager.MODE_NORMAL
         viewModel.updatePhase(ConversationPhase.IDLE)
         viewModel.updatePartialTranscript("")
         Log.d(TAG, "Gemini Live capture cancelled (session ended)")
@@ -474,6 +488,13 @@ class GeminiLiveController(
 
         audioPlayerJob = scope.launch(Dispatchers.IO) {
 
+            // Reset the turn-complete gate at the very start of each drain coroutine.
+            // If task_progress:idle arrived before the first audio chunk (race condition),
+            // isTurnComplete would already be true and the loop would exit immediately
+            // without playing anything. Resetting here ensures we always wait for a
+            // fresh idle signal before declaring this turn done.
+            isTurnComplete.set(false)
+
             withContext(Dispatchers.Main) {
                 if (hasHardwareAec.get()) {
                     // ── AEC path: mic stays OPEN during playback ──────────
@@ -491,6 +512,10 @@ class GeminiLiveController(
                 }
                 // Flush accumulated user transcript as one chat message
                 flushPendingUserTranscript()
+                // Ensure audio plays through the loudspeaker, not the earpiece.
+                // MODE_IN_COMMUNICATION (set for mic AEC) defaults to earpiece routing;
+                // isSpeakerphoneOn overrides that so the user can hear AURA's response.
+                audioManager.isSpeakerphoneOn = true
             }
 
             pcmPlayer.start()
@@ -667,22 +692,34 @@ class GeminiLiveController(
                     val isFinal = json.optBoolean("is_final", true)
                     val isUser = json.optBoolean("is_user", false)
                     if (isUser && transcript.isNotEmpty()) {
-                        // ── Update pendingUserTranscript SYNCHRONOUSLY on the WebSocket
-                        // thread — this MUST happen before the next message is dispatched.
-                        // If we put this inside scope.launch{}, it races with
-                        // flushPendingUserTranscript() which is called when the very next
-                        // audio_response chunk arrives, often losing the race and producing
-                        // an empty user message.
-                        pendingUserTranscript.clear()
-                        pendingUserTranscript.append(transcript)
-                        scope.launch(Dispatchers.Main) {
-                            viewModel.updatePartialTranscript(transcript)
-                            if (hasHardwareAec.get()) {
-                                // Barge-in: cancel AI audio immediately when user speaks.
-                                interruptPlaybackForBargein()
+                        if (!isFinal) {
+                            // Partial update — show live "what you're saying" in the wave
+                            // area but do NOT add to chat history yet. The server streams
+                            // progressively more accurate versions until turn_complete.
+                            //
+                            // DO NOT call interruptPlaybackForBargein() here.
+                            // Gemini sends late/corrected input_transcription events for the
+                            // PREVIOUS user utterance while the AI is already responding.
+                            // Triggering barge-in on those cuts off the AI mid-sentence.
+                            // Real barge-in is handled by the server's "interrupted" message
+                            // (server_content.interrupted=True), which Gemini sets when it
+                            // actually detects new user speech during model output.
+                            scope.launch(Dispatchers.Main) {
+                                viewModel.updatePartialTranscript(transcript)
+                            }
+                            Log.d(TAG, "User transcript partial: ${transcript.take(60)}")
+                        } else {
+                            // Final corrected transcript arrives at turn_complete.
+                            // Add directly to chat — bypasses the pendingUserTranscript
+                            // buffer because flushPendingUserTranscript() runs before this
+                            // (when audio playback starts) and would otherwise lose it.
+                            Log.d(TAG, "User transcript final: ${transcript.take(60)}")
+                            pendingUserTranscript.clear()
+                            scope.launch(Dispatchers.Main) {
+                                viewModel.addUserMessage(transcript)
+                                viewModel.updatePartialTranscript("")
                             }
                         }
-                        Log.d(TAG, "User transcript buffered: ${transcript.take(60)}")
                     } else if (!isUser && isFinal && transcript.isNotEmpty()) {
                         // AI transcript arrives once per turn (is_final=true).
                         // Add directly to chat — no buffering needed.
@@ -699,19 +736,29 @@ class GeminiLiveController(
                                 // Automation task running — pause mic so noise doesn't
                                 // confuse Gemini, but keep sessionActive so mic restarts
                                 // when the task is done.
+                                automationInProgress.set(true)
                                 if (isRecording.get()) stopCapture()
                                 viewModel.updatePhase(ConversationPhase.THINKING)
                                 AuraOverlayService.minimize(context)
                             }
                             "idle" -> {
-                                // Guard: if user is already recording (e.g. rapid follow-up)
-                                // don't interrupt LISTENING with IDLE.
+                                // IMPORTANT: set isTurnComplete FIRST, before any guard.
+                                // The audio drain loop polls this flag every 10 ms to know
+                                // when to stop. In AEC mode the mic stays open during
+                                // playback (isRecording=true), so if we guard-return before
+                                // setting this flag the drain loop runs forever — the audio
+                                // player job stays alive, blocking all future turns (stuck).
+                                automationInProgress.set(false)
+                                isTurnComplete.set(true)
+                                AuraOverlayService.restore(context)
+
                                 if (isRecording.get()) {
-                                    Log.d(TAG, "task_progress:idle ignored — already recording")
+                                    // AEC path: mic is already open. The drain loop will exit
+                                    // on its own now that isTurnComplete is set. No mic restart
+                                    // needed — phase transition happens inside the drain coroutine.
+                                    Log.d(TAG, "task_progress:idle — mic already open (AEC), drain loop will exit")
                                     return@launch
                                 }
-                                AuraOverlayService.restore(context)
-                                isTurnComplete.set(true)
 
                                 if (sessionActive.get()) {
                                     // Audio player handles the restart if audio is in flight.
@@ -757,7 +804,12 @@ class GeminiLiveController(
                         viewModel.addAssistantMessage(responseText)
                         viewModel.updatePhase(ConversationPhase.RESPONDING)
                         if (readyForNext) {
-                            AuraOverlayService.restore(context)
+                            // Only restore the overlay if no automation task is in flight.
+                            // If task_progress:executing already minimized the overlay, leave it
+                            // minimized — task_progress:idle will restore it when the task finishes.
+                            if (!automationInProgress.get()) {
+                                AuraOverlayService.restore(context)
+                            }
                             if (sessionActive.get()) startMicInternal() else viewModel.resetToIdle()
                         }
                     }

@@ -426,8 +426,12 @@ private fun ResponseSheet(
                         }
                     }
                     
-                    // Show partial transcript when listening
-                    if (state.isListening && state.partialTranscript.isNotBlank()) {
+                    // Show partial transcript while listening OR while AI responds.
+                    // The final confirmed transcript arrives at turn_complete (after audio
+                    // finishes). Keeping the partial visible during RESPONDING lets the
+                    // user see what they said while the AI is speaking. It is cleared
+                    // automatically when the final transcript bubble is added to messages.
+                    if (state.partialTranscript.isNotBlank()) {
                         item {
                             OverlayMessageBubble(
                                 message = ConversationMessage(

@@ -67,6 +67,13 @@ class AuraAccessibilityService : AccessibilityService() {
 
         fun isServiceRunning(): Boolean = instance != null
 
+        /**
+         * Pending MediaProjection permission result that arrived before the service was running.
+         * Consumed automatically in onServiceConnected().
+         */
+        var pendingMediaProjectionResultCode: Int? = null
+        var pendingMediaProjectionData: Intent? = null
+
         fun setBackendUrl(url: String) {
             val normalizedUrl = url.trimEnd('/')
             BACKEND_URL = normalizedUrl
@@ -164,6 +171,25 @@ class AuraAccessibilityService : AccessibilityService() {
         // Command polling removed - all commands now use WebSocket
 
         AgentLogger.UI.i("AURA Accessibility Service connected")
+
+        // Apply any pending MediaProjection permission that arrived while the service was not yet running
+        val pendingCode = pendingMediaProjectionResultCode
+        val pendingData = pendingMediaProjectionData
+        if (pendingCode != null && pendingData != null) {
+            pendingMediaProjectionResultCode = null
+            pendingMediaProjectionData = null
+            AgentLogger.Screen.i("📸 Applying pending MediaProjection permission on service connect")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                val success = screenCaptureManager.initializeMediaProjection(pendingCode, pendingData)
+                if (success) {
+                    AgentLogger.Screen.i("✅ Pending MediaProjection initialized successfully")
+                    updateScreenCaptureStatus(true)
+                    sendScreenCapturePermissionResult(granted = true)
+                } else {
+                    AgentLogger.Screen.e("❌ Pending MediaProjection initialization failed — token may be expired")
+                }
+            }
+        }
 
         startForegroundService()
 

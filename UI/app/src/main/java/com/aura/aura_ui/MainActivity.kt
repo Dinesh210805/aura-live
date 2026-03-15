@@ -320,17 +320,13 @@ class MainActivity : ComponentActivity() {
                         ).show()
                     }
                 } else {
-                    Log.e(TAG, "❌ Screen capture permission granted but Accessibility Service is not running")
-                    
-                    // Notify backend of failure
-                    AuraAccessibilityService.sendScreenCapturePermissionResult(
-                        granted = false, 
-                        error = "Accessibility Service not running"
-                    )
-                    
+                    // Service not running yet — stash the result so onServiceConnected() can apply it
+                    Log.w(TAG, "⚠️ Accessibility Service not running — storing permission for deferred init")
+                    AuraAccessibilityService.pendingMediaProjectionResultCode = result.resultCode
+                    AuraAccessibilityService.pendingMediaProjectionData = result.data
                     android.widget.Toast.makeText(
                         this,
-                        "⚠️ Please enable Accessibility Service first, then restart the app",
+                        "✅ Screen capture permission stored — will activate when service connects",
                         android.widget.Toast.LENGTH_LONG,
                     ).show()
                 }

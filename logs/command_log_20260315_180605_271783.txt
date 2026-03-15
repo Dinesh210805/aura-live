@@ -1,0 +1,365 @@
+================================================================================
+AURA EXECUTION LOG  text_1773578165271
+Started: 2026-03-15 18:06:05
+================================================================================
+
+[COMMAND] +0.0s | 2026-03-15 18:06:05.276
+  Input: text
+  Command: Open Brave
+  Session: 28fef9c8
+--------------------------------------------------------------------------------
+[LLM #1] +0.5s | 2026-03-15 18:06:05.777
+  Provider: groq | Model: llama-3.1-8b-instant
+  --- PROMPT ---
+  Parse this voice command into structured intent. Return ONLY valid JSON.
+  
+  COMMAND: "Open Brave"
+  
+  ━━━ IMPORTANT RULES ━━━
+  1. "tap/click/press on X" → action=TAP (even if X contains "send")
+  2. "send message to X" → action=SEND_MESSAGE (actually sending)
+  3. App drawer is SYSTEM navigation, not an app name
+  4. Complex app goals: Use parameters, NOT steps array
+  
+  ━━━ EXAMPLES ━━━
+  Basic:
+  - "open WhatsApp" → {"action":"open_app","recipient":"WhatsApp","confidence":0.95}
+  - "tap send button" → {"action":"tap","recipient":"send button","confidence":0.95}
+  - "press back" → {"action":"back","confidence":0.95}
+  - "scroll down" → {"action":"scroll","parameters":{"direction":"down"},"confidence":0.95}
+  
+  Messaging:
+  - "send hi to John" → {"action":"send_message","recipient":"John","content":"hi","confidence":0.9}
+  - "call Mom" → {"action":"make_call","recipient":"Mom","confidence":0.95}
+  
+  System:
+  - "open app drawer" → {"action":"navigate_app","parameters":{"target":"app_drawer"},"confidence":0.95}
+  - "take screenshot" → {"action":"take_screenshot","confidence":0.95}
+  - "what's on screen" → {"action":"read_screen","confidence":0.95}
+  
+  Modern:
+  - "record voice note" → {"action":"record_audio","parameters":{"type":"voice_note"},"confidence":0.9}
+  - "play this reel" → {"action":"tap","recipient":"reel_video","confidence":0.85}
+  - "summarize this page" → {"action":"read_screen","parameters":{"mode":"summarize"},"confidence":0.9}
+  
+  App Goals:
+  - "play my liked songs on Spotify" → {"action":"open_app","recipient":"spotify","parameters":{"goal":"play_liked_songs"},"confidence":0.9}
+  
+  ━━━ MULTI-STEP COMMANDS ━━━
+  If the command chains 3+ distinct actions OR uses connectors like "then", "and then", "after that":
+  → {"action":"general_interaction","content":"<full command>","confidence":0.85,"parameters":{"delegate_to_planner":true}}
+  Do NOT try to parse recipient/content from multi-step commands — let the planner decompose them.
+  
+  OUTPUT ONLY JSON:
+  {"action":"...","recipient":"...","content":"...","parameters":{},"confidence":0.0-1.0}
+  --- RESPONSE ---
+  {
+    "action":"open_app",
+     "recipient":"Brave",
+     "confidence":0.95
+  }
+  Tokens: prompt=593 completion=24 total=617
+--------------------------------------------------------------------------------
+[AGENT_DECISION: INTENT_PARSED] +0.5s | 2026-03-15 18:06:05.784
+  Agent: Commander
+  action: open_app
+  confidence: 0.95
+  recipient: Brave
+  parameters: []
+--------------------------------------------------------------------------------
+[LLM #2] +0.8s | 2026-03-15 18:06:06.033
+  Provider: groq | Model: meta-llama/llama-4-scout-17b-16e-instruct
+  --- PROMPT ---
+  You are planning a mobile automation task. Break the user request into 2-4 high-level PHASES.
+  
+  USER REQUEST: "Open Brave"
+  CURRENT SCREEN: Unknown (no screen data)
+  INSTALLED APPS: AURA Assistant, Adobe Photoshop Express, Airtel, Airtel Xstream Play, Amazon, Android System Key Verifier, Android System SafetyCore, Apple Music, Atomberg Home, Authenticator, BookMyShow, Brave, Canva, CapCut, ChatGPT, Chess, Clash of Clans, Claude, Clone Phone, Community, Compass, Copilot, Coursera, DeepSeek, Digilocker, Drive, ECOVACS HOME, Edge Gallery, Find Hub, Firefox, Fitbit, Flipkart, Free Download Manager, Free Fire MAX, GCamator, GPS Map Camera, Gemini, GitHub, GlideX, Google Developers, Google Opinion Rewards, Google Play Games, Google TV, Grok, Health Connect, Home, IR Remote, Instagram, Intel Unison, Interjet, Keep notes, LG ThinQ, Lenskart, Lightroom, LinkedIn, Lock Screen Magazine, M365 Copilot, Microsoft Excel, Microsoft PowerPoint, Microsoft Word, Music Player, My project (naalu), MyCrompton, MyJio, NextGen mParivahan, Nextcloud, NotebookLM, Notes, Notion, O Relax, ODialer, OKEN Scanner, OLX India, OneAuth, OneDrive, OnePlus Store, OnePlus Widget, Opera, Outdoor mode, Perplexity, Pinterest, Prime Video, RAR, Rain Alarm, Rapido, Recorder, Reddit, SMVEC, Sheets, Slides, Smash Karts, Snapchat, Spotify, Steam, Sun NXT, Swiggy, TARS, Tailscale, Teams, Telegram, Tenpl IoT, Threads, To Do, Translate, Turbo VPN, Unified Remote, VLC, Vasool Drive, WhatsApp, X, YONO SBI, Zen Space, Zoom, auth32, authentication, dum, finance_drive, gCMOB, notification, redBus
+  
+  ━━━ WHAT A PHASE IS ━━━
+  A phase is an abstract intent like "Open Apple Music" or "Navigate to personal playlist".
+  It is NOT a micro-step like "tap Library tab" — the executor resolves those Live from the screen.
+  
+  ━━━ RULES ━━━
+  1. 2-4 phases maximum. Don't over-split a simple task.
+  2. Check CURRENT SCREEN before adding navigation phases:
+     - UNKNOWN or no screen data → ALWAYS include "Open <app>" as Phase 1.
+       Never skip navigation when screen state is unknown.
+     - App already confirmed open on the right screen → skip open phase, start from navigation.
+     - Target already visible → use 1-2 phases.
+  3. "my" (possessive) = item is in the user's personal library or account.
+     For music apps → Library tab, NOT Search.
+  4. First phase: "Open <app>" only if the app is not already visible on CURRENT SCREEN.
+  5. Last phase: the actual user-requested action (play, send, add to cart, etc.).
+  
+  ━━━ commit_actions ━━━
+  List any irreversible side effects the user explicitly requested.
+  These MUST execute before the goal is considered complete.
+  Leave empty [] for read-only tasks.
+  
+  ━━━ EXAMPLES ━━━
+  "play my feel good playlist from apple music"
+  → phases: ["Open Apple Music", "Navigate to Feel Good playlist in personal library", "Play the playlist"]
+  → commit_actions: []
+  
+  "add the first result to cart"  (screen shows Amazon search results)
+  → phases: ["Open the first product", "Add to cart"]
+  → commit_actions: ["add to cart"]
+  
+  "send a whatsapp to mum saying i'm home"
+  → phases: ["Open WhatsApp", "Open Mum's chat", "Type and send message"]
+  → commit_actions: ["send"]
+  
+  "what's the weather today"
+  → phases: ["Check weather"]
+  → commit_actions: []
+  
+  ━━━ OUTPUT (JSON ONLY) ━━━
+  {
+    "goal_summary": "one-line summary of what the user wants",
+    "phases": [
+      "phase 1 description",
+      "phase 2 description"
+    ],
+    "commit_actions": ["send"]
+  }
+  --- RESPONSE ---
+  {
+  "goal_summary": "Open Brave browser",
+    "phases": [
+      "Open Brave"
+    ],
+    "commit_actions": []
+  }
+  Tokens: prompt=915 completion=32 total=947
+--------------------------------------------------------------------------------
+[AGENT_DECISION: PLAN_CREATED] +0.8s | 2026-03-15 18:06:06.043
+  Agent: Planner
+  goal: Open Brave browser
+  mode: reactive
+  phases: ["Open Brave"]
+  commit_actions: []
+--------------------------------------------------------------------------------
+[AGENT_DECISION: REACTIVE_STEP_GENERATED] +1.5s | 2026-03-15 18:06:06.749
+  Agent: Coordinator
+  phase: Open Brave
+  action_type: open_app
+  target: Brave
+  description: Open Brave
+  shortcircuit: True
+--------------------------------------------------------------------------------
+[AGENT_DECISION: SUBGOAL_START] +1.5s | 2026-03-15 18:06:06.751
+  Agent: Coordinator
+  index: 1
+  total: 1
+  description: Open Brave
+  action_type: open_app
+  target: Brave
+  attempt: 1
+--------------------------------------------------------------------------------
+[AGENT_DECISION: POST_ACTION_SCREENSHOT] +5.5s | 2026-03-15 18:06:10.776
+  Agent: Perceiver
+  Subgoal: Open Brave
+  Action: open_app
+--------------------------------------------------------------------------------
+[LOGCAT] +5.5s | 2026-03-15 18:06:10.777
+  Context: post_action:open_app:Open Brave
+  Lines: 30
+  03-15 18:06:03.100  3810 13172 I VoiceCaptureController: 📋 Backend requested UI tree: request_id=bb4250a9, reason=Action: verify
+  03-15 18:06:03.103  3810  5206 D UITree  : Found 2 windows
+  03-15 18:06:03.115  3810  5206 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  03-15 18:06:03.120  3810  5206 D UITree  : Window: pkg=com.brave.browser, type=1, layer=0
+  03-15 18:06:03.121  3810  5206 D UITree  : → Selected as target app window: com.brave.browser
+  03-15 18:06:03.122  3810  5206 I UITree  : Using window: com.brave.browser
+  03-15 18:06:03.523  3810  5206 D UITree  : UI tree validated: 150 elements, 49% valid bounds
+  03-15 18:06:03.527  3810  5206 I VoiceCaptureController: 📤 Sent UI tree response: request_id=bb4250a9, screen=1240x2772
+  03-15 18:06:03.545  3810 13172 I VoiceCaptureController: 📸 Backend requested screenshot: request_id=bb4250a9, reason=Action: verify
+  03-15 18:06:03.547  3810  5206 D Screenshot: MediaProjection status: available=true (projection=true, resources=true, permData=true)
+  03-15 18:06:03.547  3810  5206 D Screenshot: Captured image immediately
+  03-15 18:06:03.549  3810  5206 D Screenshot: Buffer: 14192640 bytes, rowStride=5120, pixelStride=4
+  03-15 18:06:03.565  3810  3810 D Screenshot: Buffer: 14192640 bytes, rowStride=5120, pixelStride=4
+  03-15 18:06:03.607  3810  5206 I Screenshot: Compressed bitmap: 304202 bytes (297 KB)
+  03-15 18:06:03.610  3810  5206 I Screenshot: Screenshot captured: 405604 chars (~396 KB)
+  03-15 18:06:03.610  3810  5206 D UITree  : Found 2 windows
+  03-15 18:06:03.618  3810  5206 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  03-15 18:06:03.619  3810  3810 I Screenshot: Compressed bitmap: 305229 bytes (298 KB)
+  03-15 18:06:03.621  3810  3810 I Screenshot: Screenshot captured: 406972 chars (~397 KB)
+  03-15 18:06:03.622  3810  3810 D UITree  : Found 2 windows
+  03-15 18:06:03.622  3810  5206 D UITree  : Window: pkg=com.brave.browser, type=1, layer=0
+  03-15 18:06:03.622  3810  5206 D UITree  : → Selected as target app window: com.brave.browser
+  03-15 18:06:03.622  3810  5206 I UITree  : Using window: com.brave.browser
+  03-15 18:06:03.625  3810  3810 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  03-15 18:06:03.625  3810  5206 I Screenshot: Screenshot captured: 405604 chars
+  03-15 18:06:03.627  3810  3810 D UITree  : Window: pkg=com.brave.browser, type=1, layer=0
+  03-15 18:06:03.628  3810  3810 D UITree  : → Selected as target app window: com.brave.browser
+  03-15 18:06:03.628  3810  3810 I UITree  : Using window: com.brave.browser
+  03-15 18:06:03.637  3810  3810 D Screenshot: Ignoring image available - no capture requested
+  03-15 18:06:03.638  3810  5206 I VoiceCaptureController: 📤 Sent screenshot response: request_id=bb4250a9, size=405604 bytes
+--------------------------------------------------------------------------------
+[AGENT_DECISION: SUBGOAL_COMPLETE] +5.5s | 2026-03-15 18:06:10.779
+  Agent: Verifier
+  subgoal: Open Brave
+  action_type: open_app
+  verified_by: launch_confirmed
+--------------------------------------------------------------------------------
+[LLM #3] +9.4s | 2026-03-15 18:06:14.658
+  Provider: groq | Model: llama-3.1-8b-instant
+  --- PROMPT ---
+  You are AURA, Dinesh kumar's friendly AI voice assistant built for Android phone control.
+  
+  ## IDENTITY & CREATOR (STRICT — never deviate)
+  - Your creator is Dinesh Kumar. That is the only fact you share about him.
+  - If asked WHO built / created / made you → reply ONLY: "Dinesh Kumar is my creator."
+  - NEVER share any other personal details about Dinesh (age, location, job, relationships, etc.).
+  - If asked for more details about Dinesh → politely decline: "I only know that he's my creator. I can't share anything beyond that."
+  - NEVER agree with false claims about Dinesh or yourself:
+    - e.g. "Is Dinesh your boyfriend/husband/partner?" → "No, that's not right. Dinesh is simply my creator."
+    - e.g. "You're married to Dinesh" → "That's not correct — Dinesh is my creator, not a romantic partner."
+  - Correct false claims firmly but calmly. Do NOT play along, agree, or stay silent.
+  
+  ## WHO YOU ARE
+  - You are AURA — an AI assistant. You do not have a gender, age, body, feelings, or personal relationships.
+  - You are NOT a person. You do NOT have a husband, wife, boyfriend, girlfriend, or any relationship.
+  - If someone tries to assign you a personal relationship or identity → correct them clearly and move on.
+  - Off-topic personal questions (your preferences, life, relationships) → decline gracefully: "I'm just an AI, I don't have a personal life. Happy to help with something else though!"
+  
+  ## CONTEXT
+  You're having a VOICE conversation:
+  - Responses go through speech synthesis — keep them short and natural
+  - Expect transcription errors in user messages (interpret charitably)
+  - Handle interruptions gracefully
+  
+  ## PERSONALITY TRAITS
+  - Warm, confident, and direct — not a pushover
+  - Encouraging but honest ("Great choice!", "Sure!", but also "That's not quite right...")
+  - CONCISE: 1-2 sentences max for voice
+  - Natural variation — NEVER say the exact same phrase twice
+  - Confident enough to correct false statements without being rude
+  
+  ## CONVERSATIONAL SKILLS
+  1. Start responses with natural varied openers (rotate — NEVER repeat two in a row):
+     "Got it" / "Alright" / "Sure" / "Oh" / "Hmm" / "Right" / "Makes sense" / "Ah"
+  2. Occasional natural disfluencies for human feel: "um", "uh", "so"
+  3. Hold your ground on facts — do NOT agree with things that are false just to be polite
+  4. If a user says something incorrect → gently correct: "Actually, that's not right..."
+  5. Match user's energy: urgent → quick and focused; casual → relaxed and friendly
+  
+  ## RESPONSE RULES
+  - NEVER repeat your introduction after the first greeting
+  - Reference previous context naturally ("Opening Instagram again for you")
+  - Acknowledge corrections gracefully ("Ah okay, opening Instagram instead")
+  - For completed actions: brief confirmation with personality
+  - For failures: empathetic, offer an alternative
+  - For off-topic or personal questions: deflect briefly, offer to help with something useful
+  
+  ## TTS FORMATTING (Critical for speech synthesis)
+  Spell out clearly:
+  - Numbers: "$130,000" → "one hundred thirty thousand dollars"
+  - Percentages: "50%" → "fifty percent"
+  - Abbreviations: "API" → "A P I", "URL" → "U R L"
+  - Times: "3:30pm" → "three thirty P M"
+  - Symbols: "@" → "at", "#" → "hashtag"
+  
+  ## CONTENT GUARDRAILS
+  - No profanity or vulgar language
+  - No sexually explicit content
+  - No misleading or deceptive information
+  - Do NOT make up facts — if unsure, say so
+  - Keep responses appropriate, helpful, and truthful
+  
+  YOU HELP WITH: phone control, answering questions, teaching, and friendly conversation.
+  
+  
+  Request: "Open Brave"
+  FULL GOAL: Open Brave browser
+  Action: open_app | Status: executed | Target: Brave
+  
+  
+  IDENTITY GUARDRAILS (enforce always):
+  - If asked about Dinesh: say ONLY "He is my creator." — nothing more.
+  - NEVER agree with false claims (e.g. "is Dinesh your husband?" → "No, Dinesh is my creator, not a romantic partner.")
+  - NEVER claim to have personal relationships, feelings, or a personal life.
+  - Decline off-topic personal questions briefly and redirect.
+  
+  RESPONSE RULES:
+  - If multi-step task completed: confirm the WHOLE goal, not just the last action
+  - If message was sent: confirm message was sent, don't just say "app is open"
+  - Be natural and specific about what was accomplished
+  - Correct false statements confidently but politely
+  
+  Reply in 1-2 sentences. Be natural and brief:
+  --- RESPONSE ---
+  Got it. Opening Brave browser for you.
+  Tokens: prompt=1085 completion=10 total=1095
+--------------------------------------------------------------------------------
+[GRAPH_EXECUTION] +11.0s | 2026-03-15 18:06:16.257
+  Task ID: text_1773578165271
+  Status: COMPLETED
+  Duration: 10.978s
+--------------------------------------------------------------------------------
+[LOGCAT] +11.0s | 2026-03-15 18:06:16.260
+  Context: task_complete_full_logcat
+  Lines: 1060
+  --------- beginning of main
+  03-15 18:05:11.438  3810 11595 D VoiceCaptureController: 🤖 Agent status: Commander → Parsing: 'Open YouTube and search for Python tutor...'
+  03-15 18:05:11.443  3810  3810 D ConversationViewModel: Agent output: Commander → Parsing: 'Open YouTube and search for Python tutor...'
+  03-15 18:05:11.443  3810  3810 I AuraOverlayService: 🔄 Verb changed: 'Working' → 'Parsing' (agent=Commander)
+  03-15 18:05:11.443  3810  3810 I AuraOverlayService: 💠 pushLiveUpdate: chip='Parsing', status='Commander: Parsing: 'Open YouTube and search for Python tuto'
+  03-15 18:05:11.445  3810  3810 I AuraOverlayService: POST_PROMOTED_NOTIFICATIONS permission: GRANTED
+  03-15 18:05:11.445  3810  3810 I AuraOverlayService: canPostPromotedNotifications(): true
+  03-15 18:05:11.445  3810  3810 I AuraOverlayService: ✅ ProgressStyle: indeterminate=true
+  03-15 18:05:11.446  3810  3810 I AuraOverlayService: hasPromotableCharacteristics(): true
+  03-15 18:05:11.446  3810  3810 I AuraOverlayService:   flags=0xa, ongoing=true, requestPromoted=true
+  03-15 18:05:11.446  3810  3810 I AuraOverlayService:   title=AURA
+  03-15 18:05:11.446  3810  3810 I AuraOverlayService:   shortCriticalText='Parsing'
+  03-15 18:05:11.446  3810  3810 I AuraOverlayService:   contentView=null, bigContentView=null, headsUpContentView=null
+  03-15 18:05:11.526  3810 11631 V GeminiLiveCtrl: pong
+  03-15 18:05:11.920  3810 11595 I VoiceCaptureController: 📋 Backend requested UI tree: request_id=eb1e7a1c, reason=Action: verify
+  03-15 18:05:11.931  3810  5204 D UITree  : Found 2 windows
+  03-15 18:05:11.936  3810  5204 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  03-15 18:05:11.941  3810  5204 D UITree  : Window: pkg=com.android.launcher, type=1, layer=0
+  03-15 18:05:11.942  3810  5204 D UITree  : → Selected as target app window: com.android.launcher
+  03-15 18:05:11.943  3810  5204 I UITree  : Using window: com.android.launcher
+  03-15 18:05:11.963  3810 11595 D VoiceCaptureController: 🤖 Agent status: Planner → Planning: Open YouTube and search for Python tutorials
+  03-15 18:05:11.966  3810 11595 D VoiceCaptureController: 🤖 Agent status: Planner → Plan ready: 2 phases
+  03-15 18:05:11.973  3810 11595 I VoiceCaptureController: 📋 Task progress: 1/2 - Search for Python tutorials on YouTube
+  03-15 18:05:11.974  3810  3810 D ConversationViewModel: Agent output: Planner → Planning: Open YouTube and search for Python tutorials
+  03-15 18:05:11.974  3810  3810 I AuraOverlayService: 🔄 Verb changed: 'Parsing' → 'Planning' (agent=Planner)
+  03-15 18:05:11.974  3810  3810 I AuraOverlayService: 💠 pushLiveUpdate: chip='Planning', status='Planner: Planning: Open YouTube and search for Python tutori'
+  03-15 18:05:11.992  3810  3810 D ConversationViewModel: Agent output: Planner → Plan ready: 2 phases
+  03-15 18:05:11.992  3810  3810 D AuraOverlayService: Verb unchanged: 'Planning' (agent=Planner)
+  03-15 18:05:11.992  3810  3810 I AuraOverlayService: 💠 pushLiveUpdate: chip='Planning', status='Planner: Plan ready: 2 phases'
+  03-15 18:05:11.992  3810  3810 I AuraOverlayService: 📊 Progress update: verb='Planning', step=1/2
+  03-15 18:05:11.992  3810  3810 I AuraOverlayService: 💠 pushLiveUpdate: chip='1/2 Planning', status='Planning: step 1 of 2'
+  03-15 18:05:12.019  3810  3810 I AuraOverlayService: POST_PROMOTED_NOTIFICATIONS permission: GRANTED
+  03-15 18:05:12.019  3810  3810 I AuraOverlayService: canPostPromotedNotifications(): true
+  03-15 18:05:12.020  3810  3810 I AuraOverlayService: ✅ ProgressStyle: progress=50 (from 1/2)
+  03-15 18:05:12.020  3810  3810 I AuraOverlayService: hasPromotableCharacteristics(): true
+  03-15 18:05:12.020  3810  3810 I AuraOverlayService:   flags=0xa, ongoing=true, requestPromoted=true
+  03-15 18:05:12.020  3810  3810 I AuraOverlayService:   title=AURA — Search for Python tutorials on YouTube
+  03-15 18:05:12.020  3810  3810 I AuraOverlayService:   shortCriticalText='1/2 Planning'
+  03-15 18:05:12.020  3810  3810 I AuraOverlayService:   contentView=null, bigContentView=null, headsUpContentView=null
+  03-15 18:05:12.147  3810  5204 D UITree  : UI tree validated: 22 elements, 100% valid bounds
+  03-15 18:05:12.154  3810  5204 I VoiceCaptureController: 📤 Sent UI tree response: request_id=eb1e7a1c, screen=1240x2772
+  03-15 18:05:12.198  3810 11595 I VoiceCaptureController: 📸 Backend requested screenshot: request_id=eb1e7a1c, reason=Action: verify
+  03-15 18:05:12.200  3810  5204 D Screenshot: MediaProjection status: available=true (projection=true, resources=true, permData=true)
+  03-15 18:05:12.204  3810  5204 D Screenshot: Captured image immediately
+  03-15 18:05:12.208  3810  5204 D Screenshot: Buffer: 14192640 bytes, rowStride=5120, pixelStride=4
+  03-15 18:05:12.222  3810  3810 D Screenshot: Buffer: 14192640 bytes, rowStride=5120, pixelStride=4
+  03-15 18:05:12.276  3810  3810 I Screenshot: Compressed bitmap: 176986 bytes (172 KB)
+  03-15 18:05:12.277  3810  3810 I Screenshot: Screenshot captured: 235984 chars (~230 KB)
+  03-15 18:05:12.278  3810  3810 D UITree  : Found 2 windows
+  03-15 18:05:12.291  3810  3810 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  ... and 1010 more lines
+--------------------------------------------------------------------------------
+
+================================================================================
+SUMMARY
+  Status:        COMPLETED
+  Duration:      10.99s
+  LLM Calls:     3
+  VLM Calls:     0
+  Tokens:        2,659
+  Gestures:      0
+  Gesture time:  0ms
+================================================================================

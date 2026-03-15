@@ -150,7 +150,9 @@ class VLMService:
             ModelProviderError: If all available providers fail.
         """
         target_provider = provider or self.settings.default_vlm_provider
-        target_model = model or self.settings.default_vlm_model
+        target_model = model or self.provider_models.get(
+            target_provider, self.settings.default_vlm_model
+        )
 
         logger.info(
             f"Analyzing image with provider: {target_provider}, model: {target_model}"
@@ -169,7 +171,15 @@ class VLMService:
 
             # If fallback is enabled, try alternative providers
             if self.settings.enable_provider_fallback:
-                fallback_providers = [p for p in ["nvidia", "gemini", "groq"] if p != target_provider]
+                preferred_fallback = self.settings.fallback_vlm_provider
+                fallback_providers = []
+                if preferred_fallback != target_provider:
+                    fallback_providers.append(preferred_fallback)
+                fallback_providers.extend(
+                    p
+                    for p in ["nvidia", "gemini", "groq"]
+                    if p != target_provider and p not in fallback_providers
+                )
 
                 for fallback_provider in fallback_providers:
                     try:
@@ -213,7 +223,9 @@ class VLMService:
         Passes both images in a single VLM call for delta detection.
         """
         target_provider = provider or self.settings.default_vlm_provider
-        target_model = model or self.settings.default_vlm_model
+        target_model = model or self.provider_models.get(
+            target_provider, self.settings.default_vlm_model
+        )
 
         try:
             if target_provider == "groq":

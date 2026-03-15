@@ -53,7 +53,10 @@ class PcmStreamPlayer {
             audioTrack = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        // USAGE_VOICE_COMMUNICATION pairs with MODE_IN_COMMUNICATION
+                        // to activate hardware echo cancellation at the driver level,
+                        // preventing Gemini from hearing its own voice through the mic.
+                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )

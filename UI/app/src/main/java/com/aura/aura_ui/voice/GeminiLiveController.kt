@@ -2,8 +2,10 @@ package com.aura.aura_ui.voice
 
 import android.content.Context
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.AcousticEchoCanceler
 import android.os.Build
 import android.util.Base64
 import android.util.Log
@@ -31,6 +33,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Gemini Live bidirectional audio controller — fully continuous/hands-free mode.
@@ -82,6 +85,13 @@ class GeminiLiveController(
         private const val SCREENSHOT_INTERVAL_MS = 3000L
         private const val UI_TREE_INTERVAL_MS = 5000L
         private const val PING_INTERVAL_MS = 25_000L
+
+        // ── Post-response auto-stop ───────────────────────────────────────────
+        // After the AI finishes speaking, the mic restarts for follow-up.
+        // If the user stays silent for this long, the session auto-ends cleanly.
+        private const val POST_RESPONSE_SILENCE_MS = 8000L
+        // Amplitude below this = silence (normalised 0..1 RMS scale)
+        private const val SPEECH_AMPLITUDE_THRESHOLD = 0.025f
     }
 
     // ── OkHttp ───────────────────────────────────────────────────────────────
@@ -109,7 +119,7 @@ class GeminiLiveController(
     private var recordingJob: Job? = null
     private var screenshotJob: Job? = null
     private var pingJob: Job? = null
-    private val vadDetector = SimpleVAD()
+    // No client-side VAD — server RealtimeInputConfig handles all turn detection
 
     // ── Audio playback (single-consumer queue pattern) ────────────────────────
     private val pcmPlayer = PcmStreamPlayer()
@@ -118,6 +128,26 @@ class GeminiLiveController(
     // Set true when server sends task_progress:idle — player drains then
     // restarts listening instead of going IDLE.
     private val isTurnComplete = AtomicBoolean(false)
+
+    // ── Transcript accumulation ───────────────────────────────────────────────
+    // Buffer user speech fragments received during a turn; flushed as ONE
+    // chat message when the AI starts responding (mic muted for playback).
+    // Backend already accumulates AI transcripts into one message per turn.
+    private val pendingUserTranscript = StringBuilder()
+
+    // ── Post-response silence auto-stop ───────────────────────────────────────
+    // Tracks the last time non-silence audio was captured. After a response
+    // completes the controller starts a watchdog; if this timestamp isn't
+    // updated within POST_RESPONSE_SILENCE_MS the session auto-ends.
+    private val lastSpeechMs = AtomicLong(0L)
+    private var postResponseSilenceJob: Job? = null
+
+    // ── AudioManager for AEC mode ─────────────────────────────────────────────
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    // True when hardware AcousticEchoCanceler was successfully attached to the mic.
+    // When true: mic stays open during playback — barge-in is fully supported.
+    // When false: mic is muted during playback to prevent echo feedback loop.
+    private val hasHardwareAec = AtomicBoolean(false)
 
     // ── Public API ────────────────────────────────────────────────────────────
 
@@ -205,6 +235,7 @@ class GeminiLiveController(
         }
 
         sessionActive.set(true)
+        cancelPostResponseSilenceTimer()
         stopAudioPlayer()
         audioQueue.clear()
         isTurnComplete.set(false)
@@ -221,6 +252,10 @@ class GeminiLiveController(
         if (!isConnected.get()) return
 
         try {
+            // Use VOICE_COMMUNICATION mode: enables hardware AEC, noise suppression,
+            // and automatic gain control at the driver level on most devices.
+            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+
             val chunkSize = (SAMPLE_RATE * CHUNK_MS / 1000) * 2
             val bufferSize = maxOf(
                 AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT),
@@ -228,15 +263,33 @@ class GeminiLiveController(
             )
             @Suppress("MissingPermission")
             audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
+                MediaRecorder.AudioSource.VOICE_COMMUNICATION, // best source for AEC
                 SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize
             )
+
+            // Apply hardware Acoustic Echo Canceler if available — prevents mic from
+            // picking up speaker output and creating a Gemini-hears-itself loop.
+            val sessionId = audioRecord?.audioSessionId ?: AudioManager.ERROR
+            if (sessionId != AudioManager.ERROR && AcousticEchoCanceler.isAvailable()) {
+                val aec = AcousticEchoCanceler.create(sessionId)
+                if (aec != null) {
+                    aec.enabled = true
+                    hasHardwareAec.set(true)
+                    Log.i(TAG, "✅ AcousticEchoCanceler enabled — barge-in active (session $sessionId)")
+                } else {
+                    hasHardwareAec.set(false)
+                    Log.w(TAG, "AcousticEchoCanceler.create() returned null — falling back to mic-mute")
+                }
+            } else {
+                hasHardwareAec.set(false)
+                Log.w(TAG, "AcousticEchoCanceler not available — barge-in disabled, mic-mute mode active")
+            }
+
             audioRecord?.startRecording()
             isRecording.set(true)
-            vadDetector.reset()
 
             viewModel.updatePhase(ConversationPhase.LISTENING)
-            viewModel.updatePartialTranscript("🎤 Listening...")
+            viewModel.updatePartialTranscript("")
 
             recordingJob = scope.launch(Dispatchers.IO) { streamAudioToGemini(chunkSize) }
             screenshotJob = scope.launch(Dispatchers.IO) { streamScreenContext() }
@@ -278,6 +331,7 @@ class GeminiLiveController(
      */
     fun cancelCapture() {
         sessionActive.set(false)
+        cancelPostResponseSilenceTimer()
         isRecording.set(false)
         recordingJob?.cancel()
         recordingJob = null
@@ -290,7 +344,9 @@ class GeminiLiveController(
 
         stopAudioPlayer()
         audioQueue.clear()
+        pendingUserTranscript.clear()
         onAmplitudeUpdate?.invoke(0f)
+        audioManager.mode = AudioManager.MODE_NORMAL  // restore normal audio routing
         viewModel.updatePhase(ConversationPhase.IDLE)
         viewModel.updatePartialTranscript("")
         Log.d(TAG, "Gemini Live capture cancelled (session ended)")
@@ -307,7 +363,7 @@ class GeminiLiveController(
     }
 
     fun cleanup() {
-        cancelCapture()
+        cancelCapture()          // also cancels postResponseSilenceTimer
         pingJob?.cancel()
         pingJob = null
         webSocket?.close(1000, "Gemini Live controller cleanup")
@@ -320,34 +376,30 @@ class GeminiLiveController(
 
     private suspend fun streamAudioToGemini(chunkSize: Int) {
         val buffer = ByteArray(chunkSize)
-        var speechDetected = false
-        var silenceFrames = 0
-        val silenceThreshold = 20 // ~2 s at 100 ms chunks
 
+        // Stream audio continuously to Gemini Live — no client-side VAD stopping.
+        // The server's RealtimeInputConfig (AutomaticActivityDetection, 2 s silence)
+        // handles all turn boundaries. Client-side silence detection caused the
+        // "1.6 s cutoff" bug and fought against server VAD causing random commands.
         while (isRecording.get()) {
             val bytesRead = audioRecord?.read(buffer, 0, buffer.size) ?: 0
             if (bytesRead <= 0) continue
 
+            // Amplitude used for UI waveform animation only
             val amplitude = calculateAmplitude(buffer, bytesRead)
             withContext(Dispatchers.Main) { onAmplitudeUpdate?.invoke(amplitude) }
 
-            val isSpeech = vadDetector.isSpeech(buffer, bytesRead)
-            if (isSpeech) {
-                silenceFrames = 0
-                speechDetected = true
-            } else if (speechDetected) {
-                silenceFrames++
+            // Track last-speech timestamp. If user speaks during the post-response
+            // silence window, cancel the auto-stop timer — they want to continue.
+            if (amplitude > SPEECH_AMPLITUDE_THRESHOLD) {
+                lastSpeechMs.set(System.currentTimeMillis())
+                cancelPostResponseSilenceTimer()
             }
 
             val encoded = Base64.encodeToString(buffer.copyOf(bytesRead), Base64.NO_WRAP)
             sendJson(JSONObject().apply { put("type", "audio_chunk"); put("data", encoded) })
-
-            if (speechDetected && silenceFrames >= silenceThreshold) {
-                Log.i(TAG, "✋ VAD silence detected — auto-stopping Gemini Live capture")
-                withContext(Dispatchers.Main) { stopCapture() }
-                break
-            }
         }
+        Log.d(TAG, "streamAudioToGemini: loop exited (isRecording=${isRecording.get()})")
     }
 
     private suspend fun streamScreenContext() {
@@ -421,6 +473,26 @@ class GeminiLiveController(
         if (audioPlayerJob?.isActive == true) return
 
         audioPlayerJob = scope.launch(Dispatchers.IO) {
+
+            withContext(Dispatchers.Main) {
+                if (hasHardwareAec.get()) {
+                    // ── AEC path: mic stays OPEN during playback ──────────
+                    // Hardware echo canceller prevents the speaker output from
+                    // being captured by the mic, so Gemini won't hear itself.
+                    // This also enables barge-in: user can speak while AI
+                    // is talking and Gemini will interrupt itself.
+                    Log.d(TAG, "🎤 Mic stays open during playback (AEC active, barge-in enabled)")
+                } else {
+                    // ── No-AEC path: mute mic to prevent echo feedback ────
+                    // On this device hardware AEC is unavailable so any speaker
+                    // output would be captured and fed back to Gemini.
+                    // Barge-in is unavailable in this mode.
+                    muteMicForPlayback()
+                }
+                // Flush accumulated user transcript as one chat message
+                flushPendingUserTranscript()
+            }
+
             pcmPlayer.start()
             withContext(Dispatchers.Main) {
                 viewModel.updatePhase(ConversationPhase.RESPONDING)
@@ -445,20 +517,69 @@ class GeminiLiveController(
             isTurnComplete.set(false)
             audioPlayerJob = null
 
-            // ── Bidirectional auto-restart ─────────────────────────────────
-            // After AI finishes speaking, go back to LISTENING automatically
-            // so the user can speak again without pressing any button.
-            // Only restart if the session is still active AND we're not
-            // recording (user might have pressed mic again already).
+            // ── Echo cooldown before mic restarts (no-AEC path only) ────────
+            // With AEC: mic is already open, no cooldown needed.
+            // Without AEC: wait for room reverb to decay before reopening mic,
+            // otherwise the speaker echo triggers Gemini's VAD immediately.
+            if (sessionActive.get()) {
+                delay(if (hasHardwareAec.get()) 200L else 1000L)
+            }
+
+            // ── Bidirectional auto-restart / phase reset ───────────────────
             if (sessionActive.get() && !isRecording.get()) {
-                Log.d(TAG, "Audio drained — restarting mic for bidirectional session")
-                withContext(Dispatchers.Main) { startMicInternal() }
-            } else if (!sessionActive.get()) {
-                // Session was cancelled while audio was playing
+                // No-AEC path: mic was muted, restart it now
+                Log.d(TAG, "Audio drained + cooldown done — restarting mic")
                 withContext(Dispatchers.Main) {
+                    startMicInternal()
+                    startPostResponseSilenceTimer()
+                }
+            } else if (sessionActive.get() && isRecording.get()) {
+                // AEC path: mic stayed open, just flip phase back to LISTENING
+                Log.d(TAG, "Audio drained — returning to LISTENING (mic was open)")
+                withContext(Dispatchers.Main) {
+                    viewModel.updatePhase(ConversationPhase.LISTENING)
+                    startPostResponseSilenceTimer()
+                }
+            } else if (!sessionActive.get()) {
+                withContext(Dispatchers.Main) {
+                    audioManager.mode = AudioManager.MODE_NORMAL
                     viewModel.updatePhase(ConversationPhase.IDLE)
                     AuraOverlayService.restore(context)
                 }
+            }
+        }
+    }
+
+    /**
+     * Mute the microphone while AI audio plays back — prevents the speaker
+     * output from being captured by the mic and fed back to Gemini (echo loop).
+     *
+     * Unlike [stopCapture], this does NOT send `end_turn` and does NOT change
+     * [sessionActive] — the session remains alive and mic will auto-restart.
+     */
+    private fun muteMicForPlayback() {
+        if (!isRecording.get()) return
+        isRecording.set(false)
+        recordingJob?.cancel(); recordingJob = null
+        screenshotJob?.cancel(); screenshotJob = null
+        audioRecord?.stop()
+        audioRecord?.release()
+        audioRecord = null
+        onAmplitudeUpdate?.invoke(0f)
+        Log.d(TAG, "🔇 Mic muted for playback — echo prevention (session still active)")
+    }
+
+    /**
+     * Flush accumulated user speech transcript as one chat message.
+     * Called just before AI starts playing audio (end of user turn).
+     */
+    private fun flushPendingUserTranscript() {
+        val text = pendingUserTranscript.toString().trim()
+        pendingUserTranscript.clear()
+        if (text.isNotEmpty()) {
+            scope.launch {
+                viewModel.addUserMessage(text)
+                viewModel.updatePartialTranscript("")
             }
         }
     }
@@ -467,6 +588,64 @@ class GeminiLiveController(
         audioPlayerJob?.cancel()
         audioPlayerJob = null
         pcmPlayer.stop()
+    }
+
+    /**
+     * Start the post-response silence watchdog.
+     *
+     * After each AI turn ends the controller restarts the mic and enters a
+     * brief listen-for-follow-up window.  If the user doesn't speak above
+     * [SPEECH_AMPLITUDE_THRESHOLD] for [POST_RESPONSE_SILENCE_MS] milliseconds,
+     * the session is cancelled automatically — no infinite listening loop.
+     *
+     * Cancelled early by [cancelPostResponseSilenceTimer] whenever the amplitude
+     * tracker in [streamAudioToGemini] detects real speech.
+     */
+    private fun startPostResponseSilenceTimer() {
+        postResponseSilenceJob?.cancel()
+        lastSpeechMs.set(System.currentTimeMillis())  // grace period starts now
+        postResponseSilenceJob = scope.launch {
+            while (isActive && sessionActive.get()) {
+                delay(500L)  // check every 500 ms
+                val silenceMs = System.currentTimeMillis() - lastSpeechMs.get()
+                if (silenceMs >= POST_RESPONSE_SILENCE_MS) {
+                    Log.i(TAG, "⏱ No speech for ${POST_RESPONSE_SILENCE_MS / 1000}s — auto-ending session")
+                    withContext(Dispatchers.Main) { cancelCapture() }
+                    break
+                }
+            }
+        }
+        Log.d(TAG, "Post-response silence timer started (${POST_RESPONSE_SILENCE_MS / 1000}s)")
+    }
+
+    private fun cancelPostResponseSilenceTimer() {
+        postResponseSilenceJob?.cancel()
+        postResponseSilenceJob = null
+    }
+
+    /**
+     * Immediately interrupt AI audio playback because the user started speaking.
+     *
+     * Called when a [transcript] with [is_user=true] arrives while the audio
+     * player is active. Only triggered on AEC-capable devices where the mic
+     * is open during playback.
+     *
+     * Steps:
+     *  1. Clear the pending audio queue so no more chunks are written.
+     *  2. Cancel the player coroutine (exits the drain loop immediately).
+     *  3. Stop the AudioTrack (flushes hardware buffer).
+     *  4. Reset state flags so the next turn starts clean.
+     *  5. Update UI phase back to LISTENING (mic is already open on AEC path).
+     */
+    private fun interruptPlaybackForBargein() {
+        if (audioPlayerJob?.isActive != true) return
+        Log.i(TAG, "🗣️ Barge-in detected — interrupting AI playback immediately")
+        audioQueue.clear()           // drop queued chunks we haven't played yet
+        isTurnComplete.set(false)    // reset so next turn's drain loop works correctly
+        audioPlayerJob?.cancel()     // exit the drain coroutine at next suspension point
+        audioPlayerJob = null
+        pcmPlayer.stop()             // flush + release AudioTrack immediately
+        viewModel.updatePhase(ConversationPhase.LISTENING)
     }
 
     private fun handleMessage(text: String) {
@@ -487,22 +666,28 @@ class GeminiLiveController(
                     val transcript = json.optString("text", "")
                     val isFinal = json.optBoolean("is_final", true)
                     val isUser = json.optBoolean("is_user", false)
-                    scope.launch {
-                        if (isUser) {
-                            // User speech transcription from Gemini input_transcription
-                            if (transcript.isNotEmpty()) {
-                                viewModel.addUserMessage(transcript)
-                                viewModel.updatePartialTranscript("")
-                            }
-                        } else {
-                            // AI output transcription
-                            if (isFinal && transcript.isNotEmpty()) {
-                                viewModel.addAssistantMessage(transcript)
-                                viewModel.updatePartialTranscript("")
-                            } else if (!isFinal) {
-                                viewModel.updatePartialTranscript(transcript)
+                    if (isUser && transcript.isNotEmpty()) {
+                        // ── Update pendingUserTranscript SYNCHRONOUSLY on the WebSocket
+                        // thread — this MUST happen before the next message is dispatched.
+                        // If we put this inside scope.launch{}, it races with
+                        // flushPendingUserTranscript() which is called when the very next
+                        // audio_response chunk arrives, often losing the race and producing
+                        // an empty user message.
+                        pendingUserTranscript.clear()
+                        pendingUserTranscript.append(transcript)
+                        scope.launch(Dispatchers.Main) {
+                            viewModel.updatePartialTranscript(transcript)
+                            if (hasHardwareAec.get()) {
+                                // Barge-in: cancel AI audio immediately when user speaks.
+                                interruptPlaybackForBargein()
                             }
                         }
+                        Log.d(TAG, "User transcript buffered: ${transcript.take(60)}")
+                    } else if (!isUser && isFinal && transcript.isNotEmpty()) {
+                        // AI transcript arrives once per turn (is_final=true).
+                        // Add directly to chat — no buffering needed.
+                        Log.d(TAG, "AI transcript received: ${transcript.take(60)}")
+                        scope.launch { viewModel.addAssistantMessage(transcript) }
                     }
                 }
 
@@ -551,6 +736,14 @@ class GeminiLiveController(
                     val msg = json.optString("message", "Unknown Gemini Live error")
                     Log.e(TAG, "Server error: $msg")
                     scope.launch { viewModel.setError(msg) }
+                }
+
+                // Server detected the user started speaking mid-response (barge-in).
+                // Matches Google's reference: clear audio queue + stop playback
+                // immediately so the user doesn't wait for the queue to drain.
+                "interrupted" -> {
+                    Log.i(TAG, "🛑 Server interrupted signal — clearing audio queue")
+                    interruptPlaybackForBargein()
                 }
 
                 "pong" -> Log.v(TAG, "pong")

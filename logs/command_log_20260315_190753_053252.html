@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURA Log &mdash; text_1773581873052</title>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        :root {
+            --bg: #080c10;
+            --surface: #0d1117;
+            --surface2: #131920;
+            --border: #1e2733;
+            --border2: #2a3441;
+            --text: #cdd9e5;
+            --muted: #636e7b;
+            --muted2: #8b949e;
+            --blue: #4493f8;
+            --green: #3fb950;
+            --orange: #d29922;
+            --red: #f85149;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 13px; padding: 60px 24px 40px; line-height: 1.5; max-width: 1400px; margin: 0 auto; }
+        h1 { font-size: 20px; color: var(--blue); margin-bottom: 4px; font-weight: 600; letter-spacing: -0.3px; }
+        .meta { color: var(--muted); font-size: 11px; }
+        .page-header { margin-bottom: 16px; }
+
+        /* ── Summary panel ── */
+        #summary { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 24px; margin-bottom: 20px; display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+        .sum-block { display: flex; flex-direction: column; gap: 4px; min-width: 80px; }
+        .sum-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+        .sum-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .sum-val.status-FAILED { color: var(--red); }
+        .sum-val.status-completed { color: var(--green); }
+        .sum-val.status-failed { color: var(--red); }
+
+        /* ── Entries ── */
+        .entry { border-radius: 8px; margin-bottom: 8px; overflow: hidden; border: 1px solid var(--border); transition: box-shadow 0.15s; }
+        .entry:hover { box-shadow: 0 0 0 1px var(--border2); }
+        .entry-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+        .entry-header:hover { filter: brightness(1.12); }
+        .entry-body { background: var(--surface); padding: 12px 16px; }
+        .entry-body.collapsed { display: none; }
+        .chevron { margin-left: auto; font-size: 10px; opacity: 0.4; transition: transform 0.15s ease; display: inline-block; flex-shrink: 0; }
+        .chevron.rotated { transform: rotate(-90deg); }
+        .entry-COMMAND .entry-header { background: #0f1e3a; border-left: 3px solid var(--blue); }
+        .entry-LLM .entry-header { background: #150f2a; border-left: 3px solid var(--purple); }
+        .entry-VLM .entry-header { background: #1e1a12; border-left: 3px solid var(--orange); }
+        .entry-GESTURE .entry-header { background: #0a1f12; border-left: 3px solid var(--green); }
+        .entry-GRAPH_EXECUTION .entry-header { background: #111520; border-left: 3px solid var(--muted); }
+        .entry-LOGCAT .entry-header { background: #0d1510; border-left: 3px solid #2ea043; }
+        .entry-ERROR .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-PLAN_CREATED .entry-header { background: #111530; border-left: 3px solid var(--blue); }
+        .entry-AGENT_DECISION.decision-SUBGOAL_START .entry-header { background: #0a1624; border-left: 3px solid var(--cyan); }
+        .entry-AGENT_DECISION.decision-SUBGOAL_COMPLETE .entry-header { background: #0a1f12; border-left: 3px solid var(--green); }
+        .entry-AGENT_DECISION.decision-ACTION_FAILED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-PERCEPTION_RESULT .entry-header { background: #0a1820; border-left: 3px solid var(--cyan); }
+        .entry-AGENT_DECISION.decision-POST_ACTION_SCREENSHOT .entry-header { background: #111530; border-left: 3px solid var(--purple); }
+        .entry-AGENT_DECISION.decision-VERIFICATION_FAILED .entry-header { background: #1e1608; border-left: 3px solid var(--orange); }
+        .entry-AGENT_DECISION.decision-BUDGET_EXHAUSTED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-LOOP_DETECTED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-REPLAN .entry-header { background: #180a2a; border-left: 3px solid var(--purple); }
+        .entry-AGENT_DECISION.decision-INTENT_PARSED .entry-header { background: #0a1624; border-left: 3px solid var(--cyan); }
+
+        .ts { color: var(--muted); font-size: 11px; font-weight: 400; font-family: 'JetBrains Mono', monospace; }
+        .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+        .badge-LLM { background: #2d1f5e; color: #c4a7ff; border: 1px solid #4a2f9a; }
+        .badge-VLM { background: #3d2800; color: #f0a500; border: 1px solid #6b4800; }
+        .badge-GESTURE { background: #0d2d17; color: #56d364; border: 1px solid #1b5e30; }
+        .badge-COMMAND { background: #0d2050; color: #79c0ff; border: 1px solid #1a3a8f; }
+        .badge-AGENT { background: #1a2030; color: #79c0ff; border: 1px solid #2a3548; }
+        .badge-GRAPH { background: #1a1f28; color: var(--muted2); border: 1px solid #2a3040; }
+        .badge-ERROR { background: #4a0a0a; color: #ff8080; border: 1px solid #8a1a1a; }
+        .provider-tag { color: var(--muted2); font-size: 11px; font-weight: 400; }
+
+        /* ── Key-value rows ── */
+        .kv-row { display: flex; gap: 0; margin: 3px 0; min-height: 22px; }
+        .kv-key { color: var(--muted); min-width: 130px; font-size: 11px; padding-top: 1px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500; }
+        .kv-val { color: var(--text); font-size: 12px; }
+        .kv-val.ok { color: var(--green); font-weight: 600; }
+        .kv-val.fail { color: var(--red); font-weight: 600; }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+        /* ── LLM response box ── */
+        .agent-box { background: #06090d; border: 1px solid var(--border2); border-left: 3px solid #3a2a6a; border-radius: 6px; padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.65; color: #adbac7; }
+        .token-row { color: var(--muted2); font-size: 11px; margin-top: 8px; padding: 5px 8px; background: var(--surface2); border-radius: 4px; display: inline-block; }
+
+        /* ── Prompt box ── */
+        .prompt-section { margin: 8px 0; }
+        .prompt-toggle { background: #0d1a2e; border: 1px solid #1e3a5a; border-radius: 4px; padding: 5px 12px; cursor: pointer; font-size: 11px; color: #4493f8; font-family: 'JetBrains Mono', monospace; width: 100%; text-align: left; letter-spacing: 0.2px; }
+        .prompt-toggle:hover { background: #132040; color: #79c0ff; }
+        .prompt-box { background: #04070c; border: 1px solid #1e3a5a; border-radius: 0 0 6px 6px; padding: 12px 16px; margin: 0 0 6px 0; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.65; color: #7cb8fa; word-break: break-word; max-height: none; overflow-x: auto; }
+
+        /* ── JSON blocks ── */
+        .json-section { margin: 8px 0; }
+        .json-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+        pre.json { background: #06090d; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 11px; overflow-x: auto; color: #adbac7; margin: 0; font-family: 'JetBrains Mono', monospace; line-height: 1.55; }
+        pre.logcat { background: #06090d; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 10.5px; overflow-x: auto; color: #8b9dab; margin: 0; font-family: 'JetBrains Mono', monospace; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+
+        /* ── Screenshots ── */
+        .screenshot-row { margin: 10px 0; }
+        .screenshot-row img { max-width: 320px; border-radius: 8px; border: 1px solid var(--border2); display: block; }
+        .screenshot-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+
+        /* ── Elements table ── */
+        .elements-section { margin: 10px 0; }
+        .elements-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted2); font-weight: 600; margin-bottom: 6px; padding: 5px 10px; background: var(--surface2); border-radius: 4px; display: block; }
+        .elements-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .elements-table thead tr { background: #06090d; }
+        .elements-table th { text-align: left; padding: 5px 10px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; border-bottom: 1px solid var(--border2); white-space: nowrap; }
+        .elements-table td { padding: 4px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); font-size: 11px; }
+        .elements-table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.018); }
+        .elements-table tr:hover td { background: var(--surface2); }
+        .elements-table .col-idx { color: var(--muted); font-size: 10px; text-align: right; padding-right: 8px; width: 28px; }
+        .elements-table .col-text { color: #79c0ff; font-weight: 500; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .elements-table .col-desc { color: var(--muted2); font-style: italic; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .elements-table .col-class { color: var(--muted2); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+        .elements-table .col-res { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+        .elements-table .col-bounds { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap; }
+        .elements-table .col-center { color: #f0a500; font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap; font-weight: 600; }
+        .row-target td { background: #1f1200 !important; outline: 1px solid #d29922; }
+        .row-target .col-center { color: #ffcc00 !important; }
+        .row-target-label { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px; background: #4a2b00; color: #ffcc00; border: 1px solid #8a5200; font-weight: 700; margin-left: 4px; }
+        .tag { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px; margin: 1px; font-weight: 600; letter-spacing: 0.3px; white-space: nowrap; }
+        .tag-clickable { background: #0d2d17; color: #56d364; border: 1px solid #1b4a25; }
+        .tag-scrollable { background: #0d1f35; color: #58a6ff; border: 1px solid #1a3560; }
+        .tag-editable { background: #2a1800; color: #f0a500; border: 1px solid #4a3000; }
+        .tag-focused { background: #1a0d30; color: #c4a7ff; border: 1px solid #3a1f60; }
+        .tag-disabled { background: #1a1a1a; color: #555; border: 1px solid #333; }
+
+        .match-found { color: var(--green); font-weight: 600; }
+        .match-none { color: var(--red); }
+        .debug-line { color: var(--muted); font-size: 11px; padding: 1px 12px; }
+        .debug-line:hover { background: var(--surface2); }
+        .hidden { display: none; }
+
+        /* ── Logcat coloring ── */
+        .lc-E { color: #f85149; }
+        .lc-W { color: #d29922; }
+        .lc-I { color: #58a6ff; }
+        .lc-D { color: #8b949e; }
+
+        /* ── Sticky top bar ── */
+        #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: #060a0d; border-bottom: 1px solid var(--border); padding: 7px 24px; display: flex; align-items: center; gap: 14px; }
+        #topbar-title { color: var(--blue); font-weight: 700; font-size: 13px; white-space: nowrap; }
+        #topbar-exec { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ctrl-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; color: var(--muted2); font-size: 11px; padding: 3px 10px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+        .ctrl-btn:hover { background: var(--border); color: var(--text); }
+
+        /* ── Elapsed time badge ── */
+        .elapsed { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; background: rgba(255,255,255,0.04); padding: 1px 6px; border-radius: 3px; white-space: nowrap; margin-left: 4px; }
+
+        /* ── VLM response box (amber tint, distinct from LLM purple) ── */
+        .vlm-box { background: #0e0900; border: 1px solid #4a3008; border-left: 3px solid #8a5a00; border-radius: 6px; padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.65; color: #d4b46a; }
+
+        /* ── Screenshot grid (side-by-side layout) ── */
+        .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 10px 0; }
+        .screenshot-grid .screenshot-row img { max-width: 100%; }
+
+        /* ── Gesture parallel layout (details + annotated screenshot) ── */
+        .gesture-layout { display: flex; gap: 16px; align-items: flex-start; }
+        .gesture-details { flex: 1; min-width: 0; }
+        .gesture-screenshot { flex-shrink: 0; width: 260px; }
+        .gesture-screenshot img { max-width: 100%; border-radius: 8px; border: 2px solid var(--green); display: block; }
+        .gesture-screenshot .screenshot-label { color: var(--green); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+
+        /* ── VLM parallel layout (response + input image side-by-side) ── */
+        .vlm-layout { display: flex; gap: 16px; align-items: flex-start; }
+        .vlm-content { flex: 1; min-width: 0; }
+        .vlm-screenshot { flex-shrink: 0; width: 260px; }
+        .vlm-screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid var(--orange); display: block; }
+        .vlm-screenshot .screenshot-label { color: var(--orange); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+        </style>
+<script>
+        function toggle(id) {
+            var el = document.getElementById(id);
+            if (el) el.classList.toggle('hidden');
+        }
+        function toggleEntry(bodyId) {
+            var body = document.getElementById(bodyId);
+            if (!body) return;
+            body.classList.toggle('collapsed');
+            var header = body.previousElementSibling;
+            if (header) {
+                var chev = header.querySelector('.chevron');
+                if (chev) chev.classList.toggle('rotated');
+            }
+        }
+        function collapseAll() {
+            document.querySelectorAll('.entry-body').forEach(function(b) {
+                b.classList.add('collapsed');
+                var h = b.previousElementSibling;
+                if (h) { var c = h.querySelector('.chevron'); if (c) c.classList.add('rotated'); }
+            });
+        }
+        function expandAll() {
+            document.querySelectorAll('.entry-body').forEach(function(b) {
+                b.classList.remove('collapsed');
+                var h = b.previousElementSibling;
+                if (h) { var c = h.querySelector('.chevron'); if (c) c.classList.remove('rotated'); }
+            });
+        }
+        </script>
+</head>
+<body>
+<div id="topbar">
+  <span id="topbar-title">&#x1F916; AURA Log</span>
+  <span id="topbar-exec">text_1773581873052</span>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <button class="ctrl-btn" onclick="expandAll()">&#x25BC; Expand all</button>
+    <button class="ctrl-btn" onclick="collapseAll()">&#x25B6; Collapse all</button>
+  </div>
+</div>
+<div class="page-header">
+<h1>&#x1F916; AURA Command Log</h1>
+<div class="meta">Execution: <strong>text_1773581873052</strong> &nbsp;|&nbsp; Started: 2026-03-15 19:07:53</div>
+</div>
+[SUMMARY_PLACEHOLDER]
+<div id="entries">
+<div class="entry entry-COMMAND">
+<div class="entry-header" onclick="toggleEntry('e147047907046400')" title="Click to collapse/expand">&#x1F4CB; <span class="badge badge-COMMAND">COMMAND</span> <span class="ts">2026-03-15 19:07:53.313</span> <span class="provider-tag">Navigate to Playlists and play favorite songs</span><span class="elapsed">+0.3s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047907046400">
+<div class="kv-row"><span class="kv-key">Input type</span><span class="kv-val">text</span></div>
+<div class="kv-row"><span class="kv-key">Command</span><span class="kv-val"><strong>Navigate to Playlists and play favorite songs</strong></span></div>
+<div class="kv-row"><span class="kv-key">Session</span><span class="kv-val">d3d07ceb</span></div>
+<div class="json-section"><div class="json-label">Metadata</div><pre class="json">{
+  &quot;text_length&quot;: 45,
+  &quot;config&quot;: null
+}</pre></div>
+</div>
+</div>
+<div class="entry entry-LLM">
+<div class="entry-header" onclick="toggleEntry('e147047912480010')" title="Click to collapse/expand">&#x1F916; <span class="badge badge-LLM">LLM #1</span> <span class="ts">2026-03-15 19:07:53.717</span> <span class="provider-tag">groq | llama-3.1-8b-instant</span><span class="elapsed">+0.7s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047912480010">
+<div class="kv-row"><span class="kv-key">Provider</span><span class="kv-val">groq</span></div>
+<div class="kv-row"><span class="kv-key">Model</span><span class="kv-val">llama-3.1-8b-instant</span></div>
+<div class="prompt-section"><button class="prompt-toggle" onclick="toggle('prompt_e147047912480010')">&#x1F4AC; Prompt &mdash; 2,058 chars (click to expand)</button><pre class="prompt-box hidden" id="prompt_e147047912480010">Parse this voice command into structured intent. Return ONLY valid JSON.
+
+COMMAND: &quot;Navigate to Playlists and play favorite songs&quot;
+
+━━━ IMPORTANT RULES ━━━
+1. &quot;tap/click/press on X&quot; → action=TAP (even if X contains &quot;send&quot;)
+2. &quot;send message to X&quot; → action=SEND_MESSAGE (actually sending)
+3. App drawer is SYSTEM navigation, not an app name
+4. Complex app goals: Use parameters, NOT steps array
+
+━━━ EXAMPLES ━━━
+Basic:
+- &quot;open WhatsApp&quot; → {&quot;action&quot;:&quot;open_app&quot;,&quot;recipient&quot;:&quot;WhatsApp&quot;,&quot;confidence&quot;:0.95}
+- &quot;tap send button&quot; → {&quot;action&quot;:&quot;tap&quot;,&quot;recipient&quot;:&quot;send button&quot;,&quot;confidence&quot;:0.95}
+- &quot;press back&quot; → {&quot;action&quot;:&quot;back&quot;,&quot;confidence&quot;:0.95}
+- &quot;scroll down&quot; → {&quot;action&quot;:&quot;scroll&quot;,&quot;parameters&quot;:{&quot;direction&quot;:&quot;down&quot;},&quot;confidence&quot;:0.95}
+
+Messaging:
+- &quot;send hi to John&quot; → {&quot;action&quot;:&quot;send_message&quot;,&quot;recipient&quot;:&quot;John&quot;,&quot;content&quot;:&quot;hi&quot;,&quot;confidence&quot;:0.9}
+- &quot;call Mom&quot; → {&quot;action&quot;:&quot;make_call&quot;,&quot;recipient&quot;:&quot;Mom&quot;,&quot;confidence&quot;:0.95}
+
+System:
+- &quot;open app drawer&quot; → {&quot;action&quot;:&quot;navigate_app&quot;,&quot;parameters&quot;:{&quot;target&quot;:&quot;app_drawer&quot;},&quot;confidence&quot;:0.95}
+- &quot;take screenshot&quot; → {&quot;action&quot;:&quot;take_screenshot&quot;,&quot;confidence&quot;:0.95}
+- &quot;what&#x27;s on screen&quot; → {&quot;action&quot;:&quot;read_screen&quot;,&quot;confidence&quot;:0.95}
+
+Modern:
+- &quot;record voice note&quot; → {&quot;action&quot;:&quot;record_audio&quot;,&quot;parameters&quot;:{&quot;type&quot;:&quot;voice_note&quot;},&quot;confidence&quot;:0.9}
+- &quot;play this reel&quot; → {&quot;action&quot;:&quot;tap&quot;,&quot;recipient&quot;:&quot;reel_video&quot;,&quot;confidence&quot;:0.85}
+- &quot;summarize this page&quot; → {&quot;action&quot;:&quot;read_screen&quot;,&quot;parameters&quot;:{&quot;mode&quot;:&quot;summarize&quot;},&quot;confidence&quot;:0.9}
+
+App Goals:
+- &quot;play my liked songs on Spotify&quot; → {&quot;action&quot;:&quot;open_app&quot;,&quot;recipient&quot;:&quot;spotify&quot;,&quot;parameters&quot;:{&quot;goal&quot;:&quot;play_liked_songs&quot;},&quot;confidence&quot;:0.9}
+
+━━━ MULTI-STEP COMMANDS ━━━
+If the command chains 3+ distinct actions OR uses connectors like &quot;then&quot;, &quot;and then&quot;, &quot;after that&quot;:
+→ {&quot;action&quot;:&quot;general_interaction&quot;,&quot;content&quot;:&quot;&lt;full command&gt;&quot;,&quot;confidence&quot;:0.85,&quot;parameters&quot;:{&quot;delegate_to_planner&quot;:true}}
+Do NOT try to parse recipient/content from multi-step commands — let the planner decompose them.
+
+OUTPUT ONLY JSON:
+{&quot;action&quot;:&quot;...&quot;,&quot;recipient&quot;:&quot;...&quot;,&quot;content&quot;:&quot;...&quot;,&quot;parameters&quot;:{},&quot;confidence&quot;:0.0-1.0}</pre></div>
+<div class="agent-box">{
+  &quot;action&quot;: &quot;open_app&quot;,
+   &quot;recipient&quot;: &quot;playlists&quot;,
+   &quot;parameters&quot;: {
+      &quot;goal&quot;: &quot;play_favorites&quot;
+   },
+   &quot;confidence&quot;: 0.9
+}</div>
+<div class="token-row">&#x1F522; Prompt: 599 | Completion: 43 | Total: 642</div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-INTENT_PARSED">
+<div class="entry-header" onclick="toggleEntry('e147047804838410')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">Commander Agent</span> <span class="ts">2026-03-15 19:07:53.723</span> <span class="provider-tag"><strong>INTENT_PARSED</strong></span><span class="elapsed">+0.7s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047804838410">
+<div class="kv-row"><span class="kv-key">action</span><span class="kv-val">open_app</span></div>
+<div class="kv-row"><span class="kv-key">confidence</span><span class="kv-val">0.9</span></div>
+<div class="kv-row"><span class="kv-key">recipient</span><span class="kv-val">playlists</span></div>
+<div class="json-section"><div class="json-label">parameters</div><pre class="json">[
+  &quot;goal&quot;
+]</pre></div>
+</div>
+</div>
+<div class="entry entry-LLM">
+<div class="entry-header" onclick="toggleEntry('e147047902387220')" title="Click to collapse/expand">&#x1F916; <span class="badge badge-LLM">LLM #2</span> <span class="ts">2026-03-15 19:07:53.994</span> <span class="provider-tag">groq | meta-llama/llama-4-scout-17b-16e-instruct</span><span class="elapsed">+0.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047902387220">
+<div class="kv-row"><span class="kv-key">Provider</span><span class="kv-val">groq</span></div>
+<div class="kv-row"><span class="kv-key">Model</span><span class="kv-val">meta-llama/llama-4-scout-17b-16e-instruct</span></div>
+<div class="prompt-section"><button class="prompt-toggle" onclick="toggle('prompt_e147047902387220')">&#x1F4AC; Prompt &mdash; 3,443 chars (click to expand)</button><pre class="prompt-box hidden" id="prompt_e147047902387220">You are planning a mobile automation task. Break the user request into 2-4 high-level PHASES.
+
+USER REQUEST: &quot;Navigate to Playlists and play favorite songs&quot;
+CURRENT SCREEN: Unknown (no screen data)
+INSTALLED APPS: AURA Assistant, Adobe Photoshop Express, Airtel, Airtel Xstream Play, Amazon, Android System Key Verifier, Android System SafetyCore, Apple Music, Atomberg Home, Authenticator, BookMyShow, Brave, Canva, CapCut, ChatGPT, Chess, Clash of Clans, Claude, Clone Phone, Community, Compass, Copilot, Coursera, DeepSeek, Digilocker, Drive, ECOVACS HOME, Edge Gallery, Find Hub, Firefox, Fitbit, Flipkart, Free Download Manager, Free Fire MAX, GCamator, GPS Map Camera, Gemini, GitHub, GlideX, Google Developers, Google Opinion Rewards, Google Play Games, Google TV, Grok, Health Connect, Home, IR Remote, Instagram, Intel Unison, Interjet, Keep notes, LG ThinQ, Lenskart, Lightroom, LinkedIn, Lock Screen Magazine, M365 Copilot, Microsoft Excel, Microsoft PowerPoint, Microsoft Word, Music Player, My project (naalu), MyCrompton, MyJio, NextGen mParivahan, Nextcloud, NotebookLM, Notes, Notion, O Relax, ODialer, OKEN Scanner, OLX India, OneAuth, OneDrive, OnePlus Store, OnePlus Widget, Opera, Outdoor mode, Perplexity, Pinterest, Prime Video, RAR, Rain Alarm, Rapido, Recorder, Reddit, SMVEC, Sheets, Slides, Smash Karts, Snapchat, Spotify, Steam, Sun NXT, Swiggy, TARS, Tailscale, Teams, Telegram, Tenpl IoT, Threads, To Do, Translate, Turbo VPN, Unified Remote, VLC, Vasool Drive, WhatsApp, X, YONO SBI, Zen Space, Zoom, auth32, authentication, dum, finance_drive, gCMOB, notification, redBus
+
+━━━ WHAT A PHASE IS ━━━
+A phase is an abstract intent like &quot;Open Apple Music&quot; or &quot;Navigate to personal playlist&quot;.
+It is NOT a micro-step like &quot;tap Library tab&quot; — the executor resolves those Live from the screen.
+
+━━━ RULES ━━━
+1. 2-4 phases maximum. Don&#x27;t over-split a simple task.
+2. Check CURRENT SCREEN before adding navigation phases:
+   - UNKNOWN or no screen data → ALWAYS include &quot;Open &lt;app&gt;&quot; as Phase 1.
+     Never skip navigation when screen state is unknown.
+   - App already confirmed open on the right screen → skip open phase, start from navigation.
+   - Target already visible → use 1-2 phases.
+3. &quot;my&quot; (possessive) = item is in the user&#x27;s personal library or account.
+   For music apps → Library tab, NOT Search.
+4. First phase: &quot;Open &lt;app&gt;&quot; only if the app is not already visible on CURRENT SCREEN.
+5. Last phase: the actual user-requested action (play, send, add to cart, etc.).
+
+━━━ commit_actions ━━━
+List any irreversible side effects the user explicitly requested.
+These MUST execute before the goal is considered complete.
+Leave empty [] for read-only tasks.
+
+━━━ EXAMPLES ━━━
+&quot;play my feel good playlist from apple music&quot;
+→ phases: [&quot;Open Apple Music&quot;, &quot;Navigate to Feel Good playlist in personal library&quot;, &quot;Play the playlist&quot;]
+→ commit_actions: []
+
+&quot;add the first result to cart&quot;  (screen shows Amazon search results)
+→ phases: [&quot;Open the first product&quot;, &quot;Add to cart&quot;]
+→ commit_actions: [&quot;add to cart&quot;]
+
+&quot;send a whatsapp to mum saying i&#x27;m home&quot;
+→ phases: [&quot;Open WhatsApp&quot;, &quot;Open Mum&#x27;s chat&quot;, &quot;Type and send message&quot;]
+→ commit_actions: [&quot;send&quot;]
+
+&quot;what&#x27;s the weather today&quot;
+→ phases: [&quot;Check weather&quot;]
+→ commit_actions: []
+
+━━━ OUTPUT (JSON ONLY) ━━━
+{
+  &quot;goal_summary&quot;: &quot;one-line summary of what the user wants&quot;,
+  &quot;phases&quot;: [
+    &quot;phase 1 description&quot;,
+    &quot;phase 2 description&quot;
+  ],
+  &quot;commit_actions&quot;: [&quot;send&quot;]
+}</pre></div>
+<div class="agent-box">{
+&quot;goal_summary&quot;: &quot;Navigate to Playlists and play favorite songs&quot;,
+  &quot;phases&quot;: [
+    &quot;Open Spotify&quot;,
+    &quot;Navigate to personal playlists&quot;,
+    &quot;Play favorite songs&quot;
+  ],
+  &quot;commit_actions&quot;: []
+}</div>
+<div class="token-row">&#x1F522; Prompt: 921 | Completion: 50 | Total: 971</div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-PLAN_CREATED">
+<div class="entry-header" onclick="toggleEntry('e147047913830420')" title="Click to collapse/expand">&#x1F4CB; <span class="badge badge-AGENT">Planner Agent</span> <span class="ts">2026-03-15 19:07:54.000</span> <span class="provider-tag"><strong>PLAN_CREATED</strong></span><span class="elapsed">+0.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047913830420">
+<div class="kv-row"><span class="kv-key">goal</span><span class="kv-val">Navigate to Playlists and play favorite songs</span></div>
+<div class="kv-row"><span class="kv-key">mode</span><span class="kv-val">reactive</span></div>
+<div class="json-section"><div class="json-label">phases</div><pre class="json">[
+  &quot;Open Spotify&quot;,
+  &quot;Navigate to personal playlists&quot;,
+  &quot;Play favorite songs&quot;
+]</pre></div>
+
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-REACTIVE_STEP_GENERATED">
+<div class="entry-header" onclick="toggleEntry('e147047906092820')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">Coordinator</span> <span class="ts">2026-03-15 19:07:57.311</span> <span class="provider-tag"><strong>REACTIVE_STEP_GENERATED</strong></span><span class="elapsed">+4.3s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047906092820">
+<div class="kv-row"><span class="kv-key">phase</span><span class="kv-val">Open Spotify</span></div>
+<div class="kv-row"><span class="kv-key">action_type</span><span class="kv-val">open_app</span></div>
+<div class="kv-row"><span class="kv-key">target</span><span class="kv-val">Spotify</span></div>
+<div class="kv-row"><span class="kv-key">description</span><span class="kv-val">Open Spotify</span></div>
+<div class="kv-row"><span class="kv-key">shortcircuit</span><span class="kv-val">True</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-SUBGOAL_START">
+<div class="entry-header" onclick="toggleEntry('e147047906054420')" title="Click to collapse/expand">&#x25B6; <span class="badge badge-AGENT">Coordinator</span> <span class="ts">2026-03-15 19:07:57.312</span> <span class="provider-tag"><strong>SUBGOAL_START</strong></span><span class="elapsed">+4.3s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047906054420">
+<div class="kv-row"><span class="kv-key">index</span><span class="kv-val">1</span></div>
+<div class="kv-row"><span class="kv-key">total</span><span class="kv-val">1</span></div>
+<div class="kv-row"><span class="kv-key">description</span><span class="kv-val">Open Spotify</span></div>
+<div class="kv-row"><span class="kv-key">action_type</span><span class="kv-val">open_app</span></div>
+<div class="kv-row"><span class="kv-key">target</span><span class="kv-val">Spotify</span></div>
+<div class="kv-row"><span class="kv-key">attempt</span><span class="kv-val">1</span></div>
+</div>
+</div>
+<div class="entry entry-LOGCAT">
+<div class="entry-header" onclick="toggleEntry('e147056541254420')" title="Click to collapse/expand">&#x1F4F1; <span class="badge">LOGCAT</span> <span class="ts">2026-03-15 19:08:06.252</span> <span class="provider-tag">post_action:open_app:Open Spotify</span><span class="elapsed">+13.2s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147056541254420">
+<div class="kv-row"><span class="kv-key">Context</span><span class="kv-val">post_action:open_app:Open Spotify</span></div>
+<pre class="logcat">03-15 19:08:04.093 22922 22949 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+03-15 19:08:04.094 22922 22949 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+03-15 19:08:04.095 22922 22949 W Screenshot: MediaProjection not available - sending UI tree only
+03-15 19:08:04.095 22922 22949 D UITree  : Found 2 windows
+03-15 19:08:04.102 22922 22949 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+03-15 19:08:04.108 22922 22949 D UITree  : Window: pkg=com.spotify.music, type=1, layer=0
+03-15 19:08:04.110 22922 22949 D UITree  : → Selected as target app window: com.spotify.music
+03-15 19:08:04.113 22922 22949 I UITree  : Using window: com.spotify.music
+03-15 19:08:04.120 22922 22949 W Screenshot: Screenshot retry also empty
+03-15 19:08:04.122 22922 22949 I VoiceCaptureController: 📤 Sent screenshot response: request_id=8e129558, size=0 bytes
+03-15 19:08:05.734 22922 22975 I VoiceCaptureController: 📸 Backend requested screenshot: request_id=8e129558_retry, reason=Action: verify (retry)
+03-15 19:08:05.739 22922 22949 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+03-15 19:08:05.744 22922 22949 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+03-15 19:08:05.746 22922 22949 W Screenshot: MediaProjection not available - sending UI tree only
+03-15 19:08:05.748 22922 22949 D UITree  : Found 2 windows
+03-15 19:08:05.752 22922 22949 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+03-15 19:08:05.762 22922 22949 D UITree  : Window: pkg=com.spotify.music, type=1, layer=0
+03-15 19:08:05.762 22922 22949 D UITree  : → Selected as target app window: com.spotify.music
+03-15 19:08:05.762 22922 22949 I UITree  : Using window: com.spotify.music
+03-15 19:08:05.764 22922 22949 W Screenshot: Screenshot data is empty, retrying once...
+03-15 19:08:06.266 22922 22949 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+03-15 19:08:06.267 22922 22949 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+03-15 19:08:06.268 22922 22949 W Screenshot: MediaProjection not available - sending UI tree only
+03-15 19:08:06.273 22922 22949 D UITree  : Found 2 windows
+03-15 19:08:06.281 22922 22949 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+03-15 19:08:06.285 22922 22949 D UITree  : Window: pkg=com.spotify.music, type=1, layer=0
+03-15 19:08:06.286 22922 22949 D UITree  : → Selected as target app window: com.spotify.music
+03-15 19:08:06.287 22922 22949 I UITree  : Using window: com.spotify.music
+03-15 19:08:06.294 22922 22949 W Screenshot: Screenshot retry also empty
+03-15 19:08:06.295 22922 22949 I VoiceCaptureController: 📤 Sent screenshot response: request_id=8e129558_retry, size=0 bytes</pre>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-SUBGOAL_COMPLETE">
+<div class="entry-header" onclick="toggleEntry('e147047927782420')" title="Click to collapse/expand">&#x2705; <span class="badge badge-AGENT">Verifier</span> <span class="ts">2026-03-15 19:08:06.253</span> <span class="provider-tag"><strong>SUBGOAL_COMPLETE</strong></span><span class="elapsed">+13.2s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047927782420">
+<div class="kv-row"><span class="kv-key">subgoal</span><span class="kv-val">Open Spotify</span></div>
+<div class="kv-row"><span class="kv-key">action_type</span><span class="kv-val">open_app</span></div>
+<div class="kv-row"><span class="kv-key">verified_by</span><span class="kv-val">launch_confirmed</span></div>
+</div>
+</div>
+<div class="entry entry-LLM">
+<div class="entry-header" onclick="toggleEntry('e147047987795230')" title="Click to collapse/expand">&#x1F916; <span class="badge badge-LLM">LLM #3</span> <span class="ts">2026-03-15 19:08:15.930</span> <span class="provider-tag">groq | meta-llama/llama-4-scout-17b-16e-instruct</span><span class="elapsed">+22.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047987795230">
+<div class="kv-row"><span class="kv-key">Provider</span><span class="kv-val">groq</span></div>
+<div class="kv-row"><span class="kv-key">Model</span><span class="kv-val">meta-llama/llama-4-scout-17b-16e-instruct</span></div>
+<div class="prompt-section"><button class="prompt-toggle" onclick="toggle('prompt_e147047987795230')">&#x1F4AC; Prompt &mdash; 18,573 chars (click to expand)</button><pre class="prompt-box hidden" id="prompt_e147047987795230">You are a mobile UI automation agent. Execute ONE action per turn to progress toward the user&#x27;s goal. You have deep knowledge of Android and iOS apps (WhatsApp, Instagram, Spotify, Gmail, YouTube, Maps, Chrome, Settings, and more).
+
+━━━ HOW TO REASON ━━━
+Use the &quot;thinking&quot; field as a scratchpad. Work through these steps in order before deciding:
+
+① VERIFY PREV — The CURRENT element tree and screenshot are the AFTER-state of the previous action.
+   Use them as evidence, not your memory of what was expected.
+   Key evidence patterns (in the current element list RIGHT NOW):
+   • cd=&#x27;playing &lt;track&gt;&#x27; or cd=&#x27;Pause&#x27; visible anywhere → media action succeeded, playback is active
+   • A new dialog / toast / overlay appeared → system responded to the previous tap
+   • The expected screen / tab is now showing → navigation succeeded
+   • CHECKED or SELECTED flag is now set on the target element → toggle/selection worked
+   Skip if PREVIOUS ACTION is &quot;None (first step)&quot;.
+   If current-tree evidence contradicts the expected result → set verification_passed: false.
+
+② BLOCKERS — Check in this exact order, stop at the first match:
+   • Autocomplete / suggestion dropdown visible under a text field?
+     → Tap the best-matching suggestion NOW. Field is NOT confirmed until tapped. Nothing else matters.
+   • Permission dialog / modal / system overlay on screen?
+     → Dismiss or accept it. Nothing behind it is reachable.
+   • Keyboard visible AND the target element is in the lower 40% of the screen?
+     → dismiss_keyboard first.
+   • Screen description contains &quot;TARGET NOT VISIBLE&quot; or &quot;INPUT NOT FOCUSED&quot;?
+     → Resolve that blocker before any other action.
+
+③ READ THE UI TREE — Parse every relevant element&#x27;s flags before deciding:
+   • FOCUSED → cursor is in this field RIGHT NOW. Type here — do NOT tap it again first.
+   • EDIT   → typeable text input (EditText / TextField). Needs FOCUSED before you can type.
+   • CLICK  → tappable button, row, icon, or link.
+   • SCROLL → this container scrolls. Use scroll_down / scroll_up / swipe to reveal hidden items.
+   • DISABLED → cannot interact. Find an alternative element or navigate differently.
+   • CHECKED / SELECTED → toggle / tab is already in that state. Do NOT tap if goal already matches.
+   • hint=&#x27;...&#x27; → field is EMPTY (placeholder text). text=&#x27;...&#x27; → field already HAS content.
+   • id=... → use resource-id to precisely identify a field when text labels are ambiguous or duplicated.
+   • Badge numbers [1]..[N] on the annotated screenshot match [N] in the element list — use both to confirm identity.
+
+④ DECIDE — Pick the single most efficient next action grounded in the screenshot + element flags.
+
+━━━ RULES ━━━
+
+NAVIGATION
+- ONE action per turn. Never plan ahead or combine steps.
+- Use open_app to launch apps. Never tap app icons on the home screen.
+- Never press back from a root / home screen — it exits the app.
+- Phase boundary: only act within CURRENT PHASE. Visible later-phase elements → ignore them.
+- Already at the destination this phase describes → phase_complete: true + action_type: &quot;wait&quot;.
+
+FORM INPUT
+- type → target = the ACTUAL TEXT TO TYPE (e.g. &quot;meeting tomorrow&quot;), NOT a field name.
+         field_hint = the label of the input field (e.g. &quot;Subject&quot;, &quot;To&quot;, &quot;Search&quot;).
+- Before typing: if element has FOCUSED flag → type directly. If no FOCUSED flag → tap the field first.
+- Multi-field forms: always tap field → type → tap next field → type. Never two type actions in a row.
+- After typing: if the next step is a tap → dismiss_keyboard first.
+- After typing a message or search query → tap Send / Search. NOT done until that button is tapped.
+- &quot;my&quot; / &quot;mine&quot; in goal = personal account content (Library, History, Saved). NOT Search.
+
+STATE CHECKS
+- Read CHECKED / SELECTED / visual highlight before acting. State already correct → do NOT tap.
+- Horizontal carousels / pill rows / stories → swipe left/right, not scroll_down.
+- &quot;No results&quot; / empty state → change strategy (different search term, go back). Do not retry same.
+- MEDIA PLAYBACK: if the goal is to play/start music or a video AND a Pause button is visible (cd=&#x27;Pause&#x27;, &#x27;⏸&#x27;, &#x27;‖&#x27;, or label containing &quot;Pause&quot;) in the transport bar or mini-player → media is already playing. Set goal_complete: true immediately. Do NOT tap Play again.
+
+FAILURE RECOVERY
+- If LAST FAILURE shows the same action_type + target failed once → change approach: scroll, try a different label, re-navigate.
+- If the same action has failed 2 or more times → escalate: go back, restart from a known screen, or take a completely different path. Do NOT repeat a failed action a third time.
+
+
+━━━ AVAILABLE ACTIONS ━━━
+open_app | tap | type | press_enter | dismiss_keyboard | swipe | scroll_down | scroll_up | back | wait
+
+━━━ OUTPUT ━━━
+Respond ONLY with a valid JSON object. No text outside the JSON.
+
+{
+  &quot;thinking&quot;: &quot;&lt;scratchpad: ① verify prev → ② blockers → ③ read UI flags → ④ decision&gt;&quot;,
+  &quot;memory&quot;: &quot;&lt;1-3 sentences: fields confirmed, items found, key state accumulated across turns&gt;&quot;,
+  &quot;action_type&quot;: &quot;tap&quot;,
+  &quot;target&quot;: &quot;&lt;element label, or exact text to type&gt;&quot;,
+  &quot;field_hint&quot;: &quot;&lt;field label for type actions, empty string otherwise&gt;&quot;,
+  &quot;description&quot;: &quot;&lt;one line for logging&gt;&quot;,
+  &quot;screen_context&quot;: &quot;&lt;App | Screen | [mini-player: track + Pause/Play if visible] | KEYBOARD: Hidden/Visible | [any overlay]&gt;&quot;,
+  &quot;phase_complete&quot;: false,
+  &quot;goal_complete&quot;: false,
+  &quot;verification_passed&quot;: true,
+  &quot;verification_reason&quot;: &quot;&lt;one sentence: screenshot evidence for previous action result&gt;&quot;
+}
+
+━━━ EXAMPLES ━━━
+
+Example 1 — FOCUSED flag tells you where cursor is; autocomplete blocks all other actions:
+UI TREE: [1] EditText &#x27;dinesh&#x27; | id=to | EDIT FOCUSED | [2] TextView &#x27;Dinesh kumar C dinesh@gmail.com&#x27; | CLICK | [3] EditText hint=&#x27;Subject&#x27; | id=subject | EDIT
+INPUT: goal=&quot;email dinesh about meeting&quot; | phase=&quot;compose email&quot; | prev=&quot;type dinesh into To field&quot; | screen=&quot;Gmail | Compose | KEYBOARD: Visible&quot;
+OUTPUT:
+{
+  &quot;thinking&quot;: &quot;① Prev: type succeeded — &#x27;dinesh&#x27; showing in To field per screenshot. ② Blocker: autocomplete row [2] &#x27;Dinesh kumar C dinesh@gmail.com&#x27; is visible under the To field — BLOCKING. Recipient is not confirmed until I tap it. ③ UI tree: [1] to field is EDIT+FOCUSED (cursor here), [2] suggestion is CLICK. [3] Subject is EDIT but no FOCUSED — I can&#x27;t touch it yet. ④ Tap suggestion [2] now.&quot;,
+  &quot;memory&quot;: &quot;Gmail compose open. To field has &#x27;dinesh&#x27; typed. Autocomplete suggestion must be confirmed before Subject.&quot;,
+  &quot;action_type&quot;: &quot;tap&quot;,
+  &quot;target&quot;: &quot;Dinesh kumar C&quot;,
+  &quot;field_hint&quot;: &quot;&quot;,
+  &quot;description&quot;: &quot;Tap autocomplete suggestion to confirm recipient&quot;,
+  &quot;screen_context&quot;: &quot;Gmail | Compose | To autocomplete visible | KEYBOARD: Visible&quot;,
+  &quot;phase_complete&quot;: false,
+  &quot;goal_complete&quot;: false,
+  &quot;verification_passed&quot;: true,
+  &quot;verification_reason&quot;: &quot;To field shows &#x27;dinesh&#x27; — type action succeeded&quot;
+}
+
+Example 2 — No FOCUSED flag means tap field before typing:
+UI TREE: [1] TextView &#x27;Dinesh kumar C&#x27; | id=to_chip | [2] EditText hint=&#x27;Subject&#x27; | id=subject | EDIT | [3] EditTextCompatMultiline hint=&#x27;Compose email&#x27; | id=body | EDIT | [4] ImageButton cd=&#x27;Send&#x27; | CLICK
+INPUT: goal=&quot;email dinesh about meeting&quot; | phase=&quot;fill subject&quot; | prev=&quot;tap autocomplete suggestion&quot; | screen=&quot;Gmail | Compose | To confirmed, KEYBOARD: Hidden&quot;
+OUTPUT:
+{
+  &quot;thinking&quot;: &quot;① Prev: autocomplete tap succeeded — To field now shows chip &#x27;Dinesh kumar C&#x27; per screenshot. ② No blockers. ③ UI tree: [2] Subject is EDIT but NO FOCUSED flag — cursor is NOT there, keyboard is hidden. I must tap Subject to focus it before I can type. [3] body also EDIT, no focus. [4] Send is CLICK. ④ Tap [2] Subject to focus it.&quot;,
+  &quot;memory&quot;: &quot;To: Dinesh kumar C confirmed. About to focus Subject field.&quot;,
+  &quot;action_type&quot;: &quot;tap&quot;,
+  &quot;target&quot;: &quot;Subject&quot;,
+  &quot;field_hint&quot;: &quot;&quot;,
+  &quot;description&quot;: &quot;Tap Subject field to move cursor there&quot;,
+  &quot;screen_context&quot;: &quot;Gmail | Compose | To confirmed | KEYBOARD: Hidden&quot;,
+  &quot;phase_complete&quot;: false,
+  &quot;goal_complete&quot;: false,
+  &quot;verification_passed&quot;: true,
+  &quot;verification_reason&quot;: &quot;To field chip &#x27;Dinesh kumar C&#x27; visible — autocomplete confirmed&quot;
+}
+
+Example 3 — SELECTED flag means already at destination; phase complete:
+UI TREE: [1] FrameLayout cd=&#x27;Home&#x27; | CLICK | [2] FrameLayout cd=&#x27;Search&#x27; | CLICK | [3] FrameLayout cd=&#x27;Your Library&#x27; | CLICK SELECTED | [4] TextView &#x27;Liked Songs&#x27; | CLICK
+INPUT: goal=&quot;play liked songs on Spotify&quot; | phase=&quot;Navigate to Library&quot; | prev=&quot;open_app Spotify&quot; | screen=&quot;Spotify | Library | Playlists visible&quot;
+OUTPUT:
+{
+  &quot;thinking&quot;: &quot;① Prev: open_app succeeded — Spotify Library showing. ② No blockers. ③ UI tree: [3] &#x27;Your Library&#x27; tab has CLICK+SELECTED — already active. [4] &#x27;Liked Songs&#x27; is CLICK and visible. Phase says &#x27;Navigate to Library&#x27; — I&#x27;m already here. ④ Set phase_complete, action wait.&quot;,
+  &quot;memory&quot;: &quot;Spotify open on Library tab. Liked Songs playlist visible in list.&quot;,
+  &quot;action_type&quot;: &quot;wait&quot;,
+  &quot;target&quot;: &quot;&quot;,
+  &quot;field_hint&quot;: &quot;&quot;,
+  &quot;description&quot;: &quot;Already at Library — phase complete&quot;,
+  &quot;screen_context&quot;: &quot;Spotify | Library | SELECTED&quot;,
+  &quot;phase_complete&quot;: true,
+  &quot;goal_complete&quot;: false,
+  &quot;verification_passed&quot;: true,
+  &quot;verification_reason&quot;: &quot;Library tab is SELECTED and playlists including Liked Songs are visible&quot;
+}
+
+Example 4 — SCROLL flag reveals hidden element; failure escalation after 2 retries:
+UI TREE: [1] RecyclerView | id=contact_list | SCROLL | [2] TextView &#x27;Alice&#x27; | CLICK | [3] TextView &#x27;Bob&#x27; | CLICK
+INPUT: goal=&quot;open WhatsApp chat with Mum&quot; | phase=&quot;find Mum in chat list&quot; | last_failure=&quot;tap(&#x27;Mum&#x27;) failed twice — element not found&quot; | screen=&quot;WhatsApp | Chats | Alice and Bob visible, Mum not visible&quot;
+OUTPUT:
+{
+  &quot;thinking&quot;: &quot;① Prev: tap Mum failed. ② No modal blockers. ③ UI tree: [1] contact_list has SCROLL flag — list is scrollable and Mum is not in the current viewport. LAST FAILURE shows same tap failed twice — escalation rule applies: do not tap, scroll to reveal instead. ④ scroll_down to bring Mum into view.&quot;,
+  &quot;memory&quot;: &quot;WhatsApp chat list open. Mum not yet visible — scrolling down to find her.&quot;,
+  &quot;action_type&quot;: &quot;scroll_down&quot;,
+  &quot;target&quot;: &quot;contact_list&quot;,
+  &quot;field_hint&quot;: &quot;&quot;,
+  &quot;description&quot;: &quot;Scroll chat list down to reveal Mum&quot;,
+  &quot;screen_context&quot;: &quot;WhatsApp | Chats | Mum not visible&quot;,
+  &quot;phase_complete&quot;: false,
+  &quot;goal_complete&quot;: false,
+  &quot;verification_passed&quot;: true,
+  &quot;verification_reason&quot;: &quot;Previous tap failed — Mum not in current viewport, scrolling to find&quot;
+}
+
+GOAL:           Navigate to Playlists and play favorite songs
+PHASE:          Navigate to personal playlists
+SCREEN:         Go to profile and settings
+HISTORY:        ✅ open_app(Spotify) → native
+LAST FAILURE:   None
+PENDING:        None
+PREV ACTION:    None (first step)
+
+━━━ UI ELEMENT TREE ━━━
+Format: [N] ClassName &#x27;text&#x27; | id=resource_id | bounds=[x1,y1→x2,y2] | FLAGS | pkg=app
+Flags:  CLICK=tappable  EDIT=typeable  SCROLL=scrollable  FOCUSED=cursor here now
+        DISABLED=cannot interact  CHECKED=toggled on  SELECTED=active tab/item
+        PWD=password  hint=&#x27;...&#x27;=placeholder(empty)  cd=&#x27;...&#x27;=content-desc
+
+[1] FrameLayout | &#x27;&#x27; | bounds=[0,0→1240,2772] | pkg=music
+[2] DrawerLayout | &#x27;&#x27; | bounds=[0,0→1240,2772]
+[3] ViewGroup | &#x27;&#x27; | bounds=[0,0→1240,2772]
+[4] ViewGroup | &#x27;&#x27; | bounds=[0,0→1240,2772]
+[5] ViewGroup | &#x27;&#x27; | bounds=[0,0→1240,2772]
+[6] ImageView | cd=&#x27;Go to profile and settings&#x27; | bounds=[28,139→196,307] | CLICK
+[7] ComposeView | &#x27;&#x27; | bounds=[168,139→1240,307]
+[8] View | &#x27;&#x27; | bounds=[168,139→1240,307]
+[9] View | &#x27;&#x27; | bounds=[168,139→1240,307]
+[10] View | &#x27;&#x27; | bounds=[690,140→1016,307] | CLICK
+[11] TextView | &#x27;Podcasts&#x27; | bounds=[746,187→960,260] | CLICK
+[12] Button | &#x27;&#x27; | bounds=[690,166→1016,281]
+[13] View | &#x27;&#x27; | bounds=[412,140→662,307] | CLICK
+[14] TextView | &#x27;Music&#x27; | bounds=[468,187→606,260] | CLICK
+[15] Button | &#x27;&#x27; | bounds=[412,166→662,281]
+[16] View | &#x27;&#x27; | bounds=[210,140→384,307] | CLICK
+[17] TextView | &#x27;All&#x27; | bounds=[266,187→328,260] | CLICK
+[18] Button | &#x27;&#x27; | bounds=[210,166→384,281]
+[19] RecyclerView | &#x27;&#x27; | bounds=[0,307→1240,2772] | SCROLL
+[20] LinearLayout | &#x27;&#x27; | bounds=[56,336→1184,1092]
+[21] GridView | &#x27;&#x27; | bounds=[56,336→1184,1092]
+[22] FrameLayout | &#x27;&#x27; | bounds=[56,336→606,504] | CLICK
+[23] ComposeView | &#x27;&#x27; | bounds=[56,336→224,504]
+[24] View | &#x27;&#x27; | bounds=[56,336→224,504]
+[25] View | &#x27;&#x27; | bounds=[56,336→224,504]
+[26] View | &#x27;&#x27; | bounds=[56,336→224,504]
+[27] TextView | &#x27;Intha vachiko 🤝&#x27; | bounds=[252,347→578,493] | CLICK
+[28] FrameLayout | &#x27;&#x27; | bounds=[634,336→1184,504] | CLICK
+[29] ComposeView | &#x27;&#x27; | bounds=[634,336→802,504]
+[30] View | &#x27;&#x27; | bounds=[634,336→802,504]
+[31] View | &#x27;&#x27; | bounds=[634,336→802,504]
+[32] View | &#x27;&#x27; | bounds=[634,336→802,504]
+[33] TextView | &#x27;Liked Songs&#x27; | bounds=[830,384→1128,457] | CLICK
+[34] FrameLayout | &#x27;&#x27; | bounds=[56,532→606,700] | CLICK
+[35] ComposeView | &#x27;&#x27; | bounds=[56,532→224,700]
+[36] View | &#x27;&#x27; | bounds=[56,532→224,700]
+[37] View | &#x27;&#x27; | bounds=[56,532→224,700]
+[38] View | &#x27;&#x27; | bounds=[56,532→224,700]
+[39] TextView | &#x27;All time Tamil kuthu songs 💃🕺&#x27; | bounds=[252,543→578,689] | CLICK
+[40] FrameLayout | &#x27;&#x27; | bounds=[634,532→1184,700] | CLICK
+[41] ComposeView | &#x27;&#x27; | bounds=[634,532→802,700]
+[42] View | &#x27;&#x27; | bounds=[634,532→802,700]
+[43] View | &#x27;&#x27; | bounds=[634,532→802,700]
+[44] View | &#x27;&#x27; | bounds=[634,532→802,700]
+[45] TextView | &#x27;Vaaranam Aayiram (Original Motion Picture Soundtrack)&#x27; | bounds=[830,543→1156,689] | CLICK
+[46] FrameLayout | &#x27;&#x27; | bounds=[56,728→606,896] | CLICK
+[47] ComposeView | &#x27;&#x27; | bounds=[56,728→224,896]
+[48] View | &#x27;&#x27; | bounds=[56,728→224,896]
+[49] View | &#x27;&#x27; | bounds=[56,728→224,896]
+[50] View | &#x27;&#x27; | bounds=[56,728→224,896]
+[51] TextView | &#x27;Exquisite 🩵&#x27; | bounds=[252,776→556,849] | CLICK
+[52] FrameLayout | &#x27;&#x27; | bounds=[634,728→1184,896] | CLICK
+[53] ComposeView | &#x27;&#x27; | bounds=[634,728→802,896]
+[54] View | &#x27;&#x27; | bounds=[634,728→802,896]
+[55] View | &#x27;&#x27; | bounds=[634,728→802,896]
+[56] View | &#x27;&#x27; | bounds=[634,728→802,896]
+[57] TextView | &#x27;Daily Mix 1&#x27; | bounds=[830,776→1086,849] | CLICK
+[58] FrameLayout | &#x27;&#x27; | bounds=[56,924→606,1092] | CLICK
+[59] ComposeView | &#x27;&#x27; | bounds=[56,924→224,1092]
+[60] View | &#x27;&#x27; | bounds=[56,924→224,1092]
+[61] View | &#x27;&#x27; | bounds=[56,924→224,1092]
+[62] View | &#x27;&#x27; | bounds=[56,924→224,1092]
+[63] TextView | &#x27;Raavana Mavandaa (From &quot;Jana Nayagan&quot;)&#x27; | bounds=[252,935→578,1081] | CLICK
+[64] FrameLayout | &#x27;&#x27; | bounds=[634,924→1184,1092] | CLICK
+[65] ComposeView | &#x27;&#x27; | bounds=[634,924→802,1092]
+[66] View | &#x27;&#x27; | bounds=[634,924→802,1092]
+[67] View | &#x27;&#x27; | bounds=[634,924→802,1092]
+[68] View | &#x27;&#x27; | bounds=[634,924→802,1092]
+[69] TextView | &#x27;Mass Intros&#x27; | bounds=[830,972→1112,1045] | CLICK
+[70] LinearLayout | &#x27;&#x27; | bounds=[0,1162→1240,2082]
+[71] ComposeView | &#x27;&#x27; | bounds=[56,1162→1240,1324]
+[72] View | &#x27;&#x27; | bounds=[56,1162→1240,1324]
+[73] View | &#x27;&#x27; | bounds=[56,1190→1240,1296]
+[74] TextView | &#x27;More of what you like&#x27; | bounds=[56,1190→892,1296]
+[75] RecyclerView | &#x27;&#x27; | bounds=[0,1324→1240,2082] | SCROLL
+[76] ViewGroup | cd=&#x27;Tamil Romance. Anirudh Ravichander, Harris Jayaraj, Sai Abhy&#x27; | bounds=[56,1324→626,2082] | CLICK
+[77] TextView | &#x27;Anirudh Ravichander, Harris Jayaraj, Sai Abhyankkar, G. V. P&#x27; | bounds=[56,1936→626,2082] | CLICK
+[78] ViewGroup | cd=&#x27;00s Dance Tamil. Devi Sri Prasad, KK, Harris Jayaraj, Thaman&#x27; | bounds=[682,1324→1240,2082] | CLICK
+[79] TextView | &#x27;Devi Sri Prasad, KK, Harris Jayaraj, Thaman S, Vijay Antony&#x27; | bounds=[682,1936→1240,2082] | CLICK
+[80] LinearLayout | &#x27;&#x27; | bounds=[0,2152→1240,2772]
+[81] ComposeView | &#x27;&#x27; | bounds=[56,2152→1240,2314]
+[82] View | &#x27;&#x27; | bounds=[56,2152→1240,2314]
+[83] View | &#x27;&#x27; | bounds=[56,2180→1240,2286]
+[84] TextView | &#x27;Today&#x27;s biggest hits&#x27; | bounds=[56,2180→825,2286]
+[85] RecyclerView | &#x27;&#x27; | bounds=[0,2314→1240,2772] | SCROLL
+[86] ViewGroup | cd=&#x27;Trending Now Tamil. Anirudh Ravichander, Yuvan Shankar Raja,&#x27; | bounds=[56,2314→626,2772] | CLICK
+[87] ViewGroup | cd=&#x27;Kollywood Cream. Anirudh Ravichander, A.R. Rahman, Sai Abhya&#x27; | bounds=[682,2314→1240,2772] | CLICK
+[88] ViewGroup | &#x27;&#x27; | bounds=[0,2287→1240,2539]
+[89] View | &#x27;&#x27; | bounds=[0,2287→1240,2539]
+[90] yox0 | &#x27;&#x27; | bounds=[0,2287→1240,2539]
+[91] ViewGroup | cd=&#x27;Now Playing Bar&#x27; | bounds=[28,2315→1212,2511] | CLICK
+[92] ImageView | cd=&#x27;The cover art of the currently playing track&#x27; | bounds=[56,2343→196,2483] | CLICK
+[93] RecyclerView | cd=&#x27;Currently playing track&#x27; | bounds=[238,2315→722,2511] | CLICK SCROLL
+[94] ViewGroup | &#x27;&#x27; | bounds=[238,2315→722,2511] | CLICK
+[95] TextView | &#x27;The One (From &quot;Retro&quot;)&#x27; | bounds=[238,2340→722,2413] | CLICK | cd=&#x27;The One (From &quot;Retro&quot;)&#x27;
+[96] TextView | &#x27;Sid Sriram&#x27; | bounds=[238,2413→481,2486] | CLICK
+[97] ImageButton | cd=&#x27;Connect to a device. Opens the devices menu&#x27; | bounds=[764,2343→904,2483] | CLICK
+[98] ImageButton | cd=&#x27;Item added&#x27; | bounds=[904,2343→1044,2483] | CLICK
+[99] ImageButton | cd=&#x27;Play&#x27; | bounds=[1072,2371→1156,2455] | CLICK
+[100] ProgressBar | &#x27;&#x27; | bounds=[56,2504→1184,2511]
+[101] ViewGroup | &#x27;&#x27; | bounds=[0,2539→1240,2716]
+[102] View | &#x27;&#x27; | bounds=[0,2539→1240,2716]
+[103] View | &#x27;&#x27; | bounds=[0,2539→248,2716] | CLICK
+[104] View | cd=&#x27;Home, Tab 1 of 5&#x27; | bounds=[0,2539→248,2716] | CLICK
+[105] View | &#x27;&#x27; | bounds=[7,2539→241,2712]
+[106] Button | &#x27;&#x27; | bounds=[0,2539→248,2716]
+[107] View | &#x27;&#x27; | bounds=[248,2539→496,2716] | CLICK
+[108] View | cd=&#x27;Search, Tab 2 of 5&#x27; | bounds=[248,2539→496,2716] | CLICK
+[109] View | &#x27;&#x27; | bounds=[255,2539→489,2712]
+[110] Button | &#x27;&#x27; | bounds=[248,2539→496,2716]
+[111] View | &#x27;&#x27; | bounds=[496,2539→744,2716] | CLICK
+[112] View | cd=&#x27;Your Library, Tab 3 of 5&#x27; | bounds=[496,2539→744,2716] | CLICK
+[113] View | &#x27;&#x27; | bounds=[503,2539→737,2712]
+[114] Button | &#x27;&#x27; | bounds=[496,2539→744,2716]
+[115] View | &#x27;&#x27; | bounds=[744,2539→992,2716] | CLICK
+[116] View | cd=&#x27;Premium, Tab 4 of 5&#x27; | bounds=[744,2539→992,2716] | CLICK
+[117] View | &#x27;&#x27; | bounds=[751,2539→985,2712]
+[118] Button | &#x27;&#x27; | bounds=[744,2539→992,2716]
+[119] View | &#x27;&#x27; | bounds=[992,2539→1240,2716] | CLICK
+[120] View | cd=&#x27;Create, Tab 5 of 5&#x27; | bounds=[992,2539→1240,2716] | CLICK
+[121] View | &#x27;&#x27; | bounds=[999,2539→1233,2712]
+[122] Button | &#x27;&#x27; | bounds=[992,2539→1240,2716]
+
+How to use this list:
+- FOCUSED on an EDIT element → type goes here directly, no tap needed.
+- EDIT without FOCUSED → tap it first to move the cursor.
+- CLICK → safe to tap. DISABLED → do not attempt, find another path.
+- SCROLL → scroll_down/up or swipe on this container to reveal off-screen items.
+- CHECKED/SELECTED → state already set; only tap if you need to toggle it OFF.
+- id=... and badge [N] on the screenshot are the most reliable identifiers.
+- text=&#x27;...&#x27; means the field has content. hint=&#x27;...&#x27; means it is empty.</pre></div>
+<div class="agent-box">{
+&quot;thinking&quot;: &quot;① Verify prev: None (first step). ② Blockers: No modal blockers. ③ Read UI flags: [6] &#x27;Go to profile and settings&#x27; has CLICK flag — navigates to profile/settings. ④ Tap [6] to navigate to profile/settings.&quot;,
+  &quot;memory&quot;: &quot;Spotify open on home screen. No previous actions.&quot;,
+  &quot;action_type&quot;: &quot;tap&quot;,
+  &quot;target&quot;: &quot;Go to profile and settings&quot;,
+  &quot;field_hint&quot;: &quot;&quot;,
+  &quot;description&quot;: &quot;Tap profile/settings icon to navigate to profile/settings&quot;,
+  &quot;screen_context&quot;: &quot;Spotify | Home&quot;,
+  &quot;phase_complete&quot;: false,
+  &quot;goal_complete&quot;: false,
+  &quot;verification_passed&quot;: true,
+  &quot;verification_reason&quot;: &quot;Spotify home screen visible&quot;
+}</div>
+<div class="token-row">&#x1F522; Prompt: 5768 | Completion: 163 | Total: 5931</div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-REACTIVE_STEP_GENERATED">
+<div class="entry-header" onclick="toggleEntry('e147047988352030')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">Reactive Step Gen</span> <span class="ts">2026-03-15 19:08:15.935</span> <span class="provider-tag"><strong>REACTIVE_STEP_GENERATED</strong></span><span class="elapsed">+22.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047988352030">
+<div class="kv-row"><span class="kv-key">phase</span><span class="kv-val">Navigate to personal playlists</span></div>
+<div class="kv-row"><span class="kv-key">action_type</span><span class="kv-val">tap</span></div>
+<div class="kv-row"><span class="kv-key">target</span><span class="kv-val">Go to profile and settings</span></div>
+<div class="kv-row"><span class="kv-key">description</span><span class="kv-val">Tap profile/settings icon to navigate to profile/settings</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-SUBGOAL_START">
+<div class="entry-header" onclick="toggleEntry('e147055809324830')" title="Click to collapse/expand">&#x25B6; <span class="badge badge-AGENT">Coordinator</span> <span class="ts">2026-03-15 19:08:15.935</span> <span class="provider-tag"><strong>SUBGOAL_START</strong></span><span class="elapsed">+22.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147055809324830">
+<div class="kv-row"><span class="kv-key">index</span><span class="kv-val">2</span></div>
+<div class="kv-row"><span class="kv-key">total</span><span class="kv-val">2</span></div>
+<div class="kv-row"><span class="kv-key">description</span><span class="kv-val">Tap profile/settings icon to navigate to profile/settings</span></div>
+<div class="kv-row"><span class="kv-key">action_type</span><span class="kv-val">tap</span></div>
+<div class="kv-row"><span class="kv-key">target</span><span class="kv-val">Go to profile and settings</span></div>
+<div class="kv-row"><span class="kv-key">attempt</span><span class="kv-val">1</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-PERCEPTION_RESULT">
+<div class="entry-header" onclick="toggleEntry('e147048000019230')" title="Click to collapse/expand">&#x1F50D; <span class="badge badge-AGENT">Perceiver Agent</span> <span class="ts">2026-03-15 19:08:18.841</span> <span class="provider-tag"><strong>PERCEPTION_RESULT</strong></span><span class="elapsed">+25.8s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147048000019230">
+<div class="kv-row"><span class="kv-key">Screen type</span><span class="kv-val">native</span></div>
+<div class="kv-row"><span class="kv-key">Element count</span><span class="kv-val">122</span></div>
+<div class="kv-row"><span class="kv-key">Target match</span><span class="kv-val match-none">&#x274C; Not found</span></div>
+<div class="elements-section"><div class="elements-section-title">UI Elements (122)</div><table class="elements-table"><thead><tr><th>#</th><th>Text</th><th>Content Desc</th><th>Class</th><th>Resource ID</th><th>Bounds</th><th>Center</th><th>Flags</th></tr></thead><tbody><tr><td class="col-idx">1</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">2</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">DrawerLayout</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">3</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">4</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">5</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">6</td><td class="col-text"></td><td class="col-desc">Go to profile and settings</td><td class="col-class">ImageView</td><td class="col-res"></td><td class="col-bounds">[28,139 → 196,307]</td><td class="col-center">112,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">7</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[168,139 → 1240,307]</td><td class="col-center">704,223</td><td></td></tr><tr><td class="col-idx">8</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[168,139 → 1240,307]</td><td class="col-center">704,223</td><td></td></tr><tr><td class="col-idx">9</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[168,139 → 1240,307]</td><td class="col-center">704,223</td><td></td></tr><tr><td class="col-idx">10</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[690,140 → 1016,307]</td><td class="col-center">853,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">11</td><td class="col-text">Podcasts</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[746,187 → 960,260]</td><td class="col-center">853,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">12</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[690,166 → 1016,281]</td><td class="col-center">853,223</td><td></td></tr><tr><td class="col-idx">13</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[412,140 → 662,307]</td><td class="col-center">537,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">14</td><td class="col-text">Music</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[468,187 → 606,260]</td><td class="col-center">537,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">15</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[412,166 → 662,281]</td><td class="col-center">537,223</td><td></td></tr><tr><td class="col-idx">16</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[210,140 → 384,307]</td><td class="col-center">297,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">17</td><td class="col-text">All</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[266,187 → 328,260]</td><td class="col-center">297,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">18</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[210,166 → 384,281]</td><td class="col-center">297,223</td><td></td></tr><tr><td class="col-idx">19</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,307 → 1240,2772]</td><td class="col-center">620,1539</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">20</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">LinearLayout</td><td class="col-res"></td><td class="col-bounds">[56,336 → 1184,1092]</td><td class="col-center">620,714</td><td></td></tr><tr><td class="col-idx">21</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">GridView</td><td class="col-res"></td><td class="col-bounds">[56,336 → 1184,1092]</td><td class="col-center">620,714</td><td></td></tr><tr><td class="col-idx">22</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[56,336 → 606,504]</td><td class="col-center">331,420</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">23</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,336 → 224,504]</td><td class="col-center">140,420</td><td></td></tr><tr><td class="col-idx">24</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,336 → 224,504]</td><td class="col-center">140,420</td><td></td></tr><tr><td class="col-idx">25</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,336 → 224,504]</td><td class="col-center">140,420</td><td></td></tr><tr><td class="col-idx">26</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,336 → 224,504]</td><td class="col-center">140,420</td><td></td></tr><tr><td class="col-idx">27</td><td class="col-text">Intha vachiko 🤝</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[252,347 → 578,493]</td><td class="col-center">415,420</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">28</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[634,336 → 1184,504]</td><td class="col-center">909,420</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">29</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[634,336 → 802,504]</td><td class="col-center">718,420</td><td></td></tr><tr><td class="col-idx">30</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,336 → 802,504]</td><td class="col-center">718,420</td><td></td></tr><tr><td class="col-idx">31</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,336 → 802,504]</td><td class="col-center">718,420</td><td></td></tr><tr><td class="col-idx">32</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,336 → 802,504]</td><td class="col-center">718,420</td><td></td></tr><tr><td class="col-idx">33</td><td class="col-text">Liked Songs</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[830,384 → 1128,457]</td><td class="col-center">979,420</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">34</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[56,532 → 606,700]</td><td class="col-center">331,616</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">35</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,532 → 224,700]</td><td class="col-center">140,616</td><td></td></tr><tr><td class="col-idx">36</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,532 → 224,700]</td><td class="col-center">140,616</td><td></td></tr><tr><td class="col-idx">37</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,532 → 224,700]</td><td class="col-center">140,616</td><td></td></tr><tr><td class="col-idx">38</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,532 → 224,700]</td><td class="col-center">140,616</td><td></td></tr><tr><td class="col-idx">39</td><td class="col-text">All time Tamil kuthu songs 💃🕺</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[252,543 → 578,689]</td><td class="col-center">415,616</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">40</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[634,532 → 1184,700]</td><td class="col-center">909,616</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">41</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[634,532 → 802,700]</td><td class="col-center">718,616</td><td></td></tr><tr><td class="col-idx">42</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,532 → 802,700]</td><td class="col-center">718,616</td><td></td></tr><tr><td class="col-idx">43</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,532 → 802,700]</td><td class="col-center">718,616</td><td></td></tr><tr><td class="col-idx">44</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,532 → 802,700]</td><td class="col-center">718,616</td><td></td></tr><tr><td class="col-idx">45</td><td class="col-text">Vaaranam Aayiram (Original Motion Picture Soundtrack)</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[830,543 → 1156,689]</td><td class="col-center">993,616</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">46</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[56,728 → 606,896]</td><td class="col-center">331,812</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">47</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,728 → 224,896]</td><td class="col-center">140,812</td><td></td></tr><tr><td class="col-idx">48</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,728 → 224,896]</td><td class="col-center">140,812</td><td></td></tr><tr><td class="col-idx">49</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,728 → 224,896]</td><td class="col-center">140,812</td><td></td></tr><tr><td class="col-idx">50</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,728 → 224,896]</td><td class="col-center">140,812</td><td></td></tr><tr><td class="col-idx">51</td><td class="col-text">Exquisite 🩵</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[252,776 → 556,849]</td><td class="col-center">404,812</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">52</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[634,728 → 1184,896]</td><td class="col-center">909,812</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">53</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[634,728 → 802,896]</td><td class="col-center">718,812</td><td></td></tr><tr><td class="col-idx">54</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,728 → 802,896]</td><td class="col-center">718,812</td><td></td></tr><tr><td class="col-idx">55</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,728 → 802,896]</td><td class="col-center">718,812</td><td></td></tr><tr><td class="col-idx">56</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,728 → 802,896]</td><td class="col-center">718,812</td><td></td></tr><tr><td class="col-idx">57</td><td class="col-text">Daily Mix 1</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[830,776 → 1086,849]</td><td class="col-center">958,812</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">58</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[56,924 → 606,1092]</td><td class="col-center">331,1008</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">59</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,924 → 224,1092]</td><td class="col-center">140,1008</td><td></td></tr><tr><td class="col-idx">60</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,924 → 224,1092]</td><td class="col-center">140,1008</td><td></td></tr><tr><td class="col-idx">61</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,924 → 224,1092]</td><td class="col-center">140,1008</td><td></td></tr><tr><td class="col-idx">62</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,924 → 224,1092]</td><td class="col-center">140,1008</td><td></td></tr><tr><td class="col-idx">63</td><td class="col-text">Raavana Mavandaa (From &quot;Jana Nayagan&quot;)</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[252,935 → 578,1081]</td><td class="col-center">415,1008</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">64</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[634,924 → 1184,1092]</td><td class="col-center">909,1008</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">65</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[634,924 → 802,1092]</td><td class="col-center">718,1008</td><td></td></tr><tr><td class="col-idx">66</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,924 → 802,1092]</td><td class="col-center">718,1008</td><td></td></tr><tr><td class="col-idx">67</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,924 → 802,1092]</td><td class="col-center">718,1008</td><td></td></tr><tr><td class="col-idx">68</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[634,924 → 802,1092]</td><td class="col-center">718,1008</td><td></td></tr><tr><td class="col-idx">69</td><td class="col-text">Mass Intros</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[830,972 → 1112,1045]</td><td class="col-center">971,1008</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">70</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">LinearLayout</td><td class="col-res"></td><td class="col-bounds">[0,1162 → 1240,2082]</td><td class="col-center">620,1622</td><td></td></tr><tr><td class="col-idx">71</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,1162 → 1240,1324]</td><td class="col-center">648,1243</td><td></td></tr><tr><td class="col-idx">72</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,1162 → 1240,1324]</td><td class="col-center">648,1243</td><td></td></tr><tr><td class="col-idx">73</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,1190 → 1240,1296]</td><td class="col-center">648,1243</td><td></td></tr><tr><td class="col-idx">74</td><td class="col-text">More of what you like</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,1190 → 892,1296]</td><td class="col-center">474,1243</td><td></td></tr><tr><td class="col-idx">75</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,1324 → 1240,2082]</td><td class="col-center">620,1703</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">76</td><td class="col-text"></td><td class="col-desc">Tamil Romance. Anirudh Ravichander, Harris Jayaraj, Sai Abhy</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[56,1324 → 626,2082]</td><td class="col-center">341,1703</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">77</td><td class="col-text">Anirudh Ravichander, Harris Jayaraj, Sai Abhyankkar, G. V. Prakash, Santhosh Nar</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,1936 → 626,2082]</td><td class="col-center">341,2009</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">78</td><td class="col-text"></td><td class="col-desc">00s Dance Tamil. Devi Sri Prasad, KK, Harris Jayaraj, Thaman</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[682,1324 → 1240,2082]</td><td class="col-center">961,1703</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">79</td><td class="col-text">Devi Sri Prasad, KK, Harris Jayaraj, Thaman S, Vijay Antony</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[682,1936 → 1240,2082]</td><td class="col-center">961,2009</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">80</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">LinearLayout</td><td class="col-res"></td><td class="col-bounds">[0,2152 → 1240,2772]</td><td class="col-center">620,2462</td><td></td></tr><tr><td class="col-idx">81</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,2152 → 1240,2314]</td><td class="col-center">648,2233</td><td></td></tr><tr><td class="col-idx">82</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,2152 → 1240,2314]</td><td class="col-center">648,2233</td><td></td></tr><tr><td class="col-idx">83</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,2180 → 1240,2286]</td><td class="col-center">648,2233</td><td></td></tr><tr><td class="col-idx">84</td><td class="col-text">Today&#x27;s biggest hits</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,2180 → 825,2286]</td><td class="col-center">440,2233</td><td></td></tr><tr><td class="col-idx">85</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,2314 → 1240,2772]</td><td class="col-center">620,2543</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">86</td><td class="col-text"></td><td class="col-desc">Trending Now Tamil. Anirudh Ravichander, Yuvan Shankar Raja,</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[56,2314 → 626,2772]</td><td class="col-center">341,2543</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">87</td><td class="col-text"></td><td class="col-desc">Kollywood Cream. Anirudh Ravichander, A.R. Rahman, Sai Abhya</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[682,2314 → 1240,2772]</td><td class="col-center">961,2543</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">88</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,2287 → 1240,2539]</td><td class="col-center">620,2413</td><td></td></tr><tr><td class="col-idx">89</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2287 → 1240,2539]</td><td class="col-center">620,2413</td><td></td></tr><tr><td class="col-idx">90</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">yox0</td><td class="col-res"></td><td class="col-bounds">[0,2287 → 1240,2539]</td><td class="col-center">620,2413</td><td></td></tr><tr><td class="col-idx">91</td><td class="col-text"></td><td class="col-desc">Now Playing Bar</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[28,2315 → 1212,2511]</td><td class="col-center">620,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">92</td><td class="col-text"></td><td class="col-desc">The cover art of the currently playing track</td><td class="col-class">ImageView</td><td class="col-res"></td><td class="col-bounds">[56,2343 → 196,2483]</td><td class="col-center">126,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">93</td><td class="col-text"></td><td class="col-desc">Currently playing track</td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[238,2315 → 722,2511]</td><td class="col-center">480,2413</td><td><span class="tag tag-clickable">tap</span><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">94</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[238,2315 → 722,2511]</td><td class="col-center">480,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">95</td><td class="col-text">The One (From &quot;Retro&quot;)</td><td class="col-desc">The One (From &quot;Retro&quot;)</td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[238,2340 → 722,2413]</td><td class="col-center">480,2376</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">96</td><td class="col-text">Sid Sriram</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[238,2413 → 481,2486]</td><td class="col-center">359,2449</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">97</td><td class="col-text"></td><td class="col-desc">Connect to a device. Opens the devices menu</td><td class="col-class">ImageButton</td><td class="col-res"></td><td class="col-bounds">[764,2343 → 904,2483]</td><td class="col-center">834,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">98</td><td class="col-text"></td><td class="col-desc">Item added</td><td class="col-class">ImageButton</td><td class="col-res"></td><td class="col-bounds">[904,2343 → 1044,2483]</td><td class="col-center">974,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">99</td><td class="col-text"></td><td class="col-desc">Play</td><td class="col-class">ImageButton</td><td class="col-res"></td><td class="col-bounds">[1072,2371 → 1156,2455]</td><td class="col-center">1114,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">100</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ProgressBar</td><td class="col-res"></td><td class="col-bounds">[56,2504 → 1184,2511]</td><td class="col-center">620,2507</td><td></td></tr><tr><td class="col-idx">101</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 1240,2716]</td><td class="col-center">620,2627</td><td></td></tr><tr><td class="col-idx">102</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 1240,2716]</td><td class="col-center">620,2627</td><td></td></tr><tr><td class="col-idx">103</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 248,2716]</td><td class="col-center">124,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">104</td><td class="col-text"></td><td class="col-desc">Home, Tab 1 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 248,2716]</td><td class="col-center">124,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">105</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[7,2539 → 241,2712]</td><td class="col-center">124,2625</td><td></td></tr><tr><td class="col-idx">106</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 248,2716]</td><td class="col-center">124,2627</td><td></td></tr><tr><td class="col-idx">107</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[248,2539 → 496,2716]</td><td class="col-center">372,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">108</td><td class="col-text"></td><td class="col-desc">Search, Tab 2 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[248,2539 → 496,2716]</td><td class="col-center">372,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">109</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[255,2539 → 489,2712]</td><td class="col-center">372,2625</td><td></td></tr><tr><td class="col-idx">110</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[248,2539 → 496,2716]</td><td class="col-center">372,2627</td><td></td></tr><tr><td class="col-idx">111</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[496,2539 → 744,2716]</td><td class="col-center">620,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">112</td><td class="col-text"></td><td class="col-desc">Your Library, Tab 3 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[496,2539 → 744,2716]</td><td class="col-center">620,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">113</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[503,2539 → 737,2712]</td><td class="col-center">620,2625</td><td></td></tr><tr><td class="col-idx">114</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[496,2539 → 744,2716]</td><td class="col-center">620,2627</td><td></td></tr><tr><td class="col-idx">115</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[744,2539 → 992,2716]</td><td class="col-center">868,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">116</td><td class="col-text"></td><td class="col-desc">Premium, Tab 4 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[744,2539 → 992,2716]</td><td class="col-center">868,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">117</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[751,2539 → 985,2712]</td><td class="col-center">868,2625</td><td></td></tr><tr><td class="col-idx">118</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[744,2539 → 992,2716]</td><td class="col-center">868,2627</td><td></td></tr><tr><td class="col-idx">119</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[992,2539 → 1240,2716]</td><td class="col-center">1116,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">120</td><td class="col-text"></td><td class="col-desc">Create, Tab 5 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[992,2539 → 1240,2716]</td><td class="col-center">1116,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">121</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[999,2539 → 1233,2712]</td><td class="col-center">1116,2625</td><td></td></tr><tr><td class="col-idx">122</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[992,2539 → 1240,2716]</td><td class="col-center">1116,2627</td><td></td></tr></tbody></table></div>
+</div>
+</div>
+<div class="entry entry-LLM">
+<div class="entry-header" onclick="toggleEntry('e147048010220840')" title="Click to collapse/expand">&#x1F916; <span class="badge badge-LLM">LLM #4</span> <span class="ts">2026-03-15 19:08:26.525</span> <span class="provider-tag">groq | meta-llama/llama-4-scout-17b-16e-instruct</span><span class="elapsed">+33.5s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147048010220840">
+<div class="kv-row"><span class="kv-key">Provider</span><span class="kv-val">groq</span></div>
+<div class="kv-row"><span class="kv-key">Model</span><span class="kv-val">meta-llama/llama-4-scout-17b-16e-instruct</span></div>
+<div class="prompt-section"><button class="prompt-toggle" onclick="toggle('prompt_e147048010220840')">&#x1F4AC; Prompt &mdash; 2,413 chars (click to expand)</button><pre class="prompt-box hidden" id="prompt_e147048010220840">Agent is stuck and needs alternative approach.
+
+ORIGINAL GOAL: Navigate to Playlists and play favorite songs
+COMPLETED: Open Spotify
+STUCK ON: Tap profile/settings icon to navigate to profile/settings
+REMAINING AFTER FIX: None
+OBSTACLE: Cannot find &#x27;Go to profile and settings&#x27; on screen after scrolling. Visible elements: [&#x27;Go to profile and settings&#x27;, &#x27;Podcasts&#x27;, &#x27;Music&#x27;, &#x27;All&#x27;]. Screen: Go to profile and settings.
+CURRENT SCREEN: App: music | Visible: Go to profile and settings, Podcasts, Music, All, Intha vachiko 🤝, Liked Songs, All time Tamil kuthu songs 💃🕺, Exquisite 🩵, Daily Mix 1, Raavana Mavandaa (From &quot;Jana Nayagan&quot;), Mass Intros, More of what you like | Buttons: Go to profile and settings, Podcasts, Music, All, Intha vachiko 🤝, Liked Songs, All time Tamil kuthu songs 💃🕺, Vaaranam Aayiram (Original Mot, Exquisite 🩵, Daily Mix 1 | History: ✅ open_app(Spotify) on native screen
+
+━━━ RECOVERY STRATEGIES ━━━
+1. Different path: Is there another way to reach the goal?
+2. Scroll first: Target might be off-screen
+3. Go back: Wrong screen, return and try again
+4. Alternative element: Similar button/link that works
+5. Simplify: Break stuck step into smaller actions
+6. Overwrite field: If an input field contains wrong/garbage text, type the correct text directly — the type action replaces all existing content.
+7. Ask user: If stuck because of ambiguity, ask the user for help
+
+━━━ INPUT FIELD TROUBLESHOOTING ━━━
+If stuck on typing into a field:
+- Check if the field already has incorrect text → use type to overwrite it directly (no clearing needed)
+- Tap directly on the EditText/input element (not labels near it)
+- If keyboard is open (field is focused/editable), type directly without tapping again
+- If a swipe/scroll failed near an input field, the keyboard may have captured the gesture as keystrokes
+
+━━━ AVAILABLE ACTION TYPES ━━━
+You MUST only use action types from this exact list. Any other action type will fail.
+  tap | type | press_enter | dismiss_keyboard | swipe | scroll | back | open_app | wait | ask_user
+
+━━━ OUTPUT (JSON ONLY) ━━━
+{
+  &quot;analysis&quot;: &quot;Why we&#x27;re stuck&quot;,
+  &quot;recovery_strategy&quot;: &quot;Which strategy to use&quot;,
+  &quot;subgoals&quot;: [
+    {
+      &quot;description&quot;: &quot;What to do&quot;,
+      &quot;action_type&quot;: &quot;ONE OF: tap, type, press_enter, dismiss_keyboard, swipe, scroll, back, open_app, wait, ask_user&quot;,
+      &quot;target&quot;: &quot;element or text&quot;
+    }
+  ]
+}
+
+Generate 1-3 alternative subgoals.</pre></div>
+<div class="agent-box">{
+&quot;analysis&quot;: &quot;The agent is stuck on tapping the profile/settings icon to navigate to profile/settings because it cannot find the &#x27;Go to profile and settings&#x27; option on the screen.&quot;,
+  &quot;recovery_strategy&quot;: &quot;Alternative element&quot;,
+  &quot;subgoals&quot;: [
+    {
+      &quot;description&quot;: &quot;Tap on &#x27;More of what you like&#x27; to see if it leads to profile/settings or a similar section&quot;,
+      &quot;action_type&quot;: &quot;tap&quot;,
+      &quot;target&quot;: &quot;More of what you like&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Scroll down the screen to see if &#x27;Go to profile and settings&#x27; becomes visible&quot;,
+      &quot;action_type&quot;: &quot;scroll&quot;,
+      &quot;target&quot;: &quot;down&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Tap on &#x27;Liked Songs&#x27; to see if it leads to profile/settings or a similar section&quot;,
+      &quot;action_type&quot;: &quot;tap&quot;,
+      &quot;target&quot;: &quot;Liked Songs&quot;
+    }
+  ]
+}</div>
+<div class="token-row">&#x1F522; Prompt: 651 | Completion: 193 | Total: 844</div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-REPLAN">
+<div class="entry-header" onclick="toggleEntry('e147048010220840')" title="Click to collapse/expand">&#x1F500; <span class="badge badge-AGENT">Planner Agent</span> <span class="ts">2026-03-15 19:08:26.530</span> <span class="provider-tag"><strong>REPLAN</strong></span><span class="elapsed">+33.5s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147048010220840">
+<div class="kv-row"><span class="kv-key">reason</span><span class="kv-val">target_not_found</span></div>
+<div class="kv-row"><span class="kv-key">obstacle</span><span class="kv-val">Cannot find &#x27;Go to profile and settings&#x27; on screen after scrolling. Visible elements: [&#x27;Go to profile and settings&#x27;, &#x27;Podcasts&#x27;, &#x27;Music&#x27;, &#x27;All&#x27;]. Screen: Go to profile and settings.</span></div>
+<div class="kv-row"><span class="kv-key">replan_count</span><span class="kv-val">1</span></div>
+<div class="kv-row"><span class="kv-key">new_subgoal_count</span><span class="kv-val">3</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-SUBGOAL_START">
+<div class="entry-header" onclick="toggleEntry('e147048010188840')" title="Click to collapse/expand">&#x25B6; <span class="badge badge-AGENT">Coordinator</span> <span class="ts">2026-03-15 19:08:26.532</span> <span class="provider-tag"><strong>SUBGOAL_START</strong></span><span class="elapsed">+33.5s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147048010188840">
+<div class="kv-row"><span class="kv-key">index</span><span class="kv-val">2</span></div>
+<div class="kv-row"><span class="kv-key">total</span><span class="kv-val">4</span></div>
+<div class="kv-row"><span class="kv-key">description</span><span class="kv-val">Tap on &#x27;More of what you like&#x27; to see if it leads</span></div>
+<div class="kv-row"><span class="kv-key">action_type</span><span class="kv-val">tap</span></div>
+<div class="kv-row"><span class="kv-key">target</span><span class="kv-val">More of what you like</span></div>
+<div class="kv-row"><span class="kv-key">attempt</span><span class="kv-val">1</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-PERCEPTION_RESULT">
+<div class="entry-header" onclick="toggleEntry('e147047994227240')" title="Click to collapse/expand">&#x1F50D; <span class="badge badge-AGENT">Perceiver Agent</span> <span class="ts">2026-03-15 19:08:29.375</span> <span class="provider-tag"><strong>PERCEPTION_RESULT</strong></span><span class="elapsed">+36.3s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047994227240">
+<div class="kv-row"><span class="kv-key">Screen type</span><span class="kv-val">native</span></div>
+<div class="kv-row"><span class="kv-key">Element count</span><span class="kv-val">94</span></div>
+<div class="kv-row"><span class="kv-key">Target match</span><span class="kv-val match-none">&#x274C; Not found</span></div>
+<div class="elements-section"><div class="elements-section-title">UI Elements (94)</div><table class="elements-table"><thead><tr><th>#</th><th>Text</th><th>Content Desc</th><th>Class</th><th>Resource ID</th><th>Bounds</th><th>Center</th><th>Flags</th></tr></thead><tbody><tr><td class="col-idx">1</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">FrameLayout</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">2</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">DrawerLayout</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">3</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">4</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">5</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,0 → 1240,2772]</td><td class="col-center">620,1386</td><td></td></tr><tr><td class="col-idx">6</td><td class="col-text"></td><td class="col-desc">Go to profile and settings</td><td class="col-class">ImageView</td><td class="col-res"></td><td class="col-bounds">[28,139 → 196,307]</td><td class="col-center">112,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">7</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[168,139 → 1240,307]</td><td class="col-center">704,223</td><td></td></tr><tr><td class="col-idx">8</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[168,139 → 1240,307]</td><td class="col-center">704,223</td><td></td></tr><tr><td class="col-idx">9</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[168,139 → 1240,307]</td><td class="col-center">704,223</td><td></td></tr><tr><td class="col-idx">10</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[690,140 → 1016,307]</td><td class="col-center">853,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">11</td><td class="col-text">Podcasts</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[746,187 → 960,260]</td><td class="col-center">853,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">12</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[690,166 → 1016,281]</td><td class="col-center">853,223</td><td></td></tr><tr><td class="col-idx">13</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[412,140 → 662,307]</td><td class="col-center">537,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">14</td><td class="col-text">Music</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[468,187 → 606,260]</td><td class="col-center">537,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">15</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[412,166 → 662,281]</td><td class="col-center">537,223</td><td></td></tr><tr><td class="col-idx">16</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[210,140 → 384,307]</td><td class="col-center">297,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">17</td><td class="col-text">All</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[266,187 → 328,260]</td><td class="col-center">297,223</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">18</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[210,166 → 384,281]</td><td class="col-center">297,223</td><td></td></tr><tr><td class="col-idx">19</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,307 → 1240,2772]</td><td class="col-center">620,1539</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">20</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">LinearLayout</td><td class="col-res"></td><td class="col-bounds">[0,307 → 1240,922]</td><td class="col-center">620,614</td><td></td></tr><tr><td class="col-idx">21</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,2 → 1240,164]</td><td class="col-center">648,83</td><td></td></tr><tr><td class="col-idx">22</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,30 → 1240,136]</td><td class="col-center">648,83</td><td></td></tr><tr><td class="col-idx">23</td><td class="col-text">More of what you like</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,30 → 892,136]</td><td class="col-center">474,83</td><td></td></tr><tr><td class="col-idx">24</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,307 → 1240,922]</td><td class="col-center">620,614</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">25</td><td class="col-text"></td><td class="col-desc">Tamil Romance. Anirudh Ravichander, Harris Jayaraj, Sai Abhy</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[56,307 → 626,922]</td><td class="col-center">341,614</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">26</td><td class="col-text">Anirudh Ravichander, Harris Jayaraj, Sai Abhyankkar, G. V. Prakash, Santhosh Nar</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,776 → 626,922]</td><td class="col-center">341,849</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">27</td><td class="col-text"></td><td class="col-desc">00s Dance Tamil. Devi Sri Prasad, KK, Harris Jayaraj, Thaman</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[682,307 → 1240,922]</td><td class="col-center">961,614</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">28</td><td class="col-text">Devi Sri Prasad, KK, Harris Jayaraj, Thaman S, Vijay Antony</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[682,776 → 1240,922]</td><td class="col-center">961,849</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">29</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">LinearLayout</td><td class="col-res"></td><td class="col-bounds">[0,992 → 1240,1912]</td><td class="col-center">620,1452</td><td></td></tr><tr><td class="col-idx">30</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,992 → 1240,1154]</td><td class="col-center">648,1073</td><td></td></tr><tr><td class="col-idx">31</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,992 → 1240,1154]</td><td class="col-center">648,1073</td><td></td></tr><tr><td class="col-idx">32</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,1020 → 1240,1126]</td><td class="col-center">648,1073</td><td></td></tr><tr><td class="col-idx">33</td><td class="col-text">Today&#x27;s biggest hits</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,1020 → 825,1126]</td><td class="col-center">440,1073</td><td></td></tr><tr><td class="col-idx">34</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,1154 → 1240,1912]</td><td class="col-center">620,1533</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">35</td><td class="col-text"></td><td class="col-desc">Trending Now Tamil. Anirudh Ravichander, Yuvan Shankar Raja,</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[56,1154 → 626,1912]</td><td class="col-center">341,1533</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">36</td><td class="col-text">Anirudh Ravichander, Yuvan Shankar Raja, G. V. Prakash, Sai Abhyankkar, Sean Rol</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,1766 → 626,1912]</td><td class="col-center">341,1839</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">37</td><td class="col-text"></td><td class="col-desc">Kollywood Cream. Anirudh Ravichander, A.R. Rahman, Sai Abhya</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[682,1154 → 1240,1912]</td><td class="col-center">961,1533</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">38</td><td class="col-text">Anirudh Ravichander, A.R. Rahman, Sai Abhyankkar, G. V. Prakash, Sooraj Santhosh</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[682,1766 → 1240,1912]</td><td class="col-center">961,1839</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">39</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">LinearLayout</td><td class="col-res"></td><td class="col-bounds">[0,1982 → 1240,2772]</td><td class="col-center">620,2377</td><td></td></tr><tr><td class="col-idx">40</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ComposeView</td><td class="col-res"></td><td class="col-bounds">[56,1982 → 1240,2150]</td><td class="col-center">648,2066</td><td></td></tr><tr><td class="col-idx">41</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,1982 → 1240,2150]</td><td class="col-center">648,2066</td><td></td></tr><tr><td class="col-idx">42</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[56,1982 → 1240,2150]</td><td class="col-center">648,2066</td><td></td></tr><tr><td class="col-idx">43</td><td class="col-text">Recents</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[56,2013 → 372,2119]</td><td class="col-center">214,2066</td><td></td></tr><tr><td class="col-idx">44</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[927,1982 → 1240,2150]</td><td class="col-center">1083,2066</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">45</td><td class="col-text">Show all</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[983,2030 → 1184,2103]</td><td class="col-center">1083,2066</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">46</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[927,2010 → 1240,2122]</td><td class="col-center">1083,2066</td><td></td></tr><tr><td class="col-idx">47</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[0,2150 → 1240,2772]</td><td class="col-center">620,2461</td><td><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">48</td><td class="col-text"></td><td class="col-desc">Intha vachiko 🤝. Playlist • anu🧃</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[28,2150 → 419,2772]</td><td class="col-center">223,2461</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">49</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[28,2541 → 419,2772]</td><td class="col-center">223,2656</td><td></td></tr><tr><td class="col-idx">50</td><td class="col-text">Intha vachiko 🤝</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[28,2569 → 419,2642]</td><td class="col-center">223,2605</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">51</td><td class="col-text">Playlist • anu🧃</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[28,2656 → 419,2729]</td><td class="col-center">223,2692</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">52</td><td class="col-text"></td><td class="col-desc">All time Tamil kuthu songs 💃🕺. Playlist • Harsha</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[475,2150 → 866,2772]</td><td class="col-center">670,2461</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">53</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[475,2541 → 866,2772]</td><td class="col-center">670,2656</td><td></td></tr><tr><td class="col-idx">54</td><td class="col-text">All time Tamil kuthu songs 💃🕺</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[475,2569 → 866,2642]</td><td class="col-center">670,2605</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">55</td><td class="col-text">Playlist • Harsha</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[475,2656 → 866,2729]</td><td class="col-center">670,2692</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">56</td><td class="col-text"></td><td class="col-desc">Vaaranam Aayiram (Original Motion Picture Soundtrack). Album</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[922,2150 → 1240,2772]</td><td class="col-center">1081,2461</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">57</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[922,2541 → 1240,2772]</td><td class="col-center">1081,2656</td><td></td></tr><tr><td class="col-idx">58</td><td class="col-text">Vaaranam Aayiram (Original Motion Picture Soundtrack)</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[922,2569 → 1240,2642]</td><td class="col-center">1081,2605</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">59</td><td class="col-text">Album • Harris Jayaraj</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[922,2656 → 1240,2729]</td><td class="col-center">1081,2692</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">60</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,2287 → 1240,2539]</td><td class="col-center">620,2413</td><td></td></tr><tr><td class="col-idx">61</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2287 → 1240,2539]</td><td class="col-center">620,2413</td><td></td></tr><tr><td class="col-idx">62</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">yox0</td><td class="col-res"></td><td class="col-bounds">[0,2287 → 1240,2539]</td><td class="col-center">620,2413</td><td></td></tr><tr><td class="col-idx">63</td><td class="col-text"></td><td class="col-desc">Now Playing Bar</td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[28,2315 → 1212,2511]</td><td class="col-center">620,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">64</td><td class="col-text"></td><td class="col-desc">The cover art of the currently playing track</td><td class="col-class">ImageView</td><td class="col-res"></td><td class="col-bounds">[56,2343 → 196,2483]</td><td class="col-center">126,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">65</td><td class="col-text"></td><td class="col-desc">Currently playing track</td><td class="col-class">RecyclerView</td><td class="col-res"></td><td class="col-bounds">[238,2315 → 722,2511]</td><td class="col-center">480,2413</td><td><span class="tag tag-clickable">tap</span><span class="tag tag-scrollable">scroll</span></td></tr><tr><td class="col-idx">66</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[238,2315 → 722,2511]</td><td class="col-center">480,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">67</td><td class="col-text">The One (From &quot;Retro&quot;)</td><td class="col-desc">The One (From &quot;Retro&quot;)</td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[238,2340 → 722,2413]</td><td class="col-center">480,2376</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">68</td><td class="col-text">Sid Sriram</td><td class="col-desc"></td><td class="col-class">TextView</td><td class="col-res"></td><td class="col-bounds">[238,2413 → 481,2486]</td><td class="col-center">359,2449</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">69</td><td class="col-text"></td><td class="col-desc">Connect to a device. Opens the devices menu</td><td class="col-class">ImageButton</td><td class="col-res"></td><td class="col-bounds">[764,2343 → 904,2483]</td><td class="col-center">834,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">70</td><td class="col-text"></td><td class="col-desc">Item added</td><td class="col-class">ImageButton</td><td class="col-res"></td><td class="col-bounds">[904,2343 → 1044,2483]</td><td class="col-center">974,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">71</td><td class="col-text"></td><td class="col-desc">Play</td><td class="col-class">ImageButton</td><td class="col-res"></td><td class="col-bounds">[1072,2371 → 1156,2455]</td><td class="col-center">1114,2413</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">72</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ProgressBar</td><td class="col-res"></td><td class="col-bounds">[56,2504 → 1184,2511]</td><td class="col-center">620,2507</td><td></td></tr><tr><td class="col-idx">73</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">ViewGroup</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 1240,2716]</td><td class="col-center">620,2627</td><td></td></tr><tr><td class="col-idx">74</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 1240,2716]</td><td class="col-center">620,2627</td><td></td></tr><tr><td class="col-idx">75</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 248,2716]</td><td class="col-center">124,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">76</td><td class="col-text"></td><td class="col-desc">Home, Tab 1 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 248,2716]</td><td class="col-center">124,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">77</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[7,2539 → 241,2712]</td><td class="col-center">124,2625</td><td></td></tr><tr><td class="col-idx">78</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[0,2539 → 248,2716]</td><td class="col-center">124,2627</td><td></td></tr><tr><td class="col-idx">79</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[248,2539 → 496,2716]</td><td class="col-center">372,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">80</td><td class="col-text"></td><td class="col-desc">Search, Tab 2 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[248,2539 → 496,2716]</td><td class="col-center">372,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">81</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[255,2539 → 489,2712]</td><td class="col-center">372,2625</td><td></td></tr><tr><td class="col-idx">82</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[248,2539 → 496,2716]</td><td class="col-center">372,2627</td><td></td></tr><tr><td class="col-idx">83</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[496,2539 → 744,2716]</td><td class="col-center">620,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">84</td><td class="col-text"></td><td class="col-desc">Your Library, Tab 3 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[496,2539 → 744,2716]</td><td class="col-center">620,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">85</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[503,2539 → 737,2712]</td><td class="col-center">620,2625</td><td></td></tr><tr><td class="col-idx">86</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[496,2539 → 744,2716]</td><td class="col-center">620,2627</td><td></td></tr><tr><td class="col-idx">87</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[744,2539 → 992,2716]</td><td class="col-center">868,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">88</td><td class="col-text"></td><td class="col-desc">Premium, Tab 4 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[744,2539 → 992,2716]</td><td class="col-center">868,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">89</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[751,2539 → 985,2712]</td><td class="col-center">868,2625</td><td></td></tr><tr><td class="col-idx">90</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[744,2539 → 992,2716]</td><td class="col-center">868,2627</td><td></td></tr><tr><td class="col-idx">91</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[992,2539 → 1240,2716]</td><td class="col-center">1116,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">92</td><td class="col-text"></td><td class="col-desc">Create, Tab 5 of 5</td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[992,2539 → 1240,2716]</td><td class="col-center">1116,2627</td><td><span class="tag tag-clickable">tap</span></td></tr><tr><td class="col-idx">93</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">View</td><td class="col-res"></td><td class="col-bounds">[999,2539 → 1233,2712]</td><td class="col-center">1116,2625</td><td></td></tr><tr><td class="col-idx">94</td><td class="col-text"></td><td class="col-desc"></td><td class="col-class">Button</td><td class="col-res"></td><td class="col-bounds">[992,2539 → 1240,2716]</td><td class="col-center">1116,2627</td><td></td></tr></tbody></table></div>
+</div>
+</div>
+<div class="debug-line">&#x26A0; 2026-03-15 19:12:11.220 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.</div>
+<div class="debug-line">&#x26A0; 2026-03-15 19:12:12.153 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.</div>
+<div class="debug-line">&#x26A0; 2026-03-15 19:12:12.989 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940819240')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:19.892</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+266.8s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940819240">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">user</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">Hello, Ora.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">input_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940492840')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:19.898</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+266.8s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940492840">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">Hello. How  can</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940595240')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:19.904</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+266.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940595240">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">I help</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940844840')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:19.934</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+266.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940844840">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">you today?</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047949158440')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:20.262</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+267.2s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047949158440">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">user</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">Hello, Ora.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">input_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940160040')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:20.263</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+267.2s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940160040">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">Hello. How can I help you today?</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940454440')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:23.664</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+270.6s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940454440">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">I&#x27;m waiting  for your  command.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047949036840')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:23.705</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+270.7s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047949036840">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">I&#x27;m waiting for your command.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047940140840')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:27.003</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+273.9s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047940140840">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">I&#x27;m here.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e147047951174440')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:12:27.005</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+274.0s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e147047951174440">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">assistant</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">I&#x27;m here.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">output_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">0ab4640e-2755-4c00-982a-674c233ee07f</span></div>
+</div>
+</div>
+<div class="debug-line">&#x26A0; 2026-03-15 19:18:31.506 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.</div>
+<div class="debug-line">&#x26A0; 2026-03-15 19:18:32.602 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.</div>
+<div class="debug-line">&#x26A0; 2026-03-15 19:18:33.697 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.</div>

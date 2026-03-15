@@ -1,0 +1,20 @@
+================================================================================
+AURA EXECUTION LOG  20260315_201824_451724
+Started: 2026-03-15 20:18:24
+================================================================================
+
+[WARN] 2026-03-15 20:18:24.714 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:18:25.895 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:20:35.650 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:20:36.364 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:20:37.009 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:21:41.612 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:21:42.385 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 20:21:42.997 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[AGENT_DECISION: LIVE_TRANSCRIPT] +210.6s | 2026-03-15 20:21:55.077
+  Agent: GeminiLive
+  speaker: user
+  text: hear me?
+  source: input_transcription
+  session_id: f43ce91c-3c78-49c9-8598-f839206b3e0f
+--------------------------------------------------------------------------------

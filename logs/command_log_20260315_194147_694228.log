@@ -1,0 +1,66 @@
+19:41:47 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:48 │ DEBUG │ services.llm │ Gemini client initialized successfully
+19:41:48 │ DEBUG │ services.llm │ NVIDIA NIM client initialized successfully
+19:41:48 │ INFO  │ services.llm │ LLMService initialized with default provider: groq
+19:41:48 │ INFO  │ uvicorn.error │ connection open
+19:41:48 │ INFO  │ uvicorn.error │ connection open
+19:41:48 │ INFO  │ services.real_accessibility │ 🔌 Device connected: CPH2661
+19:41:48 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+19:41:48 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+19:41:48 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+19:41:48 │ INFO  │ api_handlers.websocket_router │ 📱 Device info updated: CPH2661
+19:41:48 │ INFO  │ uvicorn.error │ 100.123.167.96:46774 - "WebSocket /ws/live?session_id=172ad96c-ff04-4f8f-84c8-b9050fc94b93" [accepted]
+19:41:48 │ INFO  │ uvicorn.error │ 100.123.167.96:46774 - "WebSocket /ws/live?session_id=172ad96c-ff04-4f8f-84c8-b9050fc94b93" [accepted]
+19:41:48 │ INFO  │ adk_streaming_server │ [/ws/live] New Gemini Live session: 172ad96c-ff04-4f8f-84c8-b9050fc94b93
+19:41:48 │ INFO  │ adk_streaming_server │ [/ws/live] VAD: RealtimeInputConfig applied (400 ms prefix, 800 ms silence, low speech sensitivity, barge-in ON)
+19:41:48 │ INFO  │ uvicorn.error │ connection open
+19:41:48 │ INFO  │ uvicorn.error │ connection open
+19:41:48 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:48 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:48 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:49 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:49 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:49 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:41:50 │ INFO  │ api_handlers.device_router │ 📱 Device registration: OnePlus CPH2661 [Request: fGYtRghkbVOkJVz4SOMpig]
+19:41:50 │ INFO  │ services.real_accessibility │ 🔌 Device connected: OnePlus CPH2661
+19:41:50 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+19:41:50 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+19:41:50 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+19:41:50 │ INFO  │ api_handlers.device_router │ ✅ Stored 535 apps for device: OnePlus CPH2661
+19:41:50 │ INFO  │ api_handlers.device_router │ 📦 Stored inventory: 535 apps for OnePlus CPH2661
+19:41:50 │ INFO  │ api_handlers.device_router │ ✅ Device registered: OnePlus CPH2661
+19:41:50 │ INFO  │ middleware.request_id │ [fGYtRghk] POST /device/register → 200 (26ms)
+19:41:50 │ INFO  │ utils.unified_logger │ [19:41:50.452] ℹ️ [http] POST /device/register → 200 (26ms)
+19:41:50 │ INFO  │ uvicorn.access │ 100.123.167.96:46780 - "POST /device/register HTTP/1.1" 200
+19:42:10 │ ERROR │ api_handlers.websocket_router │ Conversation error occurred: Cannot call "receive" once a disconnect message has been received.
+Traceback (most recent call last):
+  File "D:\PROJECTS\Gemini Live Hackathon\aura-live\api_handlers\websocket_router.py", line 889, in websocket_conversation
+    message = await asyncio.wait_for(websocket.receive(), timeout=10.0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINESHKUMAR C\AppData\Local\Programs\Python\Python312\Lib\asyncio\tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "C:\Users\DINESHKUMAR C\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 57, in receive
+    raise RuntimeError('Cannot call "receive" once a disconnect message has been received.')
+RuntimeError: Cannot call "receive" once a disconnect message has been received.
+19:42:10 │ INFO  │ services.real_accessibility │ 🔌 WebSocket disconnected
+19:42:10 │ INFO  │ services.real_accessibility │ 🔌 Device disconnected: OnePlus CPH2661
+19:42:10 │ INFO  │ services.visual_feedback │ ✨ Visual feedback WebSocket disconnected
+19:42:10 │ INFO  │ api_handlers.websocket_router │ 🔌 Device disconnected (WebSocket closed)
+19:42:10 │ INFO  │ api_handlers.websocket_router │ Conversation WebSocket closed
+19:42:10 │ INFO  │ uvicorn.error │ connection closed
+19:42:10 │ INFO  │ uvicorn.error │ connection closed
+19:42:10 │ INFO  │ adk_streaming_server │ [/ws/live] Client disconnected: 172ad96c-ff04-4f8f-84c8-b9050fc94b93
+19:42:10 │ INFO  │ uvicorn.error │ connection closed
+19:42:10 │ INFO  │ uvicorn.error │ connection closed
+19:42:10 │ INFO  │ adk_streaming_server │ [/ws/live] Session closed: 172ad96c-ff04-4f8f-84c8-b9050fc94b93
+19:52:15 │ INFO  │ uvicorn.error │ Shutting down
+19:52:15 │ INFO  │ uvicorn.error │ Shutting down
+19:52:16 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+19:52:16 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+19:52:16 │ INFO  │ main     │ Shutting down AURA backend server
+19:52:16 │ INFO  │ main     │ Device disconnected on shutdown
+19:52:16 │ INFO  │ uvicorn.error │ Application shutdown complete.
+19:52:16 │ INFO  │ uvicorn.error │ Application shutdown complete.
+19:52:16 │ INFO  │ uvicorn.error │ Finished server process [2884]
+19:52:16 │ INFO  │ uvicorn.error │ Finished server process [2884]

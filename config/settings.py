@@ -82,9 +82,9 @@ class Settings(BaseSettings):
         description="Default LLM provider (fast tasks)",
     )
     default_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
-        default="gemini",
+        default="groq",
         env="DEFAULT_VLM_PROVIDER",
-        description="Default VLM provider (vision tasks — Gemini 2.5 Flash primary per competition requirement)",
+        description="Default VLM provider (vision tasks)",
     )
     default_stt_provider: Literal["groq", "gemini"] = Field(
         default="groq", env="DEFAULT_STT_PROVIDER", description="Default STT provider"
@@ -156,25 +156,25 @@ class Settings(BaseSettings):
         description="Fallback LLM model for low-confidence intent parsing",
     )
     default_vlm_model: str = Field(
-        default="gemini-2.5-flash",
+        default="meta-llama/llama-4-scout-17b-16e-instruct",
         env="DEFAULT_VLM_MODEL",
-        description="Default VLM model (Gemini 2.5 Flash primary per competition requirement)",
+        description="Default VLM model (primary model for selected VLM provider)",
     )
     vlm_secondary_model: str = Field(
         default="meta-llama/llama-4-scout-17b-16e-instruct",
         env="VLM_SECONDARY_MODEL",
         description="Secondary VLM model (Scout 16 experts, higher quality fallback)",
     )
-    # Fallback VLM model for the non-default provider (Groq when Gemini is primary)
+    # Fallback VLM model for the non-default provider
     fallback_vlm_model: str = Field(
-        default="meta-llama/llama-4-scout-17b-16e-instruct",
+        default="gemini-2.5-flash",
         env="FALLBACK_VLM_MODEL",
-        description="Fallback VLM model (Groq Llama 4 Scout when Gemini fails)",
+        description="Fallback VLM model used when primary VLM provider fails",
     )
     fallback_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
-        default="groq",
+        default="gemini",
         env="FALLBACK_VLM_PROVIDER",
-        description="Provider for fallback VLM model (Groq when Gemini is primary)",
+        description="Provider for fallback VLM model",
     )
     default_stt_model: str = Field(
         default="whisper-large-v3-turbo",

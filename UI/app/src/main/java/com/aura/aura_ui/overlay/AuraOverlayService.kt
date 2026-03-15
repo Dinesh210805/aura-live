@@ -482,27 +482,36 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     
     /**
      * Show overlay and immediately start voice capture.
-     * Called when wake word is detected - overlay shows and listening starts automatically.
+     * Called when wake word is detected.
+     *
+     * In Gemini Live mode: just show the overlay — do NOT auto-start the session.
+     * The Gemini Live session is continuous and the user must explicitly press the
+     * mic button to begin. Auto-starting caused the "listening on open" bug.
+     *
+     * In classic STT mode: auto-start as before (push-to-talk style).
      */
     private fun showOverlayAndStartListening() {
-        Log.i(TAG, "🎤 Show overlay and start listening (wake word triggered)")
-        
+        Log.i(TAG, "🎤 Show overlay (wake word triggered)")
+
         // Show the overlay first
         showOverlay()
-        
-        // Wait for voice controller to be ready, then start capture
+
+        // Only auto-start for classic VoiceCaptureController (STT/TTS mode).
+        // Gemini Live is always-on once the user presses mic — never auto-start.
+        if (geminiLiveController != null) {
+            Log.i(TAG, "🎙️ Gemini Live mode — waiting for user to press mic button")
+            return
+        }
+
         serviceScope.launch {
-            // Give the voice controller(s) time to initialise and connect
+            // Give the voice controller time to initialise and connect
             var attempts = 0
             while (voiceCaptureController == null && attempts < 20) {
                 kotlinx.coroutines.delay(100)
                 attempts++
             }
 
-            if (geminiLiveController != null) {
-                Log.i(TAG, "🎙️ Auto-starting Gemini Live capture after wake word")
-                geminiLiveController?.startCapture()
-            } else if (voiceCaptureController != null) {
+            if (voiceCaptureController != null) {
                 Log.i(TAG, "🎙️ Auto-starting VoiceCaptureController after wake word")
                 voiceCaptureController?.startCapture()
             } else {

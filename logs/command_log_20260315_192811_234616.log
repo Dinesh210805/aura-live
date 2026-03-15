@@ -1,0 +1,51 @@
+19:28:11 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:28:13 │ DEBUG │ services.llm │ Gemini client initialized successfully
+19:28:13 │ DEBUG │ services.llm │ NVIDIA NIM client initialized successfully
+19:28:13 │ INFO  │ services.llm │ LLMService initialized with default provider: groq
+19:28:14 │ DEBUG │ services.vlm │ Groq VLM client initialized successfully
+19:28:14 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:28:14 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:28:14 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+19:28:15 │ DEBUG │ services.vlm │ Gemini VLM client initialized successfully
+19:28:15 │ DEBUG │ services.vlm │ NVIDIA NIM VLM client initialized successfully
+19:28:15 │ INFO  │ services.vlm │ VLMService initialized with default provider: gemini
+19:28:15 │ INFO  │ services.tts │ ✅ TTSService initialized with Edge-TTS (free, high-quality)
+19:28:15 │ INFO  │ agents.commander │ ✅ Commander initialized (rule + LLM)
+19:28:15 │ INFO  │ agents.validator │ ✅ Validator agent initialized (rule-based mode)
+19:28:16 │ INFO  │ services.gesture_executor │ ✅ Gesture executor initialized
+19:28:16 │ INFO  │ services.perception_controller │ PerceptionController singleton initialized (vlm=yes)
+19:28:16 │ INFO  │ aura_graph.nodes.coordinator_node │ ✅ Coordinator node initialized
+19:28:16 │ INFO  │ aura_graph.graph │   - Coordinator: Initialized (Phase 3 multi-agent execution)
+19:28:16 │ INFO  │ aura_graph.graph │   - PromptGuard: Initialized (meta-llama/llama-prompt-guard-2-86m via Groq)
+19:28:16 │ INFO  │ aura_graph.core_nodes │ LangGraph nodes initialized successfully with hybrid parallel architecture
+19:28:16 │ INFO  │ aura_graph.core_nodes │   - Agents: Commander, UniversalAgent, Responder, ScreenVLM, Validator
+19:28:16 │ INFO  │ aura_graph.core_nodes │   - Parallel execution: True
+19:28:16 │ INFO  │ aura_graph.graph │ Services and agents initialized (tri-provider architecture)
+19:28:16 │ INFO  │ aura_graph.graph │   - VLM Provider: gemini (gemini-2.5-flash)
+19:28:16 │ INFO  │ aura_graph.graph │   - LLM Provider: groq (llama-3.1-8b-instant)
+19:28:16 │ INFO  │ aura_graph.graph │   - Planning Provider: groq (meta-llama/llama-4-scout-17b-16e-instruct)
+19:28:16 │ INFO  │ aura_graph.graph │   - STT Model: whisper-large-v3-turbo
+19:28:16 │ INFO  │ aura_graph.graph │   - TTS Provider: edge-tts
+19:28:16 │ INFO  │ aura_graph.graph │   - Parallel Execution: True
+19:28:16 │ INFO  │ aura_graph.graph │ Creating AURA task execution graph (parallel architecture)
+19:28:16 │ INFO  │ aura_graph.graph │ Adding nodes to graph
+19:28:16 │ INFO  │ aura_graph.graph │ Setting conditional entry point
+19:28:16 │ INFO  │ aura_graph.graph │ Graph structure created successfully (parallel architecture enabled)
+19:28:16 │ INFO  │ aura_graph.graph │ Graph compiled successfully (parallel architecture enabled)
+19:28:16 │ INFO  │ main     │ LangGraph application compiled
+19:28:16 │ INFO  │ main     │ ADK agent: compiled graph registered
+19:28:16 │ INFO  │ main     │ Accessibility service initialized
+19:28:16 │ INFO  │ validators.config │  Configuration validation completed
+19:28:16 │ INFO  │ main     │ AURA backend startup completed
+19:28:16 │ INFO  │ uvicorn.error │ Application startup complete.
+19:28:16 │ INFO  │ uvicorn.error │ Application startup complete.
+19:35:47 │ INFO  │ uvicorn.error │ Shutting down
+19:35:47 │ INFO  │ uvicorn.error │ Shutting down
+19:35:47 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+19:35:47 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+19:35:47 │ INFO  │ main     │ Shutting down AURA backend server
+19:35:47 │ INFO  │ main     │ Device disconnected on shutdown
+19:35:47 │ INFO  │ uvicorn.error │ Application shutdown complete.
+19:35:47 │ INFO  │ uvicorn.error │ Application shutdown complete.
+19:35:47 │ INFO  │ uvicorn.error │ Finished server process [4548]
+19:35:47 │ INFO  │ uvicorn.error │ Finished server process [4548]

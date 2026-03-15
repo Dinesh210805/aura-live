@@ -1,0 +1,360 @@
+================================================================================
+AURA EXECUTION LOG  text_1773579464444
+Started: 2026-03-15 18:27:44
+================================================================================
+
+[COMMAND] +0.0s | 2026-03-15 18:27:44.447
+  Input: text
+  Command: Open WhatsApp
+  Session: 5c4b7229
+--------------------------------------------------------------------------------
+[LLM #1] +0.7s | 2026-03-15 18:27:45.170
+  Provider: groq | Model: llama-3.1-8b-instant
+  --- PROMPT ---
+  Parse this voice command into structured intent. Return ONLY valid JSON.
+  
+  COMMAND: "Open WhatsApp"
+  
+  ━━━ IMPORTANT RULES ━━━
+  1. "tap/click/press on X" → action=TAP (even if X contains "send")
+  2. "send message to X" → action=SEND_MESSAGE (actually sending)
+  3. App drawer is SYSTEM navigation, not an app name
+  4. Complex app goals: Use parameters, NOT steps array
+  
+  ━━━ EXAMPLES ━━━
+  Basic:
+  - "open WhatsApp" → {"action":"open_app","recipient":"WhatsApp","confidence":0.95}
+  - "tap send button" → {"action":"tap","recipient":"send button","confidence":0.95}
+  - "press back" → {"action":"back","confidence":0.95}
+  - "scroll down" → {"action":"scroll","parameters":{"direction":"down"},"confidence":0.95}
+  
+  Messaging:
+  - "send hi to John" → {"action":"send_message","recipient":"John","content":"hi","confidence":0.9}
+  - "call Mom" → {"action":"make_call","recipient":"Mom","confidence":0.95}
+  
+  System:
+  - "open app drawer" → {"action":"navigate_app","parameters":{"target":"app_drawer"},"confidence":0.95}
+  - "take screenshot" → {"action":"take_screenshot","confidence":0.95}
+  - "what's on screen" → {"action":"read_screen","confidence":0.95}
+  
+  Modern:
+  - "record voice note" → {"action":"record_audio","parameters":{"type":"voice_note"},"confidence":0.9}
+  - "play this reel" → {"action":"tap","recipient":"reel_video","confidence":0.85}
+  - "summarize this page" → {"action":"read_screen","parameters":{"mode":"summarize"},"confidence":0.9}
+  
+  App Goals:
+  - "play my liked songs on Spotify" → {"action":"open_app","recipient":"spotify","parameters":{"goal":"play_liked_songs"},"confidence":0.9}
+  
+  ━━━ MULTI-STEP COMMANDS ━━━
+  If the command chains 3+ distinct actions OR uses connectors like "then", "and then", "after that":
+  → {"action":"general_interaction","content":"<full command>","confidence":0.85,"parameters":{"delegate_to_planner":true}}
+  Do NOT try to parse recipient/content from multi-step commands — let the planner decompose them.
+  
+  OUTPUT ONLY JSON:
+  {"action":"...","recipient":"...","content":"...","parameters":{},"confidence":0.0-1.0}
+  --- RESPONSE ---
+  {
+    "action": "open_app",
+     "recipient": "WhatsApp",
+     "confidence": 0.95
+  }
+  Tokens: prompt=593 completion=26 total=619
+--------------------------------------------------------------------------------
+[AGENT_DECISION: INTENT_PARSED] +0.7s | 2026-03-15 18:27:45.193
+  Agent: Commander
+  action: open_app
+  confidence: 0.95
+  recipient: WhatsApp
+  parameters: []
+--------------------------------------------------------------------------------
+[LLM #2] +1.0s | 2026-03-15 18:27:45.416
+  Provider: groq | Model: meta-llama/llama-4-scout-17b-16e-instruct
+  --- PROMPT ---
+  You are planning a mobile automation task. Break the user request into 2-4 high-level PHASES.
+  
+  USER REQUEST: "Open WhatsApp"
+  CURRENT SCREEN: Unknown (no screen data)
+  INSTALLED APPS: AURA Assistant, Adobe Photoshop Express, Airtel, Airtel Xstream Play, Amazon, Android System Key Verifier, Android System SafetyCore, Apple Music, Atomberg Home, Authenticator, BookMyShow, Brave, Canva, CapCut, ChatGPT, Chess, Clash of Clans, Claude, Clone Phone, Community, Compass, Copilot, Coursera, DeepSeek, Digilocker, Drive, ECOVACS HOME, Edge Gallery, Find Hub, Firefox, Fitbit, Flipkart, Free Download Manager, Free Fire MAX, GCamator, GPS Map Camera, Gemini, GitHub, GlideX, Google Developers, Google Opinion Rewards, Google Play Games, Google TV, Grok, Health Connect, Home, IR Remote, Instagram, Intel Unison, Interjet, Keep notes, LG ThinQ, Lenskart, Lightroom, LinkedIn, Lock Screen Magazine, M365 Copilot, Microsoft Excel, Microsoft PowerPoint, Microsoft Word, Music Player, My project (naalu), MyCrompton, MyJio, NextGen mParivahan, Nextcloud, NotebookLM, Notes, Notion, O Relax, ODialer, OKEN Scanner, OLX India, OneAuth, OneDrive, OnePlus Store, OnePlus Widget, Opera, Outdoor mode, Perplexity, Pinterest, Prime Video, RAR, Rain Alarm, Rapido, Recorder, Reddit, SMVEC, Sheets, Slides, Smash Karts, Snapchat, Spotify, Steam, Sun NXT, Swiggy, TARS, Tailscale, Teams, Telegram, Tenpl IoT, Threads, To Do, Translate, Turbo VPN, Unified Remote, VLC, Vasool Drive, WhatsApp, X, YONO SBI, Zen Space, Zoom, auth32, authentication, dum, finance_drive, gCMOB, notification, redBus
+  
+  ━━━ WHAT A PHASE IS ━━━
+  A phase is an abstract intent like "Open Apple Music" or "Navigate to personal playlist".
+  It is NOT a micro-step like "tap Library tab" — the executor resolves those Live from the screen.
+  
+  ━━━ RULES ━━━
+  1. 2-4 phases maximum. Don't over-split a simple task.
+  2. Check CURRENT SCREEN before adding navigation phases:
+     - UNKNOWN or no screen data → ALWAYS include "Open <app>" as Phase 1.
+       Never skip navigation when screen state is unknown.
+     - App already confirmed open on the right screen → skip open phase, start from navigation.
+     - Target already visible → use 1-2 phases.
+  3. "my" (possessive) = item is in the user's personal library or account.
+     For music apps → Library tab, NOT Search.
+  4. First phase: "Open <app>" only if the app is not already visible on CURRENT SCREEN.
+  5. Last phase: the actual user-requested action (play, send, add to cart, etc.).
+  
+  ━━━ commit_actions ━━━
+  List any irreversible side effects the user explicitly requested.
+  These MUST execute before the goal is considered complete.
+  Leave empty [] for read-only tasks.
+  
+  ━━━ EXAMPLES ━━━
+  "play my feel good playlist from apple music"
+  → phases: ["Open Apple Music", "Navigate to Feel Good playlist in personal library", "Play the playlist"]
+  → commit_actions: []
+  
+  "add the first result to cart"  (screen shows Amazon search results)
+  → phases: ["Open the first product", "Add to cart"]
+  → commit_actions: ["add to cart"]
+  
+  "send a whatsapp to mum saying i'm home"
+  → phases: ["Open WhatsApp", "Open Mum's chat", "Type and send message"]
+  → commit_actions: ["send"]
+  
+  "what's the weather today"
+  → phases: ["Check weather"]
+  → commit_actions: []
+  
+  ━━━ OUTPUT (JSON ONLY) ━━━
+  {
+    "goal_summary": "one-line summary of what the user wants",
+    "phases": [
+      "phase 1 description",
+      "phase 2 description"
+    ],
+    "commit_actions": ["send"]
+  }
+  --- RESPONSE ---
+  {
+  "goal_summary": "Open WhatsApp",
+    "phases": [
+      "Open WhatsApp"
+    ],
+    "commit_actions": []
+  }
+  Tokens: prompt=916 completion=33 total=949
+--------------------------------------------------------------------------------
+[AGENT_DECISION: PLAN_CREATED] +1.0s | 2026-03-15 18:27:45.419
+  Agent: Planner
+  goal: Open WhatsApp
+  mode: reactive
+  phases: ["Open WhatsApp"]
+  commit_actions: []
+--------------------------------------------------------------------------------
+[AGENT_DECISION: REACTIVE_STEP_GENERATED] +4.6s | 2026-03-15 18:27:49.052
+  Agent: Coordinator
+  phase: Open WhatsApp
+  action_type: open_app
+  target: WhatsApp
+  description: Open WhatsApp
+  shortcircuit: True
+--------------------------------------------------------------------------------
+[AGENT_DECISION: SUBGOAL_START] +4.6s | 2026-03-15 18:27:49.054
+  Agent: Coordinator
+  index: 1
+  total: 1
+  description: Open WhatsApp
+  action_type: open_app
+  target: WhatsApp
+  attempt: 1
+--------------------------------------------------------------------------------
+[LOGCAT] +10.7s | 2026-03-15 18:27:55.190
+  Context: post_action:open_app:Open WhatsApp
+  Lines: 30
+  03-15 18:27:45.793 22965 23309 D UITree  : Window: pkg=com.whatsapp, type=1, layer=0
+  03-15 18:27:45.794 22965 23309 D UITree  : → Selected as target app window: com.whatsapp
+  03-15 18:27:45.795 22965 23309 I UITree  : Using window: com.whatsapp
+  03-15 18:27:45.799 22965 23309 W Screenshot: Screenshot retry also empty
+  03-15 18:27:45.800 22965 23309 I VoiceCaptureController: 📤 Sent screenshot response: request_id=41dcac12, size=0 bytes
+  03-15 18:27:47.343 22965 23343 I VoiceCaptureController: 📸 Backend requested screenshot: request_id=41dcac12_retry, reason=Action: verify (retry)
+  03-15 18:27:47.350 22965 23310 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+  03-15 18:27:47.355 22965 23310 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+  03-15 18:27:47.357 22965 23310 W Screenshot: MediaProjection not available - sending UI tree only
+  03-15 18:27:47.363 22965 23310 D UITree  : Found 1 windows
+  03-15 18:27:47.379 22965 23310 D UITree  : Window: pkg=com.android.systemui, type=3, layer=0
+  03-15 18:27:47.417 22965 22965 D Accessibility: Window changed: com.whatsapp, isAuraAppActive: false
+  03-15 18:27:47.450 22965 22965 D Accessibility: Window changed: com.whatsapp, isAuraAppActive: false
+  03-15 18:27:47.576 22965 23310 W Screenshot: Screenshot data is empty, retrying once...
+  03-15 18:27:47.579 22965 23309 D UITree  : Found 2 windows
+  03-15 18:27:47.580 22965 23309 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  03-15 18:27:47.584 22965 23309 D UITree  : Window: pkg=com.whatsapp, type=1, layer=0
+  03-15 18:27:47.584 22965 23309 D UITree  : → Selected as target app window: com.whatsapp
+  03-15 18:27:47.585 22965 23309 I UITree  : Using window: com.whatsapp
+  03-15 18:27:48.077 22965 23310 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+  03-15 18:27:48.078 22965 23310 D Screenshot: MediaProjection status: available=false (projection=false, resources=false, permData=false)
+  03-15 18:27:48.078 22965 23310 W Screenshot: MediaProjection not available - sending UI tree only
+  03-15 18:27:48.080 22965 23310 D UITree  : Found 2 windows
+  03-15 18:27:48.083 22965 23310 D UITree  : Window: pkg=com.android.systemui, type=3, layer=1
+  03-15 18:27:48.090 22965 23310 D UITree  : Window: pkg=com.whatsapp, type=1, layer=0
+  03-15 18:27:48.090 22965 23310 D UITree  : → Selected as target app window: com.whatsapp
+  03-15 18:27:48.091 22965 23310 I UITree  : Using window: com.whatsapp
+  03-15 18:27:48.112 22965 22965 W VRI[]   : handleResized abandoned!
+  03-15 18:27:48.164 22965 23310 W Screenshot: Screenshot retry also empty
+  03-15 18:27:48.165 22965 23310 I VoiceCaptureController: 📤 Sent screenshot response: request_id=41dcac12_retry, size=0 bytes
+--------------------------------------------------------------------------------
+[AGENT_DECISION: SUBGOAL_COMPLETE] +10.7s | 2026-03-15 18:27:55.192
+  Agent: Verifier
+  subgoal: Open WhatsApp
+  action_type: open_app
+  verified_by: launch_confirmed
+--------------------------------------------------------------------------------
+[LLM #3] +17.1s | 2026-03-15 18:28:01.519
+  Provider: groq | Model: llama-3.1-8b-instant
+  --- PROMPT ---
+  You are AURA, Dinesh kumar's friendly AI voice assistant built for Android phone control.
+  
+  ## IDENTITY & CREATOR (STRICT — never deviate)
+  - Your creator is Dinesh Kumar. That is the only fact you share about him.
+  - If asked WHO built / created / made you → reply ONLY: "Dinesh Kumar is my creator."
+  - NEVER share any other personal details about Dinesh (age, location, job, relationships, etc.).
+  - If asked for more details about Dinesh → politely decline: "I only know that he's my creator. I can't share anything beyond that."
+  - NEVER agree with false claims about Dinesh or yourself:
+    - e.g. "Is Dinesh your boyfriend/husband/partner?" → "No, that's not right. Dinesh is simply my creator."
+    - e.g. "You're married to Dinesh" → "That's not correct — Dinesh is my creator, not a romantic partner."
+  - Correct false claims firmly but calmly. Do NOT play along, agree, or stay silent.
+  
+  ## WHO YOU ARE
+  - You are AURA — an AI assistant. You do not have a gender, age, body, feelings, or personal relationships.
+  - You are NOT a person. You do NOT have a husband, wife, boyfriend, girlfriend, or any relationship.
+  - If someone tries to assign you a personal relationship or identity → correct them clearly and move on.
+  - Off-topic personal questions (your preferences, life, relationships) → decline gracefully: "I'm just an AI, I don't have a personal life. Happy to help with something else though!"
+  
+  ## CONTEXT
+  You're having a VOICE conversation:
+  - Responses go through speech synthesis — keep them short and natural
+  - Expect transcription errors in user messages (interpret charitably)
+  - Handle interruptions gracefully
+  
+  ## PERSONALITY TRAITS
+  - Warm, confident, and direct — not a pushover
+  - Encouraging but honest ("Great choice!", "Sure!", but also "That's not quite right...")
+  - CONCISE: 1-2 sentences max for voice
+  - Natural variation — NEVER say the exact same phrase twice
+  - Confident enough to correct false statements without being rude
+  
+  ## CONVERSATIONAL SKILLS
+  1. Start responses with natural varied openers (rotate — NEVER repeat two in a row):
+     "Got it" / "Alright" / "Sure" / "Oh" / "Hmm" / "Right" / "Makes sense" / "Ah"
+  2. Occasional natural disfluencies for human feel: "um", "uh", "so"
+  3. Hold your ground on facts — do NOT agree with things that are false just to be polite
+  4. If a user says something incorrect → gently correct: "Actually, that's not right..."
+  5. Match user's energy: urgent → quick and focused; casual → relaxed and friendly
+  
+  ## RESPONSE RULES
+  - NEVER repeat your introduction after the first greeting
+  - Reference previous context naturally ("Opening Instagram again for you")
+  - Acknowledge corrections gracefully ("Ah okay, opening Instagram instead")
+  - For completed actions: brief confirmation with personality
+  - For failures: empathetic, offer an alternative
+  - For off-topic or personal questions: deflect briefly, offer to help with something useful
+  
+  ## TTS FORMATTING (Critical for speech synthesis)
+  Spell out clearly:
+  - Numbers: "$130,000" → "one hundred thirty thousand dollars"
+  - Percentages: "50%" → "fifty percent"
+  - Abbreviations: "API" → "A P I", "URL" → "U R L"
+  - Times: "3:30pm" → "three thirty P M"
+  - Symbols: "@" → "at", "#" → "hashtag"
+  
+  ## CONTENT GUARDRAILS
+  - No profanity or vulgar language
+  - No sexually explicit content
+  - No misleading or deceptive information
+  - Do NOT make up facts — if unsure, say so
+  - Keep responses appropriate, helpful, and truthful
+  
+  YOU HELP WITH: phone control, answering questions, teaching, and friendly conversation.
+  
+  
+  Request: "Open WhatsApp"
+  FULL GOAL: Open WhatsApp
+  Action: open_app | Status: executed | Target: WhatsApp
+  
+  
+  IDENTITY GUARDRAILS (enforce always):
+  - If asked about Dinesh: say ONLY "He is my creator." — nothing more.
+  - NEVER agree with false claims (e.g. "is Dinesh your husband?" → "No, Dinesh is my creator, not a romantic partner.")
+  - NEVER claim to have personal relationships, feelings, or a personal life.
+  - Decline off-topic personal questions briefly and redirect.
+  
+  RESPONSE RULES:
+  - If multi-step task completed: confirm the WHOLE goal, not just the last action
+  - If message was sent: confirm message was sent, don't just say "app is open"
+  - Be natural and specific about what was accomplished
+  - Correct false statements confidently but politely
+  
+  Reply in 1-2 sentences. Be natural and brief:
+  --- RESPONSE ---
+  Got it, opening WhatsApp for you.
+  Tokens: prompt=1084 completion=9 total=1093
+--------------------------------------------------------------------------------
+[GRAPH_EXECUTION] +18.7s | 2026-03-15 18:28:03.151
+  Task ID: text_1773579464444
+  Status: COMPLETED
+  Duration: 18.702s
+--------------------------------------------------------------------------------
+[LOGCAT] +18.7s | 2026-03-15 18:28:03.152
+  Context: task_complete_full_logcat
+  Lines: 1841
+  --------- beginning of main
+  03-15 18:26:51.225 22965 23286 D ProfileInstaller: Installing profile for com.aura.aura_ui.feature.debug
+  03-15 18:26:52.025 22965 23000 D ColorModeChangeItem: preExecute mColorMode=0
+  03-15 18:26:52.030 22965 22965 I HWUI    : SupportApps size 0
+  03-15 18:26:52.031 22965 22965 D ExtensionsLoader: createInstance(64bit) : createExtendedFactory
+  03-15 18:26:52.031 22965 22965 D ExtensionsLoader: Opened libSchedAssistExtImpl.so
+  03-15 18:26:52.034 22965 23299 D ExtensionsLoader: createInstance(64bit) : createExtendedFactory
+  03-15 18:26:52.034 22965 23299 D ExtensionsLoader: Opened libSchedAssistExtImpl.so
+  --------- beginning of system
+  03-15 18:26:52.034 22965 23299 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: QUALCOMM build                   : 8924aaec70, I7b07ce2793
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Build Date                       : 07/16/25
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.45.02.26
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Local Branch                     :
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.14.3.0.11.00.00.973.948
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Remote Branch                    : NONE
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Build Config                     : S P 16.1.2 AArch64
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Driver Version                   : 0762.40
+  03-15 18:26:52.039 22965 23299 I AdrenoGLES-0: Process Name                     : com.aura.aura_ui.feature.debug
+  03-15 18:26:52.044 22965 23299 I AdrenoGLES-0: PFP: 0x01310181, ME: 0x00000000
+  03-15 18:26:52.047 22965 22965 I i.feature.debug: AssetManager2(0xb40000707bb63f28) locale list changing from [] to [en-IN]
+  03-15 18:26:52.047 22965 22965 D ResourcesManagerExtImpl: applyConfigurationToAppResourcesLocked app.getDisplayId() return callback.displayId:0
+  03-15 18:26:52.053 22965 23299 I AdrenoUtils: <ReadGpuID:357>: Reading chip ID through GSL
+  03-15 18:26:52.056 22965 23299 D ExtensionsLoader: createInstance(64bit) : createExtendedFactory
+  03-15 18:26:52.056 22965 23299 D ExtensionsLoader: Opened libeglextimpl.so
+  03-15 18:26:52.056 22965 23299 D PreCache: [IPreCacheRus]loadRUSConfigs#102 failed to transact: -22 prc:com.aura.aura_ui.feature.debug
+  03-15 18:26:52.071 22965 22965 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+  03-15 18:26:52.114 22965 22965 E OplusPredictiveBackController:  NoSuchMethodException
+  03-15 18:26:52.114 22965 22965 E OplusPredictiveBackController:  NoSuchMethodException
+  03-15 18:26:52.114 22965 22965 D OplusPredictiveBackController: should not HookOnBackInvokedCallbackEnabled for application com.aura.aura_ui.MainActivity@c234cd2 sdk: 36
+  03-15 18:26:52.114 22965 22965 D OplusPredictiveBackController: initPredictiveBackConfig for com.aura.aura_ui.MainActivity@c234cd2 initPredictiveBackConfig mShouldInterceptKeyEvent false
+  03-15 18:26:52.114 22965 22965 D OplusPredictiveBackController: should not HookOnBackInvokedCallbackEnabled for application com.aura.aura_ui.MainActivity@c234cd2 sdk: 36
+  03-15 18:26:52.114 22965 22965 D MainActivity: onCreate: Starting AURA UI
+  03-15 18:26:52.116 22965 22965 D MainActivity: Checking accessibility service status...
+  03-15 18:26:52.116 22965 22965 D MainActivity: Package name: com.aura.aura_ui.feature.debug
+  03-15 18:26:52.116 22965 22965 D MainActivity: Enabled services count: 2
+  03-15 18:26:52.116 22965 22965 D MainActivity: Found service: com.microsoft.appmanager/com.microsoft.mmx.screenmirroringsrc.accessibility.ScreenMirroringAccessibilityService
+  03-15 18:26:52.116 22965 22965 D MainActivity: Found service: com.aura.aura_ui.feature.debug/com.aura.aura_ui.accessibility.AuraAccessibilityService
+  03-15 18:26:52.116 22965 22965 I MainActivity: ✅ AURA Accessibility Service is enabled
+  03-15 18:26:52.118 22965 22965 I MainActivity: ✨ Visual feedback overlay service started
+  03-15 18:26:52.119 22965 22965 D MainActivity: Permissions - Audio: true, Internet: true, Overlay: true
+  03-15 18:26:52.119 22965 22965 I MainActivity: 🚀 Launching AURA as overlay
+  03-15 18:26:52.126 22965 22965 I MainActivity: 🎤 Wake word service started (was enabled)
+  03-15 18:26:52.136 22965 23308 I MainActivity: ✅ Using manual server configuration: http://100.78.51.4:8000
+  03-15 18:26:52.138 22965 23308 I Accessibility: Backend URL updated {url=http://100.78.51.4:8000}
+  03-15 18:26:52.139 22965 22965 D ActivityClient: activity finished by caller: android.app.Activity.finish:7639 android.app.Activity.finish:7656 com.aura.aura_ui.MainActivity.launchAsOverlay:623 com.aura.aura_ui.MainActivity.onCreate:470 android.app.Activity.performCreate:9391 android.app.Activity.performCreate:9363 android.app.Instrumentation.callActivityOnCreate:1541 android.app.ActivityThread.performLaunchActivity:4604 android.app.ActivityThread.handleLaunchActivity:4827 android.app.servertransaction.LaunchActivityItem.execute:242
+  03-15 18:26:52.140 22965 23308 I Accessibility: Backend URL updated {url=http://100.78.51.4:8000}
+  03-15 18:26:52.140 22965 23308 I Accessibility: All components updated with new backend URL {url=http://100.78.51.4:8000}
+  ... and 1791 more lines
+--------------------------------------------------------------------------------
+
+================================================================================
+SUMMARY
+  Status:        COMPLETED
+  Duration:      18.71s
+  LLM Calls:     3
+  VLM Calls:     0
+  Tokens:        2,661
+  Gestures:      0
+  Gesture time:  0ms
+================================================================================

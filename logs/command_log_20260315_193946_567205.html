@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURA Log &mdash; live_422ae426-f573-417a-9c40-619436585803</title>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        :root {
+            --bg: #080c10;
+            --surface: #0d1117;
+            --surface2: #131920;
+            --border: #1e2733;
+            --border2: #2a3441;
+            --text: #cdd9e5;
+            --muted: #636e7b;
+            --muted2: #8b949e;
+            --blue: #4493f8;
+            --green: #3fb950;
+            --orange: #d29922;
+            --red: #f85149;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 13px; padding: 60px 24px 40px; line-height: 1.5; max-width: 1400px; margin: 0 auto; }
+        h1 { font-size: 20px; color: var(--blue); margin-bottom: 4px; font-weight: 600; letter-spacing: -0.3px; }
+        .meta { color: var(--muted); font-size: 11px; }
+        .page-header { margin-bottom: 16px; }
+
+        /* ── Summary panel ── */
+        #summary { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 24px; margin-bottom: 20px; display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+        .sum-block { display: flex; flex-direction: column; gap: 4px; min-width: 80px; }
+        .sum-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+        .sum-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .sum-val.status-FAILED { color: var(--red); }
+        .sum-val.status-completed { color: var(--green); }
+        .sum-val.status-failed { color: var(--red); }
+
+        /* ── Entries ── */
+        .entry { border-radius: 8px; margin-bottom: 8px; overflow: hidden; border: 1px solid var(--border); transition: box-shadow 0.15s; }
+        .entry:hover { box-shadow: 0 0 0 1px var(--border2); }
+        .entry-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+        .entry-header:hover { filter: brightness(1.12); }
+        .entry-body { background: var(--surface); padding: 12px 16px; }
+        .entry-body.collapsed { display: none; }
+        .chevron { margin-left: auto; font-size: 10px; opacity: 0.4; transition: transform 0.15s ease; display: inline-block; flex-shrink: 0; }
+        .chevron.rotated { transform: rotate(-90deg); }
+        .entry-COMMAND .entry-header { background: #0f1e3a; border-left: 3px solid var(--blue); }
+        .entry-LLM .entry-header { background: #150f2a; border-left: 3px solid var(--purple); }
+        .entry-VLM .entry-header { background: #1e1a12; border-left: 3px solid var(--orange); }
+        .entry-GESTURE .entry-header { background: #0a1f12; border-left: 3px solid var(--green); }
+        .entry-GRAPH_EXECUTION .entry-header { background: #111520; border-left: 3px solid var(--muted); }
+        .entry-LOGCAT .entry-header { background: #0d1510; border-left: 3px solid #2ea043; }
+        .entry-ERROR .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-PLAN_CREATED .entry-header { background: #111530; border-left: 3px solid var(--blue); }
+        .entry-AGENT_DECISION.decision-SUBGOAL_START .entry-header { background: #0a1624; border-left: 3px solid var(--cyan); }
+        .entry-AGENT_DECISION.decision-SUBGOAL_COMPLETE .entry-header { background: #0a1f12; border-left: 3px solid var(--green); }
+        .entry-AGENT_DECISION.decision-ACTION_FAILED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-PERCEPTION_RESULT .entry-header { background: #0a1820; border-left: 3px solid var(--cyan); }
+        .entry-AGENT_DECISION.decision-POST_ACTION_SCREENSHOT .entry-header { background: #111530; border-left: 3px solid var(--purple); }
+        .entry-AGENT_DECISION.decision-VERIFICATION_FAILED .entry-header { background: #1e1608; border-left: 3px solid var(--orange); }
+        .entry-AGENT_DECISION.decision-BUDGET_EXHAUSTED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-LOOP_DETECTED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
+        .entry-AGENT_DECISION.decision-REPLAN .entry-header { background: #180a2a; border-left: 3px solid var(--purple); }
+        .entry-AGENT_DECISION.decision-INTENT_PARSED .entry-header { background: #0a1624; border-left: 3px solid var(--cyan); }
+
+        .ts { color: var(--muted); font-size: 11px; font-weight: 400; font-family: 'JetBrains Mono', monospace; }
+        .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+        .badge-LLM { background: #2d1f5e; color: #c4a7ff; border: 1px solid #4a2f9a; }
+        .badge-VLM { background: #3d2800; color: #f0a500; border: 1px solid #6b4800; }
+        .badge-GESTURE { background: #0d2d17; color: #56d364; border: 1px solid #1b5e30; }
+        .badge-COMMAND { background: #0d2050; color: #79c0ff; border: 1px solid #1a3a8f; }
+        .badge-AGENT { background: #1a2030; color: #79c0ff; border: 1px solid #2a3548; }
+        .badge-GRAPH { background: #1a1f28; color: var(--muted2); border: 1px solid #2a3040; }
+        .badge-ERROR { background: #4a0a0a; color: #ff8080; border: 1px solid #8a1a1a; }
+        .provider-tag { color: var(--muted2); font-size: 11px; font-weight: 400; }
+
+        /* ── Key-value rows ── */
+        .kv-row { display: flex; gap: 0; margin: 3px 0; min-height: 22px; }
+        .kv-key { color: var(--muted); min-width: 130px; font-size: 11px; padding-top: 1px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500; }
+        .kv-val { color: var(--text); font-size: 12px; }
+        .kv-val.ok { color: var(--green); font-weight: 600; }
+        .kv-val.fail { color: var(--red); font-weight: 600; }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+        /* ── LLM response box ── */
+        .agent-box { background: #06090d; border: 1px solid var(--border2); border-left: 3px solid #3a2a6a; border-radius: 6px; padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.65; color: #adbac7; }
+        .token-row { color: var(--muted2); font-size: 11px; margin-top: 8px; padding: 5px 8px; background: var(--surface2); border-radius: 4px; display: inline-block; }
+
+        /* ── Prompt box ── */
+        .prompt-section { margin: 8px 0; }
+        .prompt-toggle { background: #0d1a2e; border: 1px solid #1e3a5a; border-radius: 4px; padding: 5px 12px; cursor: pointer; font-size: 11px; color: #4493f8; font-family: 'JetBrains Mono', monospace; width: 100%; text-align: left; letter-spacing: 0.2px; }
+        .prompt-toggle:hover { background: #132040; color: #79c0ff; }
+        .prompt-box { background: #04070c; border: 1px solid #1e3a5a; border-radius: 0 0 6px 6px; padding: 12px 16px; margin: 0 0 6px 0; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.65; color: #7cb8fa; word-break: break-word; max-height: none; overflow-x: auto; }
+
+        /* ── JSON blocks ── */
+        .json-section { margin: 8px 0; }
+        .json-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+        pre.json { background: #06090d; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 11px; overflow-x: auto; color: #adbac7; margin: 0; font-family: 'JetBrains Mono', monospace; line-height: 1.55; }
+        pre.logcat { background: #06090d; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 10.5px; overflow-x: auto; color: #8b9dab; margin: 0; font-family: 'JetBrains Mono', monospace; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+
+        /* ── Screenshots ── */
+        .screenshot-row { margin: 10px 0; }
+        .screenshot-row img { max-width: 320px; border-radius: 8px; border: 1px solid var(--border2); display: block; }
+        .screenshot-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+
+        /* ── Elements table ── */
+        .elements-section { margin: 10px 0; }
+        .elements-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted2); font-weight: 600; margin-bottom: 6px; padding: 5px 10px; background: var(--surface2); border-radius: 4px; display: block; }
+        .elements-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .elements-table thead tr { background: #06090d; }
+        .elements-table th { text-align: left; padding: 5px 10px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; border-bottom: 1px solid var(--border2); white-space: nowrap; }
+        .elements-table td { padding: 4px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); font-size: 11px; }
+        .elements-table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.018); }
+        .elements-table tr:hover td { background: var(--surface2); }
+        .elements-table .col-idx { color: var(--muted); font-size: 10px; text-align: right; padding-right: 8px; width: 28px; }
+        .elements-table .col-text { color: #79c0ff; font-weight: 500; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .elements-table .col-desc { color: var(--muted2); font-style: italic; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .elements-table .col-class { color: var(--muted2); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+        .elements-table .col-res { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+        .elements-table .col-bounds { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap; }
+        .elements-table .col-center { color: #f0a500; font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap; font-weight: 600; }
+        .row-target td { background: #1f1200 !important; outline: 1px solid #d29922; }
+        .row-target .col-center { color: #ffcc00 !important; }
+        .row-target-label { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px; background: #4a2b00; color: #ffcc00; border: 1px solid #8a5200; font-weight: 700; margin-left: 4px; }
+        .tag { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px; margin: 1px; font-weight: 600; letter-spacing: 0.3px; white-space: nowrap; }
+        .tag-clickable { background: #0d2d17; color: #56d364; border: 1px solid #1b4a25; }
+        .tag-scrollable { background: #0d1f35; color: #58a6ff; border: 1px solid #1a3560; }
+        .tag-editable { background: #2a1800; color: #f0a500; border: 1px solid #4a3000; }
+        .tag-focused { background: #1a0d30; color: #c4a7ff; border: 1px solid #3a1f60; }
+        .tag-disabled { background: #1a1a1a; color: #555; border: 1px solid #333; }
+
+        .match-found { color: var(--green); font-weight: 600; }
+        .match-none { color: var(--red); }
+        .debug-line { color: var(--muted); font-size: 11px; padding: 1px 12px; }
+        .debug-line:hover { background: var(--surface2); }
+        .hidden { display: none; }
+
+        /* ── Logcat coloring ── */
+        .lc-E { color: #f85149; }
+        .lc-W { color: #d29922; }
+        .lc-I { color: #58a6ff; }
+        .lc-D { color: #8b949e; }
+
+        /* ── Sticky top bar ── */
+        #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: #060a0d; border-bottom: 1px solid var(--border); padding: 7px 24px; display: flex; align-items: center; gap: 14px; }
+        #topbar-title { color: var(--blue); font-weight: 700; font-size: 13px; white-space: nowrap; }
+        #topbar-exec { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ctrl-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; color: var(--muted2); font-size: 11px; padding: 3px 10px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+        .ctrl-btn:hover { background: var(--border); color: var(--text); }
+
+        /* ── Elapsed time badge ── */
+        .elapsed { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; background: rgba(255,255,255,0.04); padding: 1px 6px; border-radius: 3px; white-space: nowrap; margin-left: 4px; }
+
+        /* ── VLM response box (amber tint, distinct from LLM purple) ── */
+        .vlm-box { background: #0e0900; border: 1px solid #4a3008; border-left: 3px solid #8a5a00; border-radius: 6px; padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.65; color: #d4b46a; }
+
+        /* ── Screenshot grid (side-by-side layout) ── */
+        .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 10px 0; }
+        .screenshot-grid .screenshot-row img { max-width: 100%; }
+
+        /* ── Gesture parallel layout (details + annotated screenshot) ── */
+        .gesture-layout { display: flex; gap: 16px; align-items: flex-start; }
+        .gesture-details { flex: 1; min-width: 0; }
+        .gesture-screenshot { flex-shrink: 0; width: 260px; }
+        .gesture-screenshot img { max-width: 100%; border-radius: 8px; border: 2px solid var(--green); display: block; }
+        .gesture-screenshot .screenshot-label { color: var(--green); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+
+        /* ── VLM parallel layout (response + input image side-by-side) ── */
+        .vlm-layout { display: flex; gap: 16px; align-items: flex-start; }
+        .vlm-content { flex: 1; min-width: 0; }
+        .vlm-screenshot { flex-shrink: 0; width: 260px; }
+        .vlm-screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid var(--orange); display: block; }
+        .vlm-screenshot .screenshot-label { color: var(--orange); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+        </style>
+<script>
+        function toggle(id) {
+            var el = document.getElementById(id);
+            if (el) el.classList.toggle('hidden');
+        }
+        function toggleEntry(bodyId) {
+            var body = document.getElementById(bodyId);
+            if (!body) return;
+            body.classList.toggle('collapsed');
+            var header = body.previousElementSibling;
+            if (header) {
+                var chev = header.querySelector('.chevron');
+                if (chev) chev.classList.toggle('rotated');
+            }
+        }
+        function collapseAll() {
+            document.querySelectorAll('.entry-body').forEach(function(b) {
+                b.classList.add('collapsed');
+                var h = b.previousElementSibling;
+                if (h) { var c = h.querySelector('.chevron'); if (c) c.classList.add('rotated'); }
+            });
+        }
+        function expandAll() {
+            document.querySelectorAll('.entry-body').forEach(function(b) {
+                b.classList.remove('collapsed');
+                var h = b.previousElementSibling;
+                if (h) { var c = h.querySelector('.chevron'); if (c) c.classList.remove('rotated'); }
+            });
+        }
+        </script>
+</head>
+<body>
+<div id="topbar">
+  <span id="topbar-title">&#x1F916; AURA Log</span>
+  <span id="topbar-exec">live_422ae426-f573-417a-9c40-619436585803</span>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <button class="ctrl-btn" onclick="expandAll()">&#x25BC; Expand all</button>
+    <button class="ctrl-btn" onclick="collapseAll()">&#x25B6; Collapse all</button>
+  </div>
+</div>
+<div class="page-header">
+<h1>&#x1F916; AURA Command Log</h1>
+<div class="meta">Execution: <strong>live_422ae426-f573-417a-9c40-619436585803</strong> &nbsp;|&nbsp; Started: 2026-03-15 19:39:46</div>
+</div>
+
+        <div id="summary">
+          <div class="sum-block">
+            <span class="sum-label">&#x2611; Status</span>
+            <span class="sum-val status-completed">COMPLETED</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x23F1; Duration</span>
+            <span class="sum-val">93.02s</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x1F916; LLM Calls</span>
+            <span class="sum-val">0</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x1F441; VLM Calls</span>
+            <span class="sum-val">0</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x1F522; Tokens</span>
+            <span class="sum-val">0</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x26A1; Gestures</span>
+            <span class="sum-val">0</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x23F0; Gesture Time</span>
+            <span class="sum-val">0ms</span>
+          </div>
+          <div class="sum-block">
+            <span class="sum-label">&#x1F4F1; Logcat</span>
+            <span class="sum-val">&#x2705; on</span>
+          </div>
+        </div>
+        
+<div id="entries">
+<div class="entry entry-AGENT_DECISION decision-LIVE_TRANSCRIPT">
+<div class="entry-header" onclick="toggleEntry('e244823837408000')" title="Click to collapse/expand">&#x1F9E0; <span class="badge badge-AGENT">GeminiLive</span> <span class="ts">2026-03-15 19:39:46.798</span> <span class="provider-tag"><strong>LIVE_TRANSCRIPT</strong></span><span class="elapsed">+0.2s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e244823837408000">
+<div class="kv-row"><span class="kv-key">speaker</span><span class="kv-val">user</span></div>
+<div class="kv-row"><span class="kv-key">text</span><span class="kv-val">Spotify.</span></div>
+<div class="kv-row"><span class="kv-key">source</span><span class="kv-val">input_transcription</span></div>
+<div class="kv-row"><span class="kv-key">session_id</span><span class="kv-val">422ae426-f573-417a-9c40-619436585803</span></div>
+</div>
+</div>
+<div class="entry entry-LOGCAT">
+<div class="entry-header" onclick="toggleEntry('e245024894854400')" title="Click to collapse/expand">&#x1F4F1; <span class="badge">LOGCAT</span> <span class="ts">2026-03-15 19:41:19.586</span> <span class="provider-tag">task_complete_full_logcat</span><span class="elapsed">+93.0s</span><span class="chevron">&#x25BC;</span></div>
+<div class="entry-body " id="e245024894854400">
+<div class="kv-row"><span class="kv-key">Context</span><span class="kv-val">task_complete_full_logcat</span></div>
+<pre class="logcat">--------- beginning of main
+03-15 19:39:46.960 22922 22922 D GeminiLiveCtrl: 🎤 Mic stays open during playback (AEC active, barge-in enabled)
+03-15 19:39:46.963 22922 23028 I AudioTrack: set(): type=audio,case=1,attributes=1,content_type=1,usage=2,source=-1,flags=0x800
+03-15 19:39:46.963 22922 23028 D AudioTrackExtImpl: AudioTrackExtImpl init
+03-15 19:39:46.963 22922 23028 D AudioTrack: set(): streamType -1, sampleRate 24000, format 0x1, channelMask 0x1, frameCount 8192, flags #0, notificationFrames 0, sessionId 0, transferType 3, uid 10551, pid 22922
+03-15 19:39:46.964 22922 22922 D ConversationViewModel: User message added: Spotify.
+03-15 19:39:46.964 22922 23028 I AudioTrack: set(): 0xb40000702817f200, Create AudioTrackThread, tid = 11964
+03-15 19:39:46.965 22922 23028 D AudioTrackExtImpl: doSchedBoost, set audioapp task boost, pid=22922, tid=23028, enable=1, ret=0
+03-15 19:39:46.978 22922 23028 D AudioTrack: createTrack state 0 output.outputId=53
+03-15 19:39:46.980 22922 23028 I AudioTrack: createTrack_l(1245) on outputId(53) : 0xb40000702817f200, mCblk = 0x717219b000,  mLatency = 381, mAfLatency = 40, frameCount = 8192, mSampleRate = 24000, mFlags = 0, mReqFrameCount = 8192, mNotificationFramesAct = 4096
+03-15 19:39:46.981 22922 23028 D AudioTrackExtImpl: doSchedBoost, set audioapp task boost, pid=22922, tid=23028, enable=0, ret=0
+03-15 19:39:46.982 22922 23028 E AudioTrackExtImpl: get fade type, but return null, pid 22922, uid 10551
+03-15 19:39:46.982 22922 23028 D AudioTrack: set: pop_optimize mIsPopOptimizeSupport:0, mIsPopOptimizeFlush:0
+03-15 19:39:46.987 22922 23028 D AudioTrack: start(1245): prior state:STATE_STOPPED output 53 stream 0 session 8721
+03-15 19:39:47.023 22922 23028 D PcmStreamPlayer: PcmStreamPlayer started: 24000 Hz mono 16-bit, buffer=16384 bytes
+03-15 19:39:47.034 22922 22922 D ConversationViewModel: Phase transition: LISTENING -&gt; RESPONDING
+03-15 19:39:47.037 22922 22950 D AudioTrackExtImpl: doSchedBoost, set audioapp task boost, pid=22922, tid=22950, enable=1, ret=0
+03-15 19:39:47.170 22922 22922 D AudioRecord: stop(1242): mActive:1
+03-15 19:39:47.171 22922 22922 D AudioRecord: call mAudioRecord-&gt;stop()
+03-15 19:39:47.277 22922 22922 D AudioRecord: call AudioRecordThread pause()
+03-15 19:39:47.277 22922 22922 D AudioRecord: stop(1242) done
+03-15 19:39:47.278 22922 22922 D AudioRecord: stop(1242): mActive:0
+03-15 19:39:47.278 22922 22922 I AudioRecord: ~AudioRecord(1242): mStatus 0
+03-15 19:39:47.278 22922 22922 D AudioRecord: stop(1242): mActive:0
+03-15 19:39:47.280 22922 22922 D ConversationViewModel: Phase transition: RESPONDING -&gt; THINKING
+03-15 19:39:47.280 22922 22922 D GeminiLiveCtrl: Gemini Live capture stopped (session still active: true)
+03-15 19:39:47.280 22922 22922 D ConversationViewModel: Phase transition: THINKING -&gt; THINKING
+03-15 19:39:47.289 22922 22932 W AudioSystem: ioConfigChanged() closing unknown input 942
+03-15 19:39:52.253 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:00.939 22922 22928 W i.feature.debug: Suspending all threads took: 29.556ms
+03-15 19:40:02.272 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:08.028 22922 11114 V GeminiLiveCtrl: pong
+03-15 19:40:12.175 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:22.240 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:32.297 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:32.796 22922 11114 V GeminiLiveCtrl: pong
+03-15 19:40:42.212 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:52.245 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:40:57.801 22922 11114 V GeminiLiveCtrl: pong
+03-15 19:41:02.286 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:41:12.175 22922 11104 W VoiceCaptureController: ⚠️ Unknown message type: heartbeat
+03-15 19:41:14.011 22922 22933 D ColorModeChangeItem: preExecute mColorMode=0
+03-15 19:41:14.022 22922 22922 I i.feature.debug: AssetManager2(0xb4000070c9167a28) locale list changing from [] to [en-IN]
+--------- beginning of system
+03-15 19:41:14.022 22922 22922 D ResourcesManagerExtImpl: applyConfigurationToAppResourcesLocked app.getDisplayId() return callback.displayId:0
+03-15 19:41:14.028 22922 22922 E OplusPredictiveBackController:  NoSuchMethodException
+03-15 19:41:14.028 22922 22922 E OplusPredictiveBackController:  NoSuchMethodException
+03-15 19:41:14.028 22922 22922 D OplusPredictiveBackController: should not HookOnBackInvokedCallbackEnabled for application com.aura.aura_ui.MainActivity@e5157ad sdk: 36
+03-15 19:41:14.028 22922 22922 D OplusPredictiveBackController: initPredictiveBackConfig for com.aura.aura_ui.MainActivity@e5157ad initPredictiveBackConfig mShouldInterceptKeyEvent false
+03-15 19:41:14.028 22922 22922 D OplusPredictiveBackController: should not HookOnBackInvokedCallbackEnabled for application com.aura.aura_ui.MainActivity@e5157ad sdk: 36
+03-15 19:41:14.028 22922 22922 D MainActivity: onCreate: Starting AURA UI
+03-15 19:41:14.029 22922 22922 D MainActivity: Checking accessibility service status...
+03-15 19:41:14.029 22922 22922 D MainActivity: Package name: com.aura.aura_ui.feature.debug
+03-15 19:41:14.029 22922 22922 D MainActivity: Enabled services count: 2
+03-15 19:41:14.029 22922 22922 D MainActivity: Found service: com.microsoft.appmanager/com.microsoft.mmx.screenmirroringsrc.accessibility.ScreenMirroringAccessibilityService
+03-15 19:41:14.029 22922 22922 D MainActivity: Found service: com.aura.aura_ui.feature.debug/com.aura.aura_ui.accessibility.AuraAccessibilityService
+03-15 19:41:14.029 22922 22922 I MainActivity: ✅ AURA Accessibility Service is enabled
+03-15 19:41:14.030 22922 22922 I MainActivity: ✨ Visual feedback overlay service started
+03-15 19:41:14.030 22922 22922 D MainActivity: Opening settings screen from overlay
+03-15 19:41:14.035 22922 22922 D ActivityThread: ComponentInfo{com.aura.aura_ui.feature.debug/com.aura.aura_ui.MainActivity} checkFinished=false 2
+03-15 19:41:14.035 22922 22922 D ResourcesManagerExtImpl: applyConfigurationToAppResourcesLocked app.getDisplayId() return callback.displayId:0
+03-15 19:41:14.036 22922 22922 D WindowManager: Add to mViews: com.android.internal.policy.DecorView{4722ef4 I.E...... R.....I. 0,0-0,0 alpha=1.0 viewInfo = }[MainActivity],pkg= com.aura.aura_ui.feature.debug
+03-15 19:41:14.037 22922 22944 D skia    : setRusSupported enable 0
+03-15 19:41:14.041 22922 22922 D ViewRootImplExtImpl: onDisplayChanged -1 for VRI android.view.ViewRootImpl@35e8a63
+03-15 19:41:14.044 22922 22922 D ResourcesManagerExtImpl: applyConfigurationToAppResourcesLocked app.getDisplayId() return callback.displayId:0
+03-15 19:41:14.048 22922 22922 E OplusBracketLog: [OplusViewMirrorManager] updateHostViewRootIfNeeded, not support android.view.ViewRootImpl@35e8a63
+03-15 19:41:14.054 22922 22922 D Vibrator: SystemVibrator Created
+03-15 19:41:14.068 22922 22922 D Screenshot: MediaProjection status: available=true (projection=true, resources=true, permData=true)
+03-15 19:41:14.076 22922 22922 D Screenshot: MediaProjection status: available=true (projection=true, resources=true, permData=true)
+03-15 19:41:14.077 22922 22922 D Screenshot: MediaProjection status: available=true (projection=true, resources=true, permData=true)
+03-15 19:41:14.078 22922 22922 D OplusPredictiveBackController: should not HookOnBackInvokedCallbackEnabled for application com.aura.aura_ui.MainActivity@e5157ad sdk: 36
+03-15 19:41:14.090 22922 22922 D ViewRootImplExtImpl: wrapConfigInfoIntoFlags rotation=0, smallestScreenWidthDp=0, residentWS=false, scenario=0, bounds=Rect(0, 0 - 1240, 2772), relayoutAsync=false, flags=0, newFlags=1453326336, title=com.aura.aura_ui.feature.debug/com.aura.aura_ui.MainActivity
+03-15 19:41:14.096 22922 22922 D VRI[MainActivity]: relayoutWindow result, sizeChanged:true, surfaceControlChanged:true, transformHintChanged:false, mSurfaceSize:Point(1240, 2772), mLastSurfaceSize:Point(0, 0), mWidth:-1, mHeight:-1, requestedWidth:1240, requestedHeight:2772, transformHint:0, installOrientation:0, displayRotation:0, isSurfaceValid:true, attr.flag:-2122252032, tmpFrames:ClientWindowFrames{frame=[0,0][1240,2772] display=[0,0][1240,2772] parentFrame=[0,0][0,0]}, relayoutAsync:false, mSyncSeqId:0
+03-15 19:41:14.096 22922 22922 W VRI[MainActivity]: updateBlastSurfaceIfNeeded, surfaceSize:Point(1240, 2772), lastSurfaceSize:Point(0, 0), format:-2, blastBufferQueue:null
+03-15 19:41:14.096 22922 22922 D BufferQueueConsumer: [](id:598a00000011,api:0,p:-1,c:22922) connect: controlledByApp=false
+03-15 19:41:14.096 22922 22922 D BufferQueueConsumer: [VRI[MainActivity]#16(BLAST Consumer)16](id:598a00000011,api:0,p:-1,c:22922) setMaxAcquiredBufferCount: 2
+03-15 19:41:14.098 22922 22944 D HWUI    : createSurface new attribs array
+03-15 19:41:14.098 22922 22944 D libEGL  : this is from skia gles
+03-15 19:41:14.098 22922 22944 D BufferQueueProducer: [VRI[MainActivity]#16(BLAST Consumer)16](id:598a00000011,api:1,p:22922,c:22922) connect: api=1 producerControlledByApp=true
+03-15 19:41:14.102 22922 22922 I SurfaceControl:  setExtendedRangeBrightness sc=Surface(name=com.aura.aura_ui.feature.debug/com.aura.aura_ui.MainActivity)/@0x32009e8,currentBufferRatio=1.0,desiredRatio=1.0
+03-15 19:41:14.112 22922 22944 D BLASTBufferQueue: [VRI[MainActivity]#16](f:0,a:1) acquireNextBufferLocked size=1240x2772 mFrameNumber=1 applyTransaction=true mTimestamp=35615377724485(auto) mPendingTransactions.size=0 graphicBufferId=98449240358984 transform=0
+03-15 19:41:14.112 22922 22944 D VRI[MainActivity]: Received frameCommittedCallback lastAttemptedDrawFrameNum=1 didProduceBuffer=true syncBuffer=false
+03-15 19:41:14.113 22922 22922 D VRI[MainActivity]: draw finished. seqId=0
+03-15 19:41:14.128 22922 22922 W VRI[MainActivity]: handleResized, msg:, frameChanged:false, configChanged:false, displayChanged:false, attachedFrameChanged:false, compatScaleChanged:false, pendingDragResizing=false
+03-15 19:41:14.137 22922 22944 D VRI[MainActivity]: Received frameCommittedCallback lastAttemptedDrawFrameNum=3 didProduceBuffer=true syncBuffer=false
+03-15 19:41:14.138 22922 22922 D VRI[MainActivity]: draw finished. seqId=0
+03-15 19:41:14.155 22922 22922 D VRI[MainActivity]: onFocusEvent true
+03-15 19:41:14.179 22922 22922 D InsetsController: hide(ime(), fromIme=false)
+03-15 19:41:14.179 22922 22922 I ImeTracker: com.aura.aura_ui.feature.debug:85b698d0: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+03-15 19:41:14.849 22922 22922 D VRI[MainActivity]: onFocusEvent false
+03-15 19:41:15.436 22922 22922 D VRI[MainActivity]: setWindowStopped stopped:true
+03-15 19:41:15.443 22922 22922 D HWUI    : RenderProxy::destroy: this=0xb4000070280bb800, mContext=0xb4000070b46a1280
+03-15 19:41:15.443 22922 22944 D HWUI    : SkiaOpenGLPipeline::setSurface: this=0xb40000702857c500, surface=NULL
+03-15 19:41:15.443 22922 22944 D BufferQueueProducer: [VRI[MainActivity]#16(BLAST Consumer)16](id:598a00000011,api:1,p:22922,c:22922) disconnect: api 1
+03-15 19:41:15.443 22922 22944 D BLASTBufferQueue: [VRI[MainActivity]#16](f:0,a:1) destructor()
+03-15 19:41:15.443 22922 22944 D BufferQueueConsumer: [VRI[MainActivity]#16(BLAST Consumer)16](id:598a00000011,api:0,p:-1,c:22922) disconnect
+03-15 19:41:15.443 22922 22922 D ViewRootImplExtImpl: wrapConfigInfoIntoFlags rotation=0, smallestScreenWidthDp=354, residentWS=false, scenario=0, bounds=Rect(0, 0 - 1240, 2772), relayoutAsync=false, flags=0, newFlags=1453337664, title=com.aura.aura_ui.feature.debug/com.aura.aura_ui.MainActivity
+03-15 19:41:15.449 22922 22922 D VRI[MainActivity]: relayoutWindow result, sizeChanged:false, surfaceControlChanged:true, transformHintChanged:false, mSurfaceSize:Point(1240, 2772), mLastSurfaceSize:Point(1240, 2772), mWidth:1240, mHeight:2772, requestedWidth:1240, requestedHeight:2772, transformHint:0, installOrientation:0, displayRotation:0, isSurfaceValid:false, attr.flag:-2122252032, tmpFrames:ClientWindowFrames{frame=[0,0][1240,2772] display=[0,0][1240,2772] parentFrame=[0,0][0,0]}, relayoutAsync:false, mSyncSeqId:0
+03-15 19:41:15.460 22922 22937 D VRI[MainActivity]: dispatchAppVisibility visible:false mUpcomingWindowFocus:false
+03-15 19:41:15.862 22922 22956 D OplusScrollToTopManager: com.aura.aura_ui.feature.debug/com.aura.aura_ui.MainActivity,This com.android.internal.policy.DecorView{4722ef4 I.E...... R....... 0,0-1240,2772 aid=10 alpha=1.0 viewInfo = }[MainActivity] change focus to false</pre>
+</div>
+</div>
+
+</div>
+</body>
+</html>

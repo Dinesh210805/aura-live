@@ -400,8 +400,12 @@ private fun ResponseSheet(
                         )
                     }
                     
-                    // Show live thinking section during processing with real agent outputs
-                    if (state.isProcessing || state.isResponding) {
+                    // Show live thinking section only during actual task processing.
+                    // For Gemini Live conversational responses, audio plays immediately —
+                    // no "Thinking" UI needed during RESPONDING (Gemini already speaking).
+                    val showThinking = state.isProcessing &&
+                        (!state.isGeminiLiveSession || state.agentOutputs.isNotEmpty())
+                    if (showThinking) {
                         item {
                             LiveThinkingSection(
                                 agentOutputs = state.agentOutputs,
@@ -1121,15 +1125,45 @@ private fun InputBar(
             }
             
             // Voice waveform or text input field
-            // In Gemini Live session: show wave for all active phases (listening/thinking/responding)
+            // In Gemini Live session: show wave for all active phases
             val showWave = state.isListening ||
                 (state.isGeminiLiveSession && (state.isProcessing || state.isResponding))
             if (showWave) {
-                VoiceWaveformVisualizer(
-                    amplitude = if (state.isListening) state.audioAmplitude else 0f,
-                    colors = colors,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    VoiceWaveformVisualizer(
+                        amplitude = if (state.isListening) state.audioAmplitude else 0f,
+                        colors = colors,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    // Show live transcript text while user speaks, or phase label.
+                    // For Gemini Live: PROCESSING = task automation running (not conversational).
+                    val phaseLabel = when {
+                        state.isListening && state.partialTranscript.isNotBlank() ->
+                            state.partialTranscript
+                        state.isListening -> "Listening"
+                        state.isProcessing -> if (state.isGeminiLiveSession) "Executing task..." else "Thinking"
+                        state.isResponding -> "Speaking"
+                        else -> ""
+                    }
+                    if (phaseLabel.isNotBlank()) {
+                        Text(
+                            text = phaseLabel,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (state.isListening && state.partialTranscript.isNotBlank())
+                                colors.textPrimary
+                            else
+                                colors.textSecondary,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
+                }
             } else {
                 TextField(
                     value = textInput,

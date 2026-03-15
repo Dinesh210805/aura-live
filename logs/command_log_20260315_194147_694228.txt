@@ -1,0 +1,15 @@
+================================================================================
+AURA EXECUTION LOG  20260315_194147_694228
+Started: 2026-03-15 19:41:47
+================================================================================
+
+[WARN] 2026-03-15 19:41:47.948 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 19:41:48.925 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 19:41:49.667 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[AGENT_DECISION: LIVE_TRANSCRIPT] +10.5s | 2026-03-15 19:41:58.203
+  Agent: GeminiLive
+  speaker: user
+  text: Hello, Ora.
+  source: input_transcription
+  session_id: 172ad96c-ff04-4f8f-84c8-b9050fc94b93
+--------------------------------------------------------------------------------

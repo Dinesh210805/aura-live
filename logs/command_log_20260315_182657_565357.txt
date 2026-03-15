@@ -1,0 +1,388 @@
+================================================================================
+AURA EXECUTION LOG  20260315_182657_565357
+Started: 2026-03-15 18:26:57
+================================================================================
+
+[WARN] 2026-03-15 18:26:57.837 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 18:26:59.022 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 18:27:00.782 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 18:27:01.763 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 18:27:02.690 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[AGENT_DECISION: LIVE_TRANSCRIPT] +12.4s | 2026-03-15 18:27:09.994
+  Agent: GeminiLive
+  speaker: user
+  text: He llo  the re  bro.
+  source: input_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +12.4s | 2026-03-15 18:27:10.004
+  Agent: GeminiLive
+  speaker: assistant
+  text: Hello! How  can  I help
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +12.5s | 2026-03-15 18:27:10.033
+  Agent: GeminiLive
+  speaker: assistant
+  text: you today?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +12.6s | 2026-03-15 18:27:10.121
+  Agent: GeminiLive
+  speaker: user
+  text: Hello there bro.
+  source: input_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +12.6s | 2026-03-15 18:27:10.122
+  Agent: GeminiLive
+  speaker: assistant
+  text: Hello! How can I help you today?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +15.8s | 2026-03-15 18:27:13.349
+  Agent: GeminiLive
+  speaker: assistant
+  text: Hey, what's  up?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +15.8s | 2026-03-15 18:27:13.390
+  Agent: GeminiLive
+  speaker: assistant
+  text: How can
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +15.9s | 2026-03-15 18:27:13.441
+  Agent: GeminiLive
+  speaker: assistant
+  text: I help?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +16.0s | 2026-03-15 18:27:13.587
+  Agent: GeminiLive
+  speaker: assistant
+  text: Hey, what's up? How can I help?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +19.5s | 2026-03-15 18:27:17.106
+  Agent: GeminiLive
+  speaker: assistant
+  text: I'm good,  thanks!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +19.6s | 2026-03-15 18:27:17.202
+  Agent: GeminiLive
+  speaker: assistant
+  text: What do
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +19.7s | 2026-03-15 18:27:17.239
+  Agent: GeminiLive
+  speaker: assistant
+  text: you need
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +19.7s | 2026-03-15 18:27:17.312
+  Agent: GeminiLive
+  speaker: assistant
+  text: today?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +19.9s | 2026-03-15 18:27:17.488
+  Agent: GeminiLive
+  speaker: assistant
+  text: I'm good, thanks! What do you need today?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +23.6s | 2026-03-15 18:27:21.159
+  Agent: GeminiLive
+  speaker: assistant
+  text: Just hanging  out,  ready
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +23.6s | 2026-03-15 18:27:21.199
+  Agent: GeminiLive
+  speaker: assistant
+  text: if you
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +23.7s | 2026-03-15 18:27:21.262
+  Agent: GeminiLive
+  speaker: assistant
+  text: are!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +23.8s | 2026-03-15 18:27:21.405
+  Agent: GeminiLive
+  speaker: assistant
+  text: Just hanging out, ready if you are!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +27.2s | 2026-03-15 18:27:24.778
+  Agent: GeminiLive
+  speaker: assistant
+  text: Sounds good,  let me
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +27.2s | 2026-03-15 18:27:24.780
+  Agent: GeminiLive
+  speaker: assistant
+  text: know!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +27.4s | 2026-03-15 18:27:24.925
+  Agent: GeminiLive
+  speaker: assistant
+  text: Sounds good, let me know!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +30.9s | 2026-03-15 18:27:28.443
+  Agent: GeminiLive
+  speaker: assistant
+  text: No problem!  Just
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +31.0s | 2026-03-15 18:27:28.563
+  Agent: GeminiLive
+  speaker: assistant
+  text: here to
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +31.2s | 2026-03-15 18:27:28.768
+  Agent: GeminiLive
+  speaker: assistant
+  text: help.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +31.5s | 2026-03-15 18:27:29.022
+  Agent: GeminiLive
+  speaker: assistant
+  text: No problem! Just here to help.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +34.6s | 2026-03-15 18:27:32.122
+  Agent: GeminiLive
+  speaker: assistant
+  text: Anytime!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +34.6s | 2026-03-15 18:27:32.129
+  Agent: GeminiLive
+  speaker: assistant
+  text: Anytime!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +37.2s | 2026-03-15 18:27:34.760
+  Agent: GeminiLive
+  speaker: assistant
+  text: Feel free  to ask  anything!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +37.3s | 2026-03-15 18:27:34.841
+  Agent: GeminiLive
+  speaker: assistant
+  text: Feel free to ask anything!
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +46.9s | 2026-03-15 18:27:44.440
+  Agent: GeminiLive
+  speaker: user
+  text: He y  can  you  open  Wha tsApp  for me
+  source: input_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +67.1s | 2026-03-15 18:28:04.619
+  Agent: GeminiLive
+  speaker: assistant
+  text: Got it,  opening  WhatsApp
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +67.1s | 2026-03-15 18:28:04.668
+  Agent: GeminiLive
+  speaker: assistant
+  text: for you.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +67.3s | 2026-03-15 18:28:04.856
+  Agent: GeminiLive
+  speaker: user
+  text: Hey can you open WhatsApp for me
+  source: input_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +67.3s | 2026-03-15 18:28:04.858
+  Agent: GeminiLive
+  speaker: assistant
+  text: Got it, opening WhatsApp for you.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +70.7s | 2026-03-15 18:28:08.313
+  Agent: GeminiLive
+  speaker: assistant
+  text: WhatsApp is  open.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +70.8s | 2026-03-15 18:28:08.376
+  Agent: GeminiLive
+  speaker: assistant
+  text: WhatsApp is open.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +73.9s | 2026-03-15 18:28:11.515
+  Agent: GeminiLive
+  speaker: assistant
+  text: Who would  you like  to message,
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +74.0s | 2026-03-15 18:28:11.607
+  Agent: GeminiLive
+  speaker: assistant
+  text: and
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +74.1s | 2026-03-15 18:28:11.709
+  Agent: GeminiLive
+  speaker: assistant
+  text: what would
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +74.2s | 2026-03-15 18:28:11.774
+  Agent: GeminiLive
+  speaker: assistant
+  text: you like
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +74.2s | 2026-03-15 18:28:11.814
+  Agent: GeminiLive
+  speaker: assistant
+  text: to say?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +74.4s | 2026-03-15 18:28:11.984
+  Agent: GeminiLive
+  speaker: assistant
+  text: Who would you like to message, and what would you like to say?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.3s | 2026-03-15 18:28:15.868
+  Agent: GeminiLive
+  speaker: assistant
+  text: Please tell  me who  you want
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.4s | 2026-03-15 18:28:15.926
+  Agent: GeminiLive
+  speaker: assistant
+  text: to message
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.5s | 2026-03-15 18:28:16.051
+  Agent: GeminiLive
+  speaker: assistant
+  text: and
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.5s | 2026-03-15 18:28:16.103
+  Agent: GeminiLive
+  speaker: assistant
+  text: what
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.6s | 2026-03-15 18:28:16.145
+  Agent: GeminiLive
+  speaker: assistant
+  text: you'd like
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.7s | 2026-03-15 18:28:16.216
+  Agent: GeminiLive
+  speaker: assistant
+  text: to say.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +78.8s | 2026-03-15 18:28:16.391
+  Agent: GeminiLive
+  speaker: assistant
+  text: Please tell me who you want to message and what you'd like to say.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +83.1s | 2026-03-15 18:28:20.654
+  Agent: GeminiLive
+  speaker: assistant
+  text: I'm back  on the  home  screen.
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +83.2s | 2026-03-15 18:28:20.759
+  Agent: GeminiLive
+  speaker: assistant
+  text: What would
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +83.3s | 2026-03-15 18:28:20.863
+  Agent: GeminiLive
+  speaker: assistant
+  text: you like
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +83.4s | 2026-03-15 18:28:20.916
+  Agent: GeminiLive
+  speaker: assistant
+  text: to do?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------
+[AGENT_DECISION: LIVE_TRANSCRIPT] +83.5s | 2026-03-15 18:28:21.093
+  Agent: GeminiLive
+  speaker: assistant
+  text: I'm back on the home screen. What would you like to do?
+  source: output_transcription
+  session_id: c5a51dcf-2b59-4218-b0ba-c5480499e211
+--------------------------------------------------------------------------------

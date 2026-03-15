@@ -1,0 +1,15 @@
+================================================================================
+AURA EXECUTION LOG  20260315_211126_307979
+Started: 2026-03-15 21:11:26
+================================================================================
+
+[WARN] 2026-03-15 21:11:26.556 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:11:27.267 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:11:27.841 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[AGENT_DECISION: LIVE_TRANSCRIPT] +8.5s | 2026-03-15 21:11:34.817
+  Agent: GeminiLive
+  speaker: user
+  text: ச முடியும் தானே
+  source: input_transcription
+  session_id: 115e1466-9484-45b2-92af-629870fd1e83
+--------------------------------------------------------------------------------

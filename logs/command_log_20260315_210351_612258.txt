@@ -1,0 +1,27 @@
+================================================================================
+AURA EXECUTION LOG  20260315_210351_612258
+Started: 2026-03-15 21:03:51
+================================================================================
+
+[WARN] 2026-03-15 21:03:52.107 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:03:54.854 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:07:24.359 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:07:25.044 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:07:25.646 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[AGENT_DECISION: LIVE_TRANSCRIPT] +236.6s | 2026-03-15 21:07:48.230
+  Agent: GeminiLive
+  speaker: user
+  text: ദേർ
+  source: input_transcription
+  session_id: 7b6b8633-7e4d-4195-977f-b8fb00a9684f
+--------------------------------------------------------------------------------
+[WARN] 2026-03-15 21:09:43.747 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:09:44.483 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[WARN] 2026-03-15 21:09:45.079 [_api_client] Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[AGENT_DECISION: LIVE_TRANSCRIPT] +364.2s | 2026-03-15 21:09:55.846
+  Agent: GeminiLive
+  speaker: user
+  text: Hello there can you hear me
+  source: input_transcription
+  session_id: 99272031-9e30-48a4-baea-995ac8cdddda
+--------------------------------------------------------------------------------

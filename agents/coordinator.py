@@ -417,8 +417,17 @@ class Coordinator:
                             )
                             if _filtered:
                                 _elements = _filtered
-                except Exception:
-                    pass
+                except Exception as _rsg_exc:
+                    logger.warning(
+                        f"Coordinator: screenshot fetch for RSG failed — {_rsg_exc}. "
+                        "RSG will run without vision (LLM-only fallback)."
+                    )
+
+                if not _latest_b64:
+                    logger.warning(
+                        "Coordinator: no screenshot for RSG — VLM path disabled. "
+                        "Check device connection and screenshot service."
+                    )
 
                 self.task_progress.emit_agent_status("Reactive", f"Generating next step for phase: {goal.current_phase.description[:35] if goal.current_phase else 'final'}")
                 next_step = await self.reactive_gen.generate_next_step(

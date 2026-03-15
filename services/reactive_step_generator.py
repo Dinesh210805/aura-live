@@ -78,6 +78,14 @@ class ReactiveStepGenerator:
         if not goal.current_phase:
             return None
 
+        # Deterministic pre-VLM override: after typing into a recipient/contact field,
+        # detect any visible autocomplete suggestion and tap it immediately —
+        # prevents VLM blindness when Gmail auto-focuses the body while the
+        # suggestion dropdown is still present.
+        autocomplete_subgoal = self._detect_autocomplete_suggestion(prev_subgoal, ui_elements)
+        if autocomplete_subgoal is not None:
+            return autocomplete_subgoal
+
         # Build previous action descriptor for VLM verification
         if prev_subgoal is not None:
             _prev_act_desc = prev_subgoal.target or (

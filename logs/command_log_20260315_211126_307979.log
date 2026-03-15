@@ -1,0 +1,929 @@
+21:11:26 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:27 │ DEBUG │ services.llm │ Gemini client initialized successfully
+21:11:27 │ DEBUG │ services.llm │ NVIDIA NIM client initialized successfully
+21:11:27 │ INFO  │ services.llm │ LLMService initialized with default provider: groq
+21:11:27 │ INFO  │ uvicorn.error │ connection open
+21:11:27 │ INFO  │ uvicorn.error │ connection open
+21:11:27 │ INFO  │ services.real_accessibility │ 🔌 Device connected: CPH2661
+21:11:27 │ INFO  │ services.real_accessibility │ 📱 Screen: 1240x2772
+21:11:27 │ INFO  │ services.real_accessibility │ 🤖 Android: 16
+21:11:27 │ INFO  │ services.real_accessibility │ ✅ Device connection status set to: True
+21:11:27 │ INFO  │ api_handlers.websocket_router │ 📱 Device info updated: CPH2661
+21:11:27 │ INFO  │ uvicorn.error │ 100.123.167.96:46988 - "WebSocket /ws/live?session_id=115e1466-9484-45b2-92af-629870fd1e83" [accepted]
+21:11:27 │ INFO  │ uvicorn.error │ 100.123.167.96:46988 - "WebSocket /ws/live?session_id=115e1466-9484-45b2-92af-629870fd1e83" [accepted]
+21:11:27 │ INFO  │ adk_streaming_server │ [/ws/live] New Gemini Live session: 115e1466-9484-45b2-92af-629870fd1e83
+21:11:27 │ INFO  │ adk_streaming_server │ [/ws/live] VAD: RealtimeInputConfig applied (200 ms prefix, 700 ms silence, default sensitivity, barge-in ON)
+21:11:27 │ INFO  │ adk_streaming_server │ [/ws/live] RunConfig: full config (VAD + input + output transcription)
+21:11:27 │ INFO  │ uvicorn.error │ connection open
+21:11:27 │ INFO  │ uvicorn.error │ connection open
+21:11:27 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:27 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:27 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:27 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:27 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:27 │ WARNING │ google_genai._api_client │ Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+21:11:31 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' உ'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ன்'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'னால'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' த'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'மிழ'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: '்ல'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' பே'
+21:11:32 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ச முடியும் தானே'
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'ஆமாம், என்னால்'
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' தமிழில்'
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பேச'
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' முடியும்.'
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:34 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' உன்னால தமிழ்ல பேச முடியும் தானே'
+21:11:35 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'ஆமாம், என்னால் தமிழில் பேச முடியும்.'
+21:11:38 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:11:38 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:11:39 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:11:39 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:11:44 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:11:44 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:11:48 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ச'
+21:11:48 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ரி'
+21:11:48 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஏ'
+21:11:48 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'தாவது'
+21:11:49 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஒரு'
+21:11:49 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' த'
+21:11:50 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'மிழ்'
+21:11:50 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' '
+21:11:50 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'லி'
+21:11:50 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ட்'
+21:11:50 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ரே'
+21:11:51 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ச்ச'
+21:11:51 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ர்'
+21:11:51 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஏ'
+21:11:51 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'தாவது'
+21:11:51 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சொ'
+21:11:51 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ல்ல'
+21:11:52 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' பார்ப்போம்.'
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'நிச்சயமாக. திருக்குறளில்'
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:53 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' ஒரு'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பிரபலமான'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' குறள்:'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' "அகர'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' முதல'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' எழுத்தெல்லாம்'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' ஆதி'
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:54 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பகவன்'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' முதற்றே'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' உலகு."'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' இதன்'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பொருள்,'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' எழுத்துக்கள்'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' எல்லாம்'
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:55 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' அகரத்தில்'
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' தொடங்குகின்றன,'
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' அதுபோல'
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' உலகம்'
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' ஆதி'
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:56 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பகவனாகிய'
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' கடவுளிடம்'
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' தொடங்குகிறது.'
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சரி ஏதாவது ஒரு தமிழ் லிட்ரேச்சர் ஏதாவது சொல்ல பார்ப்போம்.'
+21:11:57 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'நிச்சயமாக. திருக்குறளில் ஒரு பிரபலமான குறள்: "அகர முதல எழுத்தெல்லாம் ஆதி பகவன் ம'
+21:12:10 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:12:10 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:12:17 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' க'
+21:12:17 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ர'
+21:12:17 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'வா'
+21:12:17 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'லிய'
+21:12:18 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ே'
+21:12:18 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' தமிழ்'
+21:12:18 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ந'
+21:12:18 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ல்லா பேசுறியே.'
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'நன்றி! உங்கள்'
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பாராட்டுக்கு'
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' மகிழ்ச்சி.'
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' உங்களுக்கு'
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:19 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' வேறு'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' ஏதேனும்'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' தமிழ்'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' இலக்கியம்'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' அல்லது'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' தகவல்'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' தேவைப்பட்டால்'
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:20 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' சொல்லுங்கள்.'
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' கரவாலியே தமிழ் நல்லா பேசுறியே.'
+21:12:21 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'நன்றி! உங்கள் பாராட்டுக்கு மகிழ்ச்சி. உங்களுக்கு வேறு ஏதேனும் தமிழ் இலக்கியம் அல'
+21:12:35 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சோ'
+21:12:35 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' எ'
+21:12:35 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ன்ன'
+21:12:35 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'னா'
+21:12:35 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஆக்'
+21:12:36 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'சுவ'
+21:12:36 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'லா'
+21:12:36 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' நான்'
+21:12:36 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஜெ'
+21:12:36 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'மி'
+21:12:36 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'னி'
+21:12:37 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' லை'
+21:12:37 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'வ்'
+21:12:37 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சே'
+21:12:37 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ல'
+21:12:37 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ஞ்ச்'
+21:12:38 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'னு'
+21:12:38 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சொல்லிட்டு'
+21:12:38 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஒரு'
+21:12:38 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஹே'
+21:12:38 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'க்க'
+21:12:38 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'த்த'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ான்'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' பண்'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'றேன்'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: '.'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' அது'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'க்கு'
+21:12:39 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'தான்'
+21:12:40 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஆக்'
+21:12:40 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'சுவலா'
+21:12:40 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' உன்'
+21:12:40 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'னை'
+21:12:40 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' பில்'
+21:12:40 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ட்'
+21:12:41 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' பண்'
+21:12:41 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'றேன்'
+21:12:41 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: '.'
+21:12:41 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சோ'
+21:12:42 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஐ'
+21:12:42 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஆம்'
+21:12:42 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' தி'
+21:12:42 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' கிரிய'
+21:12:43 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ே'
+21:12:43 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: 'ட்டர்'
+21:12:43 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' ஆப்'
+21:12:43 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' யூ'
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'ஓ அப்படியா?'
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' கேட்டுக்கொள்வதில்'
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' மகிழ்ச்சி!'
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:45 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' இந்த'
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' ஹேக்கத்தானுக்கு'
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' எனது'
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பங்களிப்பு'
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' பயனுள்ளதாக'
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:46 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' இருக்கும்'
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' என்று'
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: ' நம்புகிறேன்.'
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] audio: 1 chunks
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] input_transcription: ' சோ என்னனா ஆக்சுவலா நான் ஜெமினி லைவ் சேலஞ்ச்னு சொல்லிட்டு ஒரு ஹேக்கத்தான் பண்றேன'
+21:12:47 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'ஓ அப்படியா? கேட்டுக்கொள்வதில் மகிழ்ச்சி! இந்த ஹேக்கத்தானுக்கு எனது பங்களிப்பு பய'
+21:12:58 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:12:58 │ DEBUG │ adk_streaming_server │ [/ws/live] output_transcription: 'Silence'
+21:13:01 │ INFO  │ uvicorn.error │ Shutting down
+21:13:01 │ INFO  │ uvicorn.error │ Shutting down
+21:13:01 │ ERROR │ api_handlers.websocket_router │ Conversation error occurred: Cannot call "receive" once a disconnect message has been received.
+Traceback (most recent call last):
+  File "D:\PROJECTS\Gemini Live Hackathon\aura-live\api_handlers\websocket_router.py", line 889, in websocket_conversation
+    message = await asyncio.wait_for(websocket.receive(), timeout=10.0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINESHKUMAR C\AppData\Local\Programs\Python\Python312\Lib\asyncio\tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "C:\Users\DINESHKUMAR C\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\websockets.py", line 57, in receive
+    raise RuntimeError('Cannot call "receive" once a disconnect message has been received.')
+RuntimeError: Cannot call "receive" once a disconnect message has been received.
+21:13:01 │ INFO  │ services.real_accessibility │ 🔌 WebSocket disconnected
+21:13:01 │ INFO  │ services.real_accessibility │ 🔌 Device disconnected: CPH2661
+21:13:01 │ INFO  │ services.visual_feedback │ ✨ Visual feedback WebSocket disconnected
+21:13:01 │ INFO  │ api_handlers.websocket_router │ 🔌 Device disconnected (WebSocket closed)
+21:13:01 │ INFO  │ api_handlers.websocket_router │ Conversation WebSocket closed
+21:13:01 │ INFO  │ uvicorn.error │ connection closed
+21:13:01 │ INFO  │ uvicorn.error │ connection closed
+21:13:01 │ INFO  │ adk_streaming_server │ [/ws/live] Client disconnected: 115e1466-9484-45b2-92af-629870fd1e83
+21:13:01 │ INFO  │ uvicorn.error │ connection closed
+21:13:01 │ INFO  │ uvicorn.error │ connection closed
+21:13:01 │ INFO  │ adk_streaming_server │ [/ws/live] Session closed: 115e1466-9484-45b2-92af-629870fd1e83
+21:13:01 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+21:13:01 │ INFO  │ uvicorn.error │ Waiting for application shutdown.
+21:13:01 │ INFO  │ main     │ Shutting down AURA backend server
+21:13:01 │ INFO  │ main     │ Device disconnected on shutdown
+21:13:01 │ INFO  │ uvicorn.error │ Application shutdown complete.
+21:13:01 │ INFO  │ uvicorn.error │ Application shutdown complete.
+21:13:01 │ INFO  │ uvicorn.error │ Finished server process [28384]
+21:13:01 │ INFO  │ uvicorn.error │ Finished server process [28384]

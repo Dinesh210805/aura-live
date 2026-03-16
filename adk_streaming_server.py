@@ -351,49 +351,21 @@ async def handle_live_websocket(
 
     _transcription_cfg = None
     _input_transcription_cfg = None  # separate config for user's voice (input)
-    normalized_transcription_language = (
-        (transcription_language or "").strip() or
-        getattr(settings, "gemini_live_transcription_language", "en-US") or
-        "en-US"
-    )
-    if normalized_transcription_language.lower() == "auto":
-        normalized_transcription_language = "auto"
 
     if _VAD_TYPES_AVAILABLE and _AudioTranscriptionConfig is not None:
         # Determine whether language_code is supported once, then build both configs.
         # Locking to en-US prevents auto-detection from drifting to Hindi/other scripts
         # on Indian devices where the accent triggers incorrect language detection.
-        _language_code_supported = False
         try:
-            import inspect as _inspect
-            _atc_sig = _inspect.signature(_AudioTranscriptionConfig.__init__)
-            _language_code_supported = "language_code" in _atc_sig.parameters
-        except Exception:
-            pass
-
-        try:
-            if _language_code_supported and normalized_transcription_language != "auto":
-                _transcription_cfg = _AudioTranscriptionConfig(
-                    language_code=normalized_transcription_language
-                )
-                _input_transcription_cfg = _AudioTranscriptionConfig(
-                    language_code=normalized_transcription_language
-                )
-                logger.info(
-                    "[/ws/live] AudioTranscriptionConfig: "
-                    f"language_code={normalized_transcription_language!r} (input + output locked)"
-                )
-            else:
-                _transcription_cfg = _AudioTranscriptionConfig()
-                _input_transcription_cfg = _AudioTranscriptionConfig()
-                if not _language_code_supported:
-                    logger.warning(
-                        "[/ws/live] AudioTranscriptionConfig: language_code param NOT supported "
-                        "in this google-genai version — transcription uses auto-detection. "
-                        "Upgrade google-genai to ≥1.x to lock language and prevent Hindi drift."
-                    )
-                else:
-                    logger.info("[/ws/live] AudioTranscriptionConfig: auto-detection mode")
+            # The Gemini Live API does NOT support language_codes in AudioTranscriptionConfig
+            # at runtime — the field exists in the SDK types but the API rejects it.
+            # Language is controlled exclusively via the agent's system instruction.
+            # See: https://ai.google.dev/gemini-api/docs/live-guide (transcription section)
+            _transcription_cfg = _AudioTranscriptionConfig()
+            _input_transcription_cfg = _AudioTranscriptionConfig()
+            logger.info(
+                "[/ws/live] AudioTranscriptionConfig: enabled (language locked via system instruction)"
+            )
         except Exception as _tc_exc:
             logger.warning(f"[/ws/live] AudioTranscriptionConfig() failed: {_tc_exc}")
             _transcription_cfg = None

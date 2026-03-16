@@ -4,7 +4,12 @@
       "Bash(xargs grep:*)",
       "Bash(cd:*)",
       "Bash(find:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(pip show:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:googleapis.github.io)",
+      "WebFetch(domain:discuss.ai.google.dev)"
     ]
   }
 }

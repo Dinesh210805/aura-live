@@ -1,0 +1,60 @@
+# AURA Backend Dependencies
+# Core Framework
+fastapi>=0.116.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.4,<3.0.0
+pydantic-settings>=2.3.0
+python-dotenv==1.0.0
+aiofiles>=25.1.0
+slowapi>=0.1.9
+
+# AI Orchestration & Agents
+crewai>=0.86.0
+langgraph>=0.3.27
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-core>=0.3.0,<0.4
+
+# AI Model Providers
+groq==0.11.0
+google-genai>=1.0.0
+openai>=1.0.0
+litellm>=1.51.0
+
+# Policy Engine / Guardrails
+opa-python-client>=2.0.0
+regopy>=0.4.0
+
+# OmniParser CV + VLM Hybrid Perception
+ultralytics>=8.0.0
+huggingface-hub>=0.19.0
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+PyYAML>=6.0.1
+
+# Audio Processing
+pydub==0.25.1
+edge-tts>=6.1.0
+
+# HTTP Client
+httpx>=0.27.0
+aiohttp>=3.10.9
+requests>=2.31.0
+
+# Observability
+langsmith>=0.1.17,<0.4
+
+# Terminal UI
+rich>=13.7.0
+
+# Utilities
+typing-extensions>=4.12.2
+python-multipart>=0.0.7
+
+# ──────────────────────────────────────────────────────────────
+# Google Cloud Platform — Gemini Live Agent Challenge (required)
+# ──────────────────────────────────────────────────────────────
+google-adk==1.19.0
+google-cloud-storage>=2.10.0
+google-cloud-aiplatform>=1.50.0

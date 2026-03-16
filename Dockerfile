@@ -32,12 +32,13 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PORT=8080
 
 # System dependencies required by:
-#   • opencv-python  → libgl1-mesa-glx, libglib2.0-0
+#   • opencv-python  → libgl1, libgl1-mesa-dri, libglib2.0-0
 #   • pyaudio        → portaudio19-dev, libasound2-dev
 #   • pydub          → ffmpeg
 #   • ultralytics    → libgomp1 (OpenMP for YOLO CPU inference)
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
+    libgl1-mesa-dri \
     libglib2.0-0 \
     libgomp1 \
     ffmpeg \
@@ -49,7 +50,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 WORKDIR /app
 
 # Install Python dependencies first (layer-cached until requirements change)
-COPY ["requirements copy.txt", "requirements.txt"]
+COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 

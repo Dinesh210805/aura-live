@@ -37,7 +37,7 @@ httpx==0.25.2
 aiohttp==3.9.1
 
 # Observability
-langsmith==0.0.70
+langsmith>=0.1.17,<0.4
 
 # Terminal UI
 rich>=13.7.0

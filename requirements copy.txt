@@ -57,7 +57,7 @@ python-multipart==0.0.6
 # Google Cloud Platform — Gemini Live Agent Challenge (required)
 # ──────────────────────────────────────────────────────────────
 # ADK (Agent Development Kit) — satisfies "use Google ADK" requirement
-google-adk>=1.0.0
+google-adk==1.19.0
 
 # GenAI SDK — unified Gemini API client (already listed above as google-genai)
 # google-genai is pinned above; listed here for clarity

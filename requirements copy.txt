@@ -36,8 +36,8 @@ edge-tts>=6.1.0
 httpx==0.25.2
 aiohttp==3.9.1
 
-# Observability
-langsmith==0.0.70
+# Observability (langchain 0.3.x requires >=0.1.17,<0.2.0)
+langsmith>=0.1.17,<0.2.0
 
 # Terminal UI
 rich>=13.7.0

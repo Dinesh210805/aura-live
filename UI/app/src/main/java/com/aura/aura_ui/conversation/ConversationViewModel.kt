@@ -52,6 +52,23 @@ class ConversationViewModel : ViewModel() {
     companion object {
         private const val TAG = "ConversationViewModel"
         private const val MAX_AGENT_OUTPUTS = 50 // Keep last 50 agent outputs
+        private const val DUPLICATE_SUPPRESSION_WINDOW_MS = 6000L
+    }
+
+    private fun normalizeTranscript(text: String): String =
+        text.trim().lowercase().replace(Regex("\\s+"), " ")
+
+    private fun shouldSuppressDuplicateFinalMessage(text: String, isUser: Boolean): Boolean {
+        val normalized = normalizeTranscript(text)
+        val now = System.currentTimeMillis()
+        val lastFinal = _messages.value
+            .asReversed()
+            .firstOrNull { it.isUser == isUser && !it.isStreaming }
+            ?: return false
+
+        val sameText = normalizeTranscript(lastFinal.text) == normalized
+        val withinWindow = (now - lastFinal.timestamp) <= DUPLICATE_SUPPRESSION_WINDOW_MS
+        return sameText && withinWindow
     }
 
     /**
@@ -85,6 +102,10 @@ class ConversationViewModel : ViewModel() {
         if (transcript.isBlank()) return
 
         viewModelScope.launch {
+            if (shouldSuppressDuplicateFinalMessage(transcript, isUser = true)) {
+                Log.d(TAG, "Suppressed duplicate user message: ${transcript.take(60)}")
+                return@launch
+            }
             val message =
                 ConversationMessage(
                     text = transcript,
@@ -103,6 +124,10 @@ class ConversationViewModel : ViewModel() {
         if (response.isBlank()) return
 
         viewModelScope.launch {
+            if (shouldSuppressDuplicateFinalMessage(response, isUser = false)) {
+                Log.d(TAG, "Suppressed duplicate assistant message: ${response.take(60)}")
+                return@launch
+            }
             val message =
                 ConversationMessage(
                     text = response,
@@ -129,7 +154,9 @@ class ConversationViewModel : ViewModel() {
                     id = newId, text = text, isUser = true, isStreaming = true
                 )
             } else {
-                _messages.value = _messages.value.map { if (it.id == id) it.copy(text = text) else it }
+                _messages.value = _messages.value.map {
+                    if (it.id == id && it.text != text) it.copy(text = text) else it
+                }
             }
         }
     }
@@ -141,6 +168,11 @@ class ConversationViewModel : ViewModel() {
     fun finalizeStreamingUserMessage(text: String) {
         if (text.isBlank()) return
         viewModelScope.launch {
+            if (shouldSuppressDuplicateFinalMessage(text, isUser = true)) {
+                streamingUserMessageId = null
+                Log.d(TAG, "Suppressed duplicate final user transcript: ${text.take(60)}")
+                return@launch
+            }
             val id = streamingUserMessageId
             streamingUserMessageId = null
             if (id != null) {
@@ -167,7 +199,9 @@ class ConversationViewModel : ViewModel() {
                     id = newId, text = text, isUser = false, isStreaming = true
                 )
             } else {
-                _messages.value = _messages.value.map { if (it.id == id) it.copy(text = text) else it }
+                _messages.value = _messages.value.map {
+                    if (it.id == id && it.text != text) it.copy(text = text) else it
+                }
             }
         }
     }
@@ -179,6 +213,11 @@ class ConversationViewModel : ViewModel() {
     fun finalizeStreamingAiMessage(text: String) {
         if (text.isBlank()) return
         viewModelScope.launch {
+            if (shouldSuppressDuplicateFinalMessage(text, isUser = false)) {
+                streamingAiMessageId = null
+                Log.d(TAG, "Suppressed duplicate final AI transcript: ${text.take(60)}")
+                return@launch
+            }
             val id = streamingAiMessageId
             streamingAiMessageId = null
             if (id != null) {

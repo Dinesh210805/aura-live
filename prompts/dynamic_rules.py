@@ -73,6 +73,35 @@ SCROLL_GUARD_RULES = """\
 INFINITE SCROLL GUARD: 3+ consecutive scrolls in the same direction without progress = the target is NOT here.
 Change strategy: scroll back to top, use search, or navigate differently. Do NOT generate another scroll."""
 
+PARTICIPANT_PICKER_RULES = """\
+PARTICIPANT / CONTACT PICKER SCREEN (Screen A of group creation) — READ THE SCREEN, NOT THE PHASE:
+Recognise Screen A by: EditText with hint 'Search name or number…' at the top, scrollable contact list, 'Next' button.
+  NOTE: If 'New group' / 'New contact' / 'New community' options are visible instead of a search EditText,
+  you are on Screen 0 ('Select contact') — NOT Screen A. Tap 'New group' on Screen 0 first.
+On Screen A (participant picker):
+• DO NOT type the group name here. The group NAME field does not exist on this screen.
+• Action: type each participant's name in the search field → tap their contact row to select → repeat → tap Next.
+• A FOCUSED EditText with hint 'Search name or number' = type a CONTACT NAME, nothing else."""
+
+WHATSAPP_NEW_GROUP_RULES = """\
+WHATSAPP GROUP CREATION — THREE-SCREEN SEQUENCE (must follow in order):
+
+  Screen 0 — "Select contact" (entry after tapping the 'New chat' FAB):
+    Recognise it by: title 'Select contact', options 'New group' / 'New contact' / 'New community' at top, then a flat contact list.
+    ► REQUIRED ACTION: Tap 'New group'. Do NOT tap Search, do NOT tap any contact row here.
+    You are NOT yet inside the group creation flow until you tap 'New group'.
+
+  Screen A — "Add participants" (after tapping 'New group'):
+    Recognise it by: EditText with hint 'Search name or number…' at the top, contact list, 'Next' button (floating or in toolbar).
+    ► REQUIRED ACTION: Type each participant's name in the search field → tap their contact row to select (checkmark appears) → clear and repeat for the next person → tap 'Next' when ALL participants are selected.
+    Do NOT type the group name here — that field does not exist on this screen.
+
+  Screen B — "Group name" (after tapping 'Next'):
+    Recognise it by: a labelled 'Group name' or 'Group subject' text field.
+    ► REQUIRED ACTION: Type the group name → tap the checkmark/create button.
+
+CRITICAL RULE: If you see 'New group' as a tappable option on screen → you are on Screen 0. Tap it immediately. Do NOT search for contacts on Screen 0."""
+
 
 def get_contextual_rules(screen_context: str, phase: str = "") -> str:
     """Return only the rules relevant to the current screen state.
@@ -115,5 +144,25 @@ def get_contextual_rules(screen_context: str, phase: str = "") -> str:
     # Always include scroll guard after a few steps (cheap and universal)
     if any(w in phase_lower for w in ("scroll", "find", "look for", "search")):
         rules.append(SCROLL_GUARD_RULES)
+
+    # Participant/contact picker screen: fires on common picker screen cues
+    picker_ctx_signals = ("search name or number", "add participants", "select contact", "add members")
+    picker_phase_signals = ("participant", "select contact", "add john", "add max", "add members")
+    if (
+        any(w in ctx for w in picker_ctx_signals)
+        or any(w in phase_lower for w in picker_phase_signals)
+    ):
+        rules.append(PARTICIPANT_PICKER_RULES)
+
+    # WhatsApp group creation: fires whenever the task involves creating or navigating to a group.
+    # Uses broad signals — phase "Select John and Max as group participants" only contains "group"
+    # and "participant", so we match on those rather than requiring "new group" / "create group".
+    group_creation_signals = ("new group", "create group", "group named", "group called", "group subject")
+    group_participant_signals = ("group participant", "group member", "select participant", "add participant")
+    if (
+        any(w in phase_lower or w in ctx for w in group_creation_signals)
+        or any(w in phase_lower for w in group_participant_signals)
+    ):
+        rules.append(WHATSAPP_NEW_GROUP_RULES)
 
     return "\n\n".join(rules)

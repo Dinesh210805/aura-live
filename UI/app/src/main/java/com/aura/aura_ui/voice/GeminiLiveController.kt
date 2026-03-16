@@ -164,12 +164,18 @@ class GeminiLiveController(
         val geminiVoice = context
             .getSharedPreferences("aura_voice_settings", android.content.Context.MODE_PRIVATE)
             .getString("gemini_live_voice", "Charon") ?: "Charon"
+        val transcriptionLanguage = context
+            .getSharedPreferences("aura_voice_settings", android.content.Context.MODE_PRIVATE)
+            .getString("gemini_live_transcription_language", "en-US") ?: "en-US"
         val wsUrl = serverUrl
             .replace("http://", "ws://")
             .replace("https://", "wss://")
-            .trimEnd('/') + "/ws/live?session_id=$sessionId&voice=$geminiVoice"
+            .trimEnd('/') + "/ws/live?session_id=$sessionId&voice=$geminiVoice&transcription_language=$transcriptionLanguage"
 
-        Log.i(TAG, "Connecting to Gemini Live: $wsUrl (voice=$geminiVoice)")
+        Log.i(
+            TAG,
+            "Connecting to Gemini Live: $wsUrl (voice=$geminiVoice, transcription_language=$transcriptionLanguage)",
+        )
 
         var connectionResult = false
         val latch = java.util.concurrent.CountDownLatch(1)

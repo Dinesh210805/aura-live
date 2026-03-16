@@ -205,9 +205,11 @@ After execute_aura_task:
 Style: short spoken sentences, no lists, no markdown.
 
 LANGUAGE RULE:
-  - Always respond in the same language the user spoke. If the user speaks Malayalam, respond in Malayalam. If English, respond in English.
-  - NEVER translate the user's speech or your own responses to a different language unless explicitly asked.
-  - The transcript displayed to the user must reflect the actual spoken language — do not transliterate or convert scripts.
+  - DEFAULT LANGUAGE IS ENGLISH. Always respond in English unless the user explicitly and clearly asks you to switch to another language (e.g. "speak to me in Hindi", "reply in Tamil").
+  - Do NOT infer language from accent, pronunciation style, or ambiguous audio. Indian English accents are English — respond in English.
+  - NEVER switch to Hindi, Tamil, Malayalam, or any other language just because a word or phrase sounded like it. When in doubt, use English.
+  - If the user genuinely and clearly speaks a full sentence in a specific language, you may respond in that language. One ambiguous word is not enough.
+  - Do not mix languages mid-response (e.g. no Hindi words inside an English sentence).
 """,
             tools=[aura_tool] if aura_tool is not None else [],
         )
@@ -238,7 +240,12 @@ LANGUAGE RULE:
 # ---------------------------------------------------------------------------
 
 
-async def handle_live_websocket(websocket: WebSocket, session_id: str, voice: str | None = None) -> None:
+async def handle_live_websocket(
+    websocket: WebSocket,
+    session_id: str,
+    voice: str | None = None,
+    transcription_language: str | None = None,
+) -> None:
     """
     Bidirectional Gemini Live session handler for a connected Android device.
 
@@ -252,6 +259,9 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str, voice: st
         websocket: The accepted FastAPI WebSocket connection.
         session_id: Unique identifier for this device session. Used to
                     maintain Gemini Live conversation state.
+        voice: Optional prebuilt voice name for this session.
+        transcription_language: Optional language code override for this
+                    session's input/output audio transcription.
     """
     await websocket.accept()
     logger.info(f"[/ws/live] New Gemini Live session: {session_id}")
@@ -340,25 +350,54 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str, voice: st
             logger.warning(f"[/ws/live] Could not build RealtimeInputConfig: {_vad_exc} — using defaults")
 
     _transcription_cfg = None
+    _input_transcription_cfg = None  # separate config for user's voice (input)
+    normalized_transcription_language = (
+        (transcription_language or "").strip() or
+        getattr(settings, "gemini_live_transcription_language", "en-US") or
+        "en-US"
+    )
+    if normalized_transcription_language.lower() == "auto":
+        normalized_transcription_language = "auto"
+
     if _VAD_TYPES_AVAILABLE and _AudioTranscriptionConfig is not None:
+        # Determine whether language_code is supported once, then build both configs.
+        # Locking to en-US prevents auto-detection from drifting to Hindi/other scripts
+        # on Indian devices where the accent triggers incorrect language detection.
+        _language_code_supported = False
         try:
-            # language_code="auto" is supported in google-genai ≥ 1.x to preserve
-            # the spoken language in transcription without translating to English.
-            # Falls back to no-arg construction on older SDK versions.
-            try:
-                import inspect as _inspect
-                _atc_sig = _inspect.signature(_AudioTranscriptionConfig.__init__)
-                if "language_code" in _atc_sig.parameters:
-                    _transcription_cfg = _AudioTranscriptionConfig(language_code="auto")
-                    logger.info("[/ws/live] AudioTranscriptionConfig: language_code='auto' (preserves spoken language)")
-                else:
-                    _transcription_cfg = _AudioTranscriptionConfig()
-                    logger.info("[/ws/live] AudioTranscriptionConfig: no language_code param — using defaults")
-            except Exception:
+            import inspect as _inspect
+            _atc_sig = _inspect.signature(_AudioTranscriptionConfig.__init__)
+            _language_code_supported = "language_code" in _atc_sig.parameters
+        except Exception:
+            pass
+
+        try:
+            if _language_code_supported and normalized_transcription_language != "auto":
+                _transcription_cfg = _AudioTranscriptionConfig(
+                    language_code=normalized_transcription_language
+                )
+                _input_transcription_cfg = _AudioTranscriptionConfig(
+                    language_code=normalized_transcription_language
+                )
+                logger.info(
+                    "[/ws/live] AudioTranscriptionConfig: "
+                    f"language_code={normalized_transcription_language!r} (input + output locked)"
+                )
+            else:
                 _transcription_cfg = _AudioTranscriptionConfig()
+                _input_transcription_cfg = _AudioTranscriptionConfig()
+                if not _language_code_supported:
+                    logger.warning(
+                        "[/ws/live] AudioTranscriptionConfig: language_code param NOT supported "
+                        "in this google-genai version — transcription uses auto-detection. "
+                        "Upgrade google-genai to ≥1.x to lock language and prevent Hindi drift."
+                    )
+                else:
+                    logger.info("[/ws/live] AudioTranscriptionConfig: auto-detection mode")
         except Exception as _tc_exc:
             logger.warning(f"[/ws/live] AudioTranscriptionConfig() failed: {_tc_exc}")
             _transcription_cfg = None
+            _input_transcription_cfg = None
 
     # ── Build speech config (voice selection) ────────────────────────────────
     # `voice` param overrides GEMINI_LIVE_VOICE env var for this connection only.
@@ -388,8 +427,9 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str, voice: st
         _run_config_kwargs["speech_config"] = _speech_cfg
     if _transcription_cfg is not None:
         _run_config_kwargs["output_audio_transcription"] = _transcription_cfg
-        _run_config_kwargs["input_audio_transcription"] = _transcription_cfg
-    else:
+    if _input_transcription_cfg is not None:
+        _run_config_kwargs["input_audio_transcription"] = _input_transcription_cfg
+    if _transcription_cfg is None and _input_transcription_cfg is None:
         logger.warning("[/ws/live] AudioTranscriptionConfig unavailable — chat transcripts will be empty")
     if _realtime_input_cfg is not None:
         _run_config_kwargs["realtime_input_config"] = _realtime_input_cfg

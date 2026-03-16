@@ -27,6 +27,7 @@ class FloatingMicOverlay(
     private var expandedPanel: EnhancedExpandedPanel? = null
     private var expandedPanelView: View? = null
     private var isExpanded = false
+    private var overlayState: OverlayState = OverlayState.Idle
 
     private var isDragging = false
     private var initialX = 0
@@ -105,6 +106,10 @@ class FloatingMicOverlay(
     }
 
     fun expandPanel() {
+        if (overlayState == OverlayState.Processing) {
+            Log.d(TAG, "Ignored expandPanel() while processing")
+            return
+        }
         if (isExpanded || expandedPanel == null) return
 
         isExpanded = true
@@ -150,6 +155,7 @@ class FloatingMicOverlay(
     }
 
     fun updateExpandedState(state: OverlayState) {
+        overlayState = state
         // Per Google Live Update design guidelines: the bubble must NOT expand
         // during automation (Processing). Force-collapse and let the system
         // Live Update notification chip carry the status instead.

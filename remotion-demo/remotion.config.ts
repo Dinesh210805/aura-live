@@ -1,7 +1,0 @@
-import {Config} from '@remotion/cli/config';
-
-Config.setVideoImageFormat('jpeg');
-Config.setOverwriteOutput(true);
-Config.setPixelFormat('yuv420p');
-Config.setCrf(18);
-Config.setScale(2);

@@ -46,6 +46,11 @@ Leave empty [] for read-only tasks.
 → phases: ["Open WhatsApp", "Open Mum's chat", "Type and send message"]
 → commit_actions: ["send"]
 
+"create a whatsapp group called vacation with John and Max"
+→ phases: ["Open WhatsApp", "Select John and Max as group participants", "Name the group vacation and create it"]
+→ commit_actions: ["create group"]
+NOTE: WhatsApp group creation is PARTICIPANT-FIRST — contacts are selected on one screen, group name is entered on the NEXT screen after tapping Next. Never put "create group named X" before the participant selection phase.
+
 "what's the weather today"
 → phases: ["Check weather"]
 → commit_actions: []

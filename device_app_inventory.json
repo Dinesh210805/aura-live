@@ -2715,21 +2715,6 @@
           "intent_filters": []
         },
         {
-          "package_name": "com.dts.freefiremax",
-          "app_name": "Free Fire MAX",
-          "is_system_app": false,
-          "version_name": "2.121.1",
-          "deep_links": [],
-          "intent_filters": [
-            {
-              "action": "android.intent.action.MAIN",
-              "categories": [
-                "android.intent.category.LAUNCHER"
-              ]
-            }
-          ]
-        },
-        {
           "package_name": "com.oplus.customize.coreapp",
           "app_name": "CustCoreApp",
           "is_system_app": true,
@@ -5625,11 +5610,11 @@
           ]
         }
       ],
-      "last_updated": 1773648312272,
-      "app_count": 535
+      "last_updated": 1773683221388,
+      "app_count": 534
     }
   },
   "_metadata": {
-    "last_updated": 1773648312272
+    "last_updated": 1773683221388
   }
 }

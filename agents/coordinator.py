@@ -11,6 +11,7 @@ Runs the perceive → decide → act → verify loop with:
 """
 
 import asyncio
+import re
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
@@ -171,12 +172,15 @@ def _detect_goal_completion(utterance: str, elements: list, pre_elements: list |
             return True, f"Navigation active — {nav_evidence}, Start button gone"
 
     elif goal_type == "messaging":
-        sent_signals = ("sent", "delivered", "message sent", "email sent")
+        # Use word-boundary patterns to avoid substring false positives
+        # e.g. "sent" must not match "present", "delivered" must not match "undelivered"
+        sent_patterns = [re.compile(r'\b' + re.escape(sig) + r'\b', re.IGNORECASE)
+                         for sig in ("sent", "delivered", "message sent", "email sent")]
         for txt in _all_text:
-            if any(sig in txt for sig in sent_signals):
+            if any(p.search(txt) for p in sent_patterns):
                 return True, f"Message sent — indicator detected (text='{txt}')"
         for cd in _all_cd:
-            if any(sig in cd for sig in sent_signals):
+            if any(p.search(cd) for p in sent_patterns):
                 return True, f"Message sent — indicator detected (cd='{cd}')"
 
     elif goal_type == "call":
@@ -822,6 +826,49 @@ class Coordinator:
                         _field_hint, subgoal.description, _all_edits, all_elements=_all_elements
                     )
 
+                    # If the planner requested a specific field (e.g. "Group subject")
+                    # but a *different* editable field is present on this screen, do
+                    # NOT type into that fallback field (often search boxes on contact-
+                    # picker screens). Fail fast and let retry/replan choose the right
+                    # step. When there are zero editable nodes, do not treat that as a
+                    # mismatch yet — vision-only apps like Google Maps hide the field
+                    # from the accessibility tree, and we handle that below.
+                    if _field_hint and _intended_edit is None and _all_edits:
+                        logger.warning(
+                            "Coordinator: field hint mismatch — requested '%s' but no matching input on current screen",
+                            _field_hint,
+                        )
+                        _cmd_logger.log_agent_decision("TYPE_SKIPPED_FIELD_HINT_MISMATCH", {
+                            "field_hint": _field_hint,
+                            "target": target_value,
+                            "subgoal": subgoal.description,
+                            "field_count": len(_all_edits),
+                        }, agent_name="Coordinator")
+                        step_memory.append(StepMemory(
+                            subgoal_description=subgoal.description,
+                            action_type=action_type,
+                            target=subgoal.target,
+                            result=(
+                                f"failed: requested field '{_field_hint}' not present on current screen"
+                            ),
+                            screen_type=screen_state.screen_type if screen_state else "unknown",
+                            screen_before=pre_signature,
+                            screen_after=pre_signature,
+                            coordinates=None,
+                        ))
+                        subgoal.attempts += 1
+                        if subgoal.attempts >= 3:
+                            goal.advance_subgoal()
+                            self._broadcast_step(session_id, success=False)
+                        consecutive_gesture_failures += 1
+                        if consecutive_gesture_failures >= 6:
+                            goal.aborted = True
+                            goal.abort_reason = (
+                                f"Field hint mismatch after {consecutive_gesture_failures} attempts"
+                            )
+                            break
+                        continue
+
                     # Always determine the target field and embed its coords
                     # so Android uses ACTION_ACCESSIBILITY_FOCUS on the right node
                     # (even when the field *appears* focused — without a tap there
@@ -869,6 +916,10 @@ class Coordinator:
                         _field_hint_vt = subgoal.parameters.get("__field_hint__", "")
                         _tap_target = _field_hint_vt or subgoal.description or "input field"
                         _tapped_visually = False
+                        _keyboard_visible = (
+                            "keyboard: visible" in (running_screen_context or "").lower()
+                            or (screen_state and screen_state.screen_type == "keyboard_open")
+                        )
                         if self.perceiver.vlm_service:
                             try:
                                 _focus_state = await self.perceiver.perceive(
@@ -917,7 +968,18 @@ class Coordinator:
                             except Exception as _vte:
                                 logger.warning(f"Coordinator: vision-mode pre-tap failed: {_vte}")
 
-                        if not _tapped_visually:
+                        if not _tapped_visually and _keyboard_visible:
+                            logger.info(
+                                "Coordinator: vision-only type fallback — keyboard already visible; "
+                                "allowing direct text input without accessibility edit nodes"
+                            )
+                            _cmd_logger.log_agent_decision("VISION_MODE_TYPE_FALLBACK", {
+                                "field_hint": _field_hint_vt,
+                                "target": target_value,
+                                "screen_context": running_screen_context,
+                            }, agent_name="Coordinator")
+
+                        elif not _tapped_visually:
                             # No EditText and visual locate failed — type will likely fail
                             logger.warning("Coordinator: no input field on screen — skipping type action")
                             _cmd_logger.log_agent_decision("TYPE_SKIPPED_NO_INPUT_FIELD", {
@@ -1378,6 +1440,29 @@ class Coordinator:
             elif not action_result.success:
                 verification_passed = False
                 verification_reason = f"Action execution failed: {action_result.error}"
+
+            # Generic postcondition guard (app-agnostic): proceed/confirm taps
+            # such as Next/OK/Done/Create/Continue must produce an observable
+            # state transition. If the screen is unchanged, treat as verification
+            # failure and retry/replan instead of accepting a static "button visible"
+            # explanation from the model.
+            _proceed_targets = {
+                "next", "ok", "done", "continue", "create", "confirm", "save", "proceed", "submit"
+            }
+            _target_norm = (subgoal.target or "").strip().lower()
+            if (
+                verification_passed
+                and action_type == "tap"
+                and _target_norm in _proceed_targets
+                and not screen_changed
+            ):
+                verification_passed = False
+                verification_reason = (
+                    f"Proceed tap '{subgoal.target}' did not change state"
+                )
+                logger.warning(
+                    f"Coordinator: proceed-tap postcondition failed for '{subgoal.target}'"
+                )
 
             if verification_passed:
                 # AI-writer escape: if we just tapped a compose-area target and the

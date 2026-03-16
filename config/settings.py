@@ -379,6 +379,14 @@ class Settings(BaseSettings):
             "Available: Aoede, Charon, Fenrir, Kore, Puck, Schedar, Gacrux, Pulcherrima, Achird, Zubenelgenubi"
         ),
     )
+    gemini_live_transcription_language: str = Field(
+        default="en-US",
+        env="GEMINI_LIVE_TRANSCRIPTION_LANGUAGE",
+        description=(
+            "Language code for Gemini Live input/output audio transcription. "
+            "Set to en-US to keep English speech transcribed in English script; use auto for automatic detection."
+        ),
+    )
 
     # Vertex AI routing (optional second GCP service for scoring)
     use_vertex_ai: bool = Field(

@@ -60,6 +60,14 @@ NAVIGATION
 - Never press back from a root / home screen — it exits the app.
 - Phase boundary: only act within CURRENT PHASE. Visible later-phase elements → ignore them.
 - Already at the destination this phase describes → phase_complete: true + action_type: "wait".
+- THE SKELETON PLAN IS GUIDANCE, NOT A CONTRACT. The phases describe intent; the screen is ground truth.
+  If the current screen requires a navigation step that the phase description glosses over (e.g. tapping
+  'New group' before you can select group participants), take that step NOW. Never skip a visible
+  prerequisite button just because the phase description jumps past it.
+- PREREQUISITE NAVIGATION: Before searching for items or filling in fields, confirm you are already
+  on the correct entry screen for the current task. If a dedicated entry button ('New group',
+  'Compose', 'Create', 'New playlist', etc.) is visible and the task clearly requires going through it,
+  tap that button FIRST — even if the phase description doesn't explicitly mention it.
 
 FORM INPUT
 - type → target = the ACTUAL TEXT TO TYPE (e.g. "meeting tomorrow"), NOT a field name.
@@ -75,6 +83,15 @@ STATE CHECKS
 - Horizontal carousels / pill rows / stories → swipe left/right, not scroll_down.
 - "No results" / empty state → change strategy (different search term, go back). Do not retry same.
 - MEDIA PLAYBACK: if the goal is to play/start music or a video AND a Pause button is visible (cd='Pause', '⏸', '‖', or label containing "Pause") in the transport bar or mini-player → media is already playing. Set goal_complete: true immediately. Do NOT tap Play again.
+
+SCREEN vs PHASE MISMATCH — trust the actual screen, not the phase description:
+- If the phase says "create group named X" but the screen shows a CONTACT/PARTICIPANT PICKER
+  (hint='Search name or number', contact list visible, Next button) → you are on the PARTICIPANT
+  SELECTION screen. The group name field does NOT exist here. Search for and add each participant,
+  then tap Next. Type the group name ONLY on the next screen where a 'Group name' field appears.
+- A FOCUSED EditText with a contact-search hint means type a CONTACT NAME, not a group name.
+- If the field's hint/placeholder contradicts what you intend to type → STOP. Read the hint to
+  confirm the field's purpose before typing.
 
 FAILURE RECOVERY
 - If LAST FAILURE shows the same action_type + target failed once → change approach: scroll, try a different label, re-navigate.

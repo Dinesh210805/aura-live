@@ -21,7 +21,7 @@
 #   • Timeout 3600 is required for long-running device automation sessions.
 # ─────────────────────────────────────────────────────────────────────────────
 
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Prevent Python from buffering stdout/stderr (critical for Cloud Run logs)
 ENV PYTHONUNBUFFERED=1
@@ -36,7 +36,7 @@ ENV PORT=8080
 #   • pyaudio        → portaudio19-dev, libasound2-dev
 #   • pydub          → ffmpeg
 #   • ultralytics    → libgomp1 (OpenMP for YOLO CPU inference)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libgl1-mesa-glx \
     libglib2.0-0 \
     libgomp1 \
@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install Python dependencies first (layer-cached until requirements change)
-COPY "requirements copy.txt" requirements.txt
+COPY ["requirements copy.txt", "requirements.txt"]
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 

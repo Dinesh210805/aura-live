@@ -275,9 +275,15 @@ if settings.gemini_live_enabled:
         websocket: _WS,
         session_id: str = "default",
         voice: str = "",
+        transcription_language: str = "",
     ):
         """Gemini Live bidirectional audio + vision session endpoint."""
-        await handle_live_websocket(websocket, session_id, voice=voice or None)
+        await handle_live_websocket(
+            websocket,
+            session_id,
+            voice=voice or None,
+            transcription_language=transcription_language or None,
+        )
 
     logger.info("Gemini Live /ws/live endpoint registered")
 else:

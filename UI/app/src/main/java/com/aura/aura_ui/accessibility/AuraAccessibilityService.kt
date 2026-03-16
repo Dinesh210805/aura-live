@@ -84,8 +84,14 @@ class AuraAccessibilityService : AccessibilityService() {
             instance?.updateAllBackendUrls(normalizedUrl)
 
             if (normalizedUrl != lastRegisteredUrl && !isRegistering.get()) {
-                lastRegisteredUrl = normalizedUrl
-                instance?.registerDeviceWithBackend()
+                if (instance != null) {
+                    instance?.registerDeviceWithBackend()
+                } else {
+                    AgentLogger.Auto.i(
+                        "Accessibility service not ready yet; device registration will run on service connect",
+                        mapOf("url" to normalizedUrl),
+                    )
+                }
             }
 
             // Command polling removed - all commands now use WebSocket
@@ -196,6 +202,14 @@ class AuraAccessibilityService : AccessibilityService() {
         observeScreenCapturePreference()
 
         AgentLogger.UI.i("Waiting for MainActivity to configure backend URL...")
+
+        if (BACKEND_URL != lastRegisteredUrl && !isRegistering.get()) {
+            AgentLogger.Auto.i(
+                "Service connected; performing deferred device registration",
+                mapOf("url" to BACKEND_URL),
+            )
+            registerDeviceWithBackend()
+        }
     }
 
     private fun observeScreenCapturePreference() {
@@ -1559,6 +1573,8 @@ class AuraAccessibilityService : AccessibilityService() {
             return
         }
 
+        val targetUrl = BACKEND_URL
+
         backendCommunicator.registerDevice(
             screenCaptureManager.screenWidth,
             screenCaptureManager.screenHeight,
@@ -1566,9 +1582,15 @@ class AuraAccessibilityService : AccessibilityService() {
         ) { success ->
             isRegistering.set(false)
             if (success) {
+                lastRegisteredUrl = targetUrl
                 AgentLogger.Auto.i("✅ Device registered - UI data will be sent only on explicit request")
                 // Periodic updates disabled to prevent latency - use triggerScreenshotCapture() when needed
                 // commandPollingManager.startPeriodicUpdates()
+            } else {
+                AgentLogger.Auto.w(
+                    "Device registration failed; will retry on next URL update or service reconnect",
+                    mapOf("url" to targetUrl),
+                )
             }
         }
     }

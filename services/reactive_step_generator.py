@@ -213,6 +213,38 @@ class ReactiveStepGenerator:
                 verification_passed = True
                 verification_reason = "first step"
 
+            # Generic guard (app-agnostic): after typing into a searchable picker,
+            # do not advance with proceed buttons (Next/OK/Done/Create/Continue)
+            # until the typed entity is actually selected.
+            if (
+                prev_subgoal is not None
+                and prev_subgoal.action_type in ("type", "type_text", "enter_text", "set_text", "input_text")
+                and action_type == "tap"
+                and self._is_proceed_target(target)
+            ):
+                typed_entity = (prev_subgoal.target or "").strip()
+                if typed_entity and self._looks_like_searchable_picker(prev_subgoal, ui_elements):
+                    if not self._has_selected_evidence(ui_elements, typed_entity):
+                        match_label = self._find_clickable_entity_match(ui_elements, typed_entity)
+                        if match_label:
+                            logger.info(
+                                "🧭 Selection guard: '%s' not selected yet; overriding proceed tap '%s' with row tap '%s'",
+                                typed_entity,
+                                target,
+                                match_label,
+                            )
+                            action_type = "tap"
+                            target = match_label
+                            description = (
+                                f"Tap '{match_label}' to select it before proceeding"
+                            )
+                            phase_complete = False
+                            goal_complete = False
+                            verification_passed = True
+                            verification_reason = (
+                                f"Selection guard: must select '{typed_entity}' before '{target}'"
+                            )
+
             # Tick off any pending commit that this step fulfils
             if target and goal.pending_commits:
                 goal.pending_commits = [
@@ -443,6 +475,75 @@ class ReactiveStepGenerator:
                 return subgoal
 
         return None
+
+    def _is_proceed_target(self, target: Optional[str]) -> bool:
+        if not target:
+            return False
+        t = target.strip().lower()
+        proceed_terms = {
+            "next", "ok", "done", "continue", "create", "confirm", "save", "proceed", "submit"
+        }
+        return t in proceed_terms
+
+    def _looks_like_searchable_picker(self, prev_subgoal: Subgoal, ui_elements) -> bool:
+        field_hint = (prev_subgoal.parameters.get("__field_hint__") or "").lower().strip()
+        desc = (prev_subgoal.description or "").lower()
+        search_signal = any(k in field_hint or k in desc for k in (
+            "search", "find", "name", "number", "contact", "recipient", "participant", "member"
+        ))
+        if not search_signal:
+            return False
+        if not ui_elements:
+            return False
+        # Picker-like screens usually include scroll containers with clickable rows.
+        has_scroll = False
+        has_clickable_rows = False
+        for el in ui_elements:
+            cls = ""
+            if isinstance(el, dict):
+                cls = (el.get("className") or "").lower()
+                has_scroll = has_scroll or bool(el.get("scrollable") or el.get("isScrollable"))
+                has_clickable_rows = has_clickable_rows or bool(el.get("clickable") or el.get("isClickable"))
+            else:
+                cls = (getattr(el, "className", "") or "").lower()
+            has_scroll = has_scroll or any(k in cls for k in ("listview", "recyclerview", "scroll"))
+        return has_scroll and has_clickable_rows
+
+    def _has_selected_evidence(self, ui_elements, typed_entity: str) -> bool:
+        typed = typed_entity.lower().strip()
+        if not typed or not ui_elements:
+            return False
+        for el in ui_elements:
+            text = self._el_text(el).lower().strip()
+            if not text:
+                continue
+            if typed in text and any(k in text for k in ("selected", "checked", "is selected", "chosen", "added")):
+                return True
+        return False
+
+    def _find_clickable_entity_match(self, ui_elements, typed_entity: str) -> Optional[str]:
+        typed = typed_entity.lower().strip()
+        if not typed or not ui_elements:
+            return None
+        for el in ui_elements:
+            if not self._el_clickable(el):
+                continue
+            label = self._el_text(el).strip()
+            if not label:
+                continue
+            l = label.lower()
+            if l.startswith(typed) or typed in l:
+                # Avoid re-tapping the input field that contains the typed query.
+                if "edittext" in (self._el_class_name(el).lower()):
+                    continue
+                return label
+        return None
+
+    @staticmethod
+    def _el_class_name(el) -> str:
+        if isinstance(el, dict):
+            return el.get("className") or ""
+        return getattr(el, "className", "") or ""
 
     def _ui_has_recipient_suggestion_row(self, ui_elements) -> bool:
         """

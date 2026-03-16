@@ -3,7 +3,10 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.7.4
+pydantic-settings>=2.3.0
 python-dotenv==1.0.0
+aiofiles>=23.2.1
+slowapi>=0.1.9
 
 # AI Orchestration & Agents - Updated to latest stable versions
 crewai>=0.86.0
@@ -15,8 +18,10 @@ langchain-community==0.3.27
 groq==0.11.0
 google-genai>=1.0.0
 openai>=1.0.0  # For OpenRouter API (intent classification)
+litellm>=1.51.0
 
 # Policy Engine / Guardrails
+opa-python-client>=2.0.0
 regopy>=0.4.0             # Pure Python Rego interpreter for OPA policies
 
 # OmniParser CV + VLM Hybrid Perception
@@ -24,6 +29,8 @@ ultralytics>=8.0.0        # YOLOv8 for UI element detection
 huggingface-hub>=0.19.0   # Model download from HuggingFace
 opencv-python>=4.8.0      # Image processing for Set-of-Marks visualization
 numpy>=1.24.0             # Array operations
+Pillow>=10.0.0            # PIL image loading/manipulation
+PyYAML>=6.0.1             # Perception config parsing
 
 # Audio Processing
 speechrecognition==3.10.0
@@ -34,6 +41,7 @@ edge-tts>=6.1.0
 # HTTP Client
 httpx==0.25.2
 aiohttp==3.9.1
+requests>=2.31.0
 
 # Observability
 langsmith>=0.1.17,<0.4

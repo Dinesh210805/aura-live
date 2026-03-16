@@ -82,7 +82,7 @@ class Settings(BaseSettings):
         description="Default LLM provider (fast tasks)",
     )
     default_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
-        default="gemini",
+        default="groq",
         env="DEFAULT_VLM_PROVIDER",
         description="Default VLM provider (vision tasks)",
     )

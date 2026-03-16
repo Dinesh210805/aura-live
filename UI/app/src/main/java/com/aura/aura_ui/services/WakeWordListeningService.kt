@@ -27,6 +27,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**
@@ -61,8 +62,9 @@ class WakeWordListeningService : Service() {
     private var wakeWordDetector: WakeWordDetector? = null
     private var listeningModeController: ListeningModeController? = null
     private var wakeLock: PowerManager.WakeLock? = null
-    
+
     private var isWakeWordEnabled = false
+    private var activeModeSince = 0L  // timestamp when mode became ACTIVE, 0 = not active
 
     companion object {
         private const val TAG = "WakeWordService"
@@ -217,16 +219,18 @@ class WakeWordListeningService : Service() {
             
             when (newMode) {
                 ListeningMode.PASSIVE -> {
-                    // Start wake word detection
+                    activeModeSince = 0L
                     startWakeWordDetection()
                 }
                 ListeningMode.ACTIVE, ListeningMode.HITL -> {
+                    activeModeSince = System.currentTimeMillis()
                     // Stop wake word - STT will take over
                     stopWakeWordDetection()
                     // Show overlay and let it handle STT
-                    showOverlayAndStartSTT()
+                    if (oldMode != newMode) showOverlayAndStartSTT()
                 }
                 ListeningMode.OFF -> {
+                    activeModeSince = 0L
                     stopWakeWordDetection()
                 }
             }
@@ -283,7 +287,8 @@ class WakeWordListeningService : Service() {
         
         isWakeWordEnabled = true
         acquireWakeLock()
-        
+        startWatchdog()
+
         // Transition to PASSIVE mode (this triggers startWakeWordDetection via callback)
         val currentMode = listeningModeController?.currentMode?.value
         if (currentMode == ListeningMode.PASSIVE) {
@@ -293,10 +298,10 @@ class WakeWordListeningService : Service() {
         } else {
             listeningModeController?.transitionToPassive()
         }
-        
+
         updateNotification(true)
         saveWakeWordEnabled(true)
-        
+
         Log.i(TAG, "✅ Wake word detection enabled (detector listening: ${wakeWordDetector?.isListening?.value})")
     }
     
@@ -328,6 +333,25 @@ class WakeWordListeningService : Service() {
         }
     }
     
+    /**
+     * Watchdog: every 45 s, if we're stuck in ACTIVE mode (command never completed),
+     * force-return to PASSIVE so wake word can fire again.
+     */
+    private fun startWatchdog() {
+        serviceScope.launch {
+            while (isActive && isWakeWordEnabled) {
+                delay(45_000L)
+                val stuck = activeModeSince > 0L &&
+                    (System.currentTimeMillis() - activeModeSince) > 40_000L
+                if (stuck) {
+                    Log.w(TAG, "⚠️ Watchdog: stuck in ACTIVE for >40 s — forcing PASSIVE")
+                    listeningModeController?.transitionToPassive()
+                    activeModeSince = 0L
+                }
+            }
+        }
+    }
+
     private fun disableWakeWord() {
         if (!isWakeWordEnabled) return
         

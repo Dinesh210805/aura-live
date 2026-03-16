@@ -167,7 +167,10 @@ class ResponderAgent:
             goal_context = f"\nFULL GOAL: {goal_summary}"
         if completed_steps and len(completed_steps) > 1:
             # Multi-step task completed - emphasize the whole goal was done
-            steps_str = ", ".join(completed_steps[:5])  # First 5 steps
+            visible = completed_steps[:5]
+            steps_str = ", ".join(visible)
+            if len(completed_steps) > 5:
+                steps_str += f", and {len(completed_steps) - 5} more"
             goal_context += f"\nCOMPLETED STEPS: {steps_str}"
             goal_context += f"\nIMPORTANT: Acknowledge the ENTIRE goal was completed, not just the last step!"
         

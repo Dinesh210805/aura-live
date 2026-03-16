@@ -3,6 +3,7 @@ package com.aura.aura_ui.presentation.overlay
 import android.content.Context
 import android.util.Log
 import com.aura.aura_ui.accessibility.AuraAccessibilityService
+import com.aura.aura_ui.services.LiveUpdateNotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,10 +63,22 @@ class OverlayManager(
                 onPositionChanged = ::savePosition,
             )
 
-        // Observe state changes
+        // Observe state changes — drive both the overlay orb and the Live Update chip
         scope.launch {
             overlayState.collect { state ->
                 floatingOverlay?.updateExpandedState(state)
+
+                // Show/cancel the Live Update status bar chip based on phase.
+                // The chip carries execution status; the bubble stays compact.
+                when (state) {
+                    OverlayState.Processing ->
+                        LiveUpdateNotificationHelper.show(context, "Executing task...")
+                    OverlayState.Listening ->
+                        LiveUpdateNotificationHelper.cancel(context)
+                    OverlayState.Idle, OverlayState.Error ->
+                        LiveUpdateNotificationHelper.cancel(context)
+                    else -> { /* Speaking: leave chip visible until idle */ }
+                }
             }
         }
 

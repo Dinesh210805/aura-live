@@ -161,12 +161,15 @@ class GeminiLiveController(
         if (isConnected.get()) return@withContext true
 
         sessionId = UUID.randomUUID().toString()
+        val geminiVoice = context
+            .getSharedPreferences("aura_voice_settings", android.content.Context.MODE_PRIVATE)
+            .getString("gemini_live_voice", "Charon") ?: "Charon"
         val wsUrl = serverUrl
             .replace("http://", "ws://")
             .replace("https://", "wss://")
-            .trimEnd('/') + "/ws/live?session_id=$sessionId"
+            .trimEnd('/') + "/ws/live?session_id=$sessionId&voice=$geminiVoice"
 
-        Log.i(TAG, "Connecting to Gemini Live: $wsUrl")
+        Log.i(TAG, "Connecting to Gemini Live: $wsUrl (voice=$geminiVoice)")
 
         var connectionResult = false
         val latch = java.util.concurrent.CountDownLatch(1)
@@ -196,6 +199,7 @@ class GeminiLiveController(
 
                 override fun onFailure(ws: WebSocket, t: Throwable, response: Response?) {
                     Log.e(TAG, "WebSocket failure: ${t.message}")
+                    AuraAccessibilityService.instance?.restoreKeyboard()
                     isConnected.set(false)
                     connectionResult = false
                     latch.countDown()
@@ -207,12 +211,14 @@ class GeminiLiveController(
 
                 override fun onClosing(ws: WebSocket, code: Int, reason: String) {
                     Log.d(TAG, "WebSocket closing: $reason")
+                    AuraAccessibilityService.instance?.restoreKeyboard()
                     isConnected.set(false)
                     scope.launch { viewModel.updateServerConnection(false) }
                 }
 
                 override fun onClosed(ws: WebSocket, code: Int, reason: String) {
                     Log.d(TAG, "WebSocket closed: $reason")
+                    AuraAccessibilityService.instance?.restoreKeyboard()
                     isConnected.set(false)
                 }
             }
@@ -603,7 +609,10 @@ class GeminiLiveController(
         pendingUserTranscript.clear()
         if (text.isNotEmpty()) {
             scope.launch {
-                viewModel.addUserMessage(text)
+                // Use finalizeStreamingUserMessage so if the server already started a
+                // streaming bubble via partial transcripts, we finalize that same bubble
+                // instead of adding a duplicate message.
+                viewModel.finalizeStreamingUserMessage(text)
                 viewModel.updatePartialTranscript("")
             }
         }
@@ -693,38 +702,42 @@ class GeminiLiveController(
                     val isUser = json.optBoolean("is_user", false)
                     if (isUser && transcript.isNotEmpty()) {
                         if (!isFinal) {
-                            // Partial update — show live "what you're saying" in the wave
-                            // area but do NOT add to chat history yet. The server streams
-                            // progressively more accurate versions until turn_complete.
+                            // Partial user transcript — grow the bubble in place.
+                            // Also update partialTranscript so the waveform overlay
+                            // preview area shows what's being said.
                             //
                             // DO NOT call interruptPlaybackForBargein() here.
-                            // Gemini sends late/corrected input_transcription events for the
-                            // PREVIOUS user utterance while the AI is already responding.
-                            // Triggering barge-in on those cuts off the AI mid-sentence.
-                            // Real barge-in is handled by the server's "interrupted" message
-                            // (server_content.interrupted=True), which Gemini sets when it
-                            // actually detects new user speech during model output.
+                            // Gemini sends late/corrected input_transcription events for
+                            // the PREVIOUS utterance while AI is still responding.
+                            // Real barge-in is driven by the server "interrupted" message.
                             scope.launch(Dispatchers.Main) {
+                                viewModel.startOrUpdateStreamingUserMessage(transcript)
                                 viewModel.updatePartialTranscript(transcript)
                             }
                             Log.d(TAG, "User transcript partial: ${transcript.take(60)}")
                         } else {
-                            // Final corrected transcript arrives at turn_complete.
-                            // Add directly to chat — bypasses the pendingUserTranscript
-                            // buffer because flushPendingUserTranscript() runs before this
-                            // (when audio playback starts) and would otherwise lose it.
+                            // Final corrected transcript — finalize the growing bubble.
                             Log.d(TAG, "User transcript final: ${transcript.take(60)}")
                             pendingUserTranscript.clear()
                             scope.launch(Dispatchers.Main) {
-                                viewModel.addUserMessage(transcript)
+                                viewModel.finalizeStreamingUserMessage(transcript)
                                 viewModel.updatePartialTranscript("")
                             }
                         }
-                    } else if (!isUser && isFinal && transcript.isNotEmpty()) {
-                        // AI transcript arrives once per turn (is_final=true).
-                        // Add directly to chat — no buffering needed.
-                        Log.d(TAG, "AI transcript received: ${transcript.take(60)}")
-                        scope.launch { viewModel.addAssistantMessage(transcript) }
+                    } else if (!isUser) {
+                        if (!isFinal && transcript.isNotEmpty()) {
+                            // Partial AI transcript — grow the bubble in place.
+                            scope.launch(Dispatchers.Main) {
+                                viewModel.startOrUpdateStreamingAiMessage(transcript)
+                            }
+                            Log.d(TAG, "AI transcript partial: ${transcript.take(60)}")
+                        } else if (isFinal && transcript.isNotEmpty()) {
+                            // Final AI transcript — finalize the growing bubble.
+                            Log.d(TAG, "AI transcript final: ${transcript.take(60)}")
+                            scope.launch(Dispatchers.Main) {
+                                viewModel.finalizeStreamingAiMessage(transcript)
+                            }
+                        }
                     }
                 }
 
@@ -791,6 +804,8 @@ class GeminiLiveController(
                 "interrupted" -> {
                     Log.i(TAG, "🛑 Server interrupted signal — clearing audio queue")
                     interruptPlaybackForBargein()
+                    // Cancel any partial AI streaming bubble — it was cut off mid-sentence.
+                    scope.launch(Dispatchers.Main) { viewModel.cancelStreamingMessages() }
                 }
 
                 "pong" -> Log.v(TAG, "pong")

@@ -503,6 +503,24 @@ def _associate_sibling_labels(elements) -> dict:
     return label_map
 
 
+# AURA's own package names — filter these from the UI tree so the agent
+# never sees its own overlay elements mixed in with the target app's UI.
+_AURA_PACKAGES = {
+    "com.aura.aura_ui",
+    "com.aura.aura_ui.debug",
+    "com.aura.aura_ui.feature",
+    "com.aura.aura_ui.feature.debug",
+}
+
+
+def _is_aura_element(el) -> bool:
+    """Return True if this element belongs to AURA's own overlay."""
+    is_dict = isinstance(el, dict)
+    pkg = (el.get("packageName") or el.get("package") or "") if is_dict \
+          else (getattr(el, "packageName", None) or getattr(el, "package", None) or "")
+    return str(pkg) in _AURA_PACKAGES
+
+
 def format_ui_tree(elements) -> str:
     """Format UI tree elements into a rich reference string for VLM/LLM prompts.
 
@@ -511,13 +529,19 @@ def format_ui_tree(elements) -> str:
     so VLM agents can make accurate element selection and state-aware decisions.
 
     Handles raw Android dicts, Pydantic UIElement objects, and RealUIElement dataclasses.
+    AURA's own overlay elements are stripped so the agent only sees the target app.
     """
     if not elements:
         return "No UI tree data available."
 
-    label_map = _associate_sibling_labels(elements)
+    # Strip AURA's own overlay elements before anything else
+    filtered = [e for e in elements if not _is_aura_element(e)]
+    if not filtered:
+        return "No UI tree data available."
+
+    label_map = _associate_sibling_labels(filtered)
     lines = []
-    for i, el in enumerate(elements):
+    for i, el in enumerate(filtered):
         is_dict = isinstance(el, dict)
 
         def _g(*keys, _el=el, _is_dict=is_dict, default=None):

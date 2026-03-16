@@ -344,6 +344,10 @@ class ReactiveStepGenerator:
     # ── Recipient-field autocomplete detection ────────────────────────────────
 
     _RECIPIENT_FIELD_KEYWORDS = frozenset({"to", "recipient", "contact", "send to", "cc", "bcc"})
+    # Resource-id fragments that identify recipient input fields in common apps
+    _RECIPIENT_ID_FRAGMENTS = frozenset({"to", "recipient", "cc", "bcc", "contact", "email_to"})
+    # Regex to recognise an email address in a UI element's text
+    _EMAIL_RE = re.compile(r"[\w.+\-]+@[\w\-]+\.[a-z]{2,}", re.IGNORECASE)
 
     def _detect_autocomplete_suggestion(
         self,
@@ -362,6 +366,22 @@ class ReactiveStepGenerator:
         body field while the 'To' autocomplete dropdown is still showing — the
         VLM sees EDIT+FOCUSED on body and says "no blockers", skipping the
         mandatory tap.
+
+        Two independent detection strategies are combined with OR so that a
+        missing/empty field_hint (Strategy 1) does not silently disable the
+        whole check:
+
+        Strategy 1 — field-hint driven (original):
+            The previous Subgoal stored a __field_hint__ containing a recipient
+            keyword ("to", "cc", …).  Requires the planning LLM to emit that
+            field correctly.
+
+        Strategy 2 — typed-text / UI-state driven (NEW — FIX-015):
+            The typed text itself is an email address (contains "@"), which is
+            almost exclusively entered into To/recipient fields.  No dependency
+            on field_hint. Also fires when the UI tree contains a clickable
+            element whose resource-id fragment identifies it as a recipient
+            suggestion row, regardless of what field was focused.
         """
         if prev_subgoal is None:
             return None
@@ -373,12 +393,25 @@ class ReactiveStepGenerator:
         field_hint = (prev_subgoal.parameters.get("__field_hint__") or "").lower().strip()
         typed_text = (prev_subgoal.target or "").lower().strip()
 
-        if not any(kw in field_hint for kw in self._RECIPIENT_FIELD_KEYWORDS):
-            return None
         if not typed_text:
             return None
         if not ui_elements:
             return None
+
+        # ── Strategy 1: LLM-provided field_hint names a recipient field ──────
+        strategy1_match = any(kw in field_hint for kw in self._RECIPIENT_FIELD_KEYWORDS)
+
+        # ── Strategy 2: typed text is an email address (contains "@") ─────────
+        # Email addresses are virtually never entered outside of To/CC/BCC fields.
+        # Additionally scan the live UI tree: if any clickable element has a
+        # resource-id fragment that marks it as a suggestion row, treat that as
+        # a recipient-field context even when field_hint is absent.
+        strategy2_match = "@" in typed_text or self._ui_has_recipient_suggestion_row(ui_elements)
+
+        if not strategy1_match and not strategy2_match:
+            return None
+
+        detection_strategy = "field-hint" if strategy1_match else "email-pattern"
 
         # Scan for a clickable element whose text starts with or contains
         # the typed value (first match wins — suggestions are ranked by relevance).
@@ -391,8 +424,8 @@ class ReactiveStepGenerator:
             if el_text.lower().startswith(typed_text) or typed_text in el_text.lower():
                 from config.success_criteria import get_success_criteria
                 logger.info(
-                    f"🎯 Autocomplete override: tapping '{el_text}' "
-                    f"(typed='{typed_text}' in field='{field_hint}') — VLM bypassed"
+                    f"🎯 Autocomplete override [{detection_strategy}]: tapping '{el_text}' "
+                    f"(typed='{typed_text}', field='{field_hint or 'auto-detected'}') — VLM bypassed"
                 )
                 subgoal = Subgoal(
                     description=f"Tap autocomplete suggestion '{el_text}' to confirm recipient",
@@ -401,13 +434,35 @@ class ReactiveStepGenerator:
                     success_criteria=get_success_criteria("tap"),
                 )
                 subgoal.parameters["__autocomplete_override__"] = True
+                subgoal.parameters["__autocomplete_strategy__"] = detection_strategy
                 subgoal.parameters["__verification_passed__"] = True
                 subgoal.parameters["__verification_reason__"] = (
-                    f"Deterministic autocomplete: '{el_text}' matched typed '{typed_text}'"
+                    f"Deterministic autocomplete [{detection_strategy}]: "
+                    f"'{el_text}' matched typed '{typed_text}'"
                 )
                 return subgoal
 
         return None
+
+    def _ui_has_recipient_suggestion_row(self, ui_elements) -> bool:
+        """
+        Return True if the current UI tree contains a clickable element whose
+        resource-id fragment identifies it as a contact/recipient suggestion row.
+
+        This is a secondary signal for Strategy 2: even if the typed text is
+        not an email address, a visible suggestion row strongly implies the
+        previous type action targeted a recipient field.
+        """
+        for el in ui_elements:
+            if not self._el_clickable(el):
+                continue
+            res_id = self._el_resource_id(el).lower()
+            if any(frag in res_id for frag in self._RECIPIENT_ID_FRAGMENTS):
+                # Only count elements that also contain an email-looking string
+                el_text = self._el_text(el)
+                if self._EMAIL_RE.search(el_text):
+                    return True
+        return False
 
     @staticmethod
     def _el_clickable(el) -> bool:
@@ -428,6 +483,22 @@ class ReactiveStepGenerator:
             getattr(el, "text", None)
             or getattr(el, "content_description", None)
             or getattr(el, "contentDescription", None)
+            or ""
+        )
+
+    @staticmethod
+    def _el_resource_id(el) -> str:
+        if isinstance(el, dict):
+            return (
+                el.get("resourceId")
+                or el.get("resource_id")
+                or el.get("viewIdResourceName")
+                or ""
+            )
+        return (
+            getattr(el, "resource_id", None)
+            or getattr(el, "resourceId", None)
+            or getattr(el, "viewIdResourceName", None)
             or ""
         )
 

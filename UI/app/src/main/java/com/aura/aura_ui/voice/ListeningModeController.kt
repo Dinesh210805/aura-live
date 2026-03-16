@@ -92,18 +92,22 @@ class ListeningModeController private constructor(
     fun transitionToPassive() {
         val oldMode = _currentMode.value
         if (oldMode == ListeningMode.PASSIVE) {
-            Log.d(TAG, "Already in PASSIVE mode")
+            // Already PASSIVE but detector may have died — re-notify so service can restart it
+            Log.d(TAG, "Already in PASSIVE mode — re-arming detection")
+            scope.launch {
+                onModeChanged?.invoke(ListeningMode.PASSIVE, ListeningMode.PASSIVE)
+            }
             return
         }
-        
+
         Log.i(TAG, "⏸️ Transitioning $oldMode → PASSIVE")
-        
+
         // Stop STT first (if running)
         stopSTT()
-        
+
         // Update mode
         _currentMode.value = ListeningMode.PASSIVE
-        
+
         // Notify listeners
         scope.launch {
             onModeChanged?.invoke(oldMode, ListeningMode.PASSIVE)

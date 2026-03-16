@@ -19,7 +19,7 @@ class BootReceiver : BroadcastReceiver() {
     
     companion object {
         private const val TAG = "BootReceiver"
-        private const val PREFS_NAME = "aura_preferences"
+        private const val PREFS_NAME = "aura_settings"
         private const val KEY_WAKE_WORD_ENABLED = "wake_word_enabled"
     }
     

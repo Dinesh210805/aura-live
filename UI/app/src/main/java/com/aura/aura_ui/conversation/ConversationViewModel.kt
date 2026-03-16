@@ -36,7 +36,11 @@ class ConversationViewModel : ViewModel() {
 
     private val _messages = MutableStateFlow<List<ConversationMessage>>(emptyList())
     val messages: StateFlow<List<ConversationMessage>> = _messages.asStateFlow()
-    
+
+    // IDs of in-progress streaming bubbles (updated in place as words arrive)
+    private var streamingUserMessageId: String? = null
+    private var streamingAiMessageId: String? = null
+
     // Agent outputs for "thinking" trace - shows agent pipeline activity
     private val _agentOutputs = MutableStateFlow<List<AgentOutput>>(emptyList())
     val agentOutputs: StateFlow<List<AgentOutput>> = _agentOutputs.asStateFlow()
@@ -55,6 +59,8 @@ class ConversationViewModel : ViewModel() {
      */
     fun startSession(sessionId: String = UUID.randomUUID().toString()) {
         Log.d(TAG, "Starting conversation session: $sessionId")
+        streamingUserMessageId = null
+        streamingAiMessageId = null
         _state.value =
             _state.value.copy(
                 sessionId = sessionId,
@@ -105,6 +111,101 @@ class ConversationViewModel : ViewModel() {
                 )
             _messages.value = _messages.value + message
             Log.d(TAG, "Assistant message added: $response")
+        }
+    }
+
+    /**
+     * Start or update a streaming user message bubble (grows in place as words arrive).
+     * Call with each partial transcript fragment; the same bubble is updated each time.
+     */
+    fun startOrUpdateStreamingUserMessage(text: String) {
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val id = streamingUserMessageId
+            if (id == null) {
+                val newId = UUID.randomUUID().toString()
+                streamingUserMessageId = newId
+                _messages.value = _messages.value + ConversationMessage(
+                    id = newId, text = text, isUser = true, isStreaming = true
+                )
+            } else {
+                _messages.value = _messages.value.map { if (it.id == id) it.copy(text = text) else it }
+            }
+        }
+    }
+
+    /**
+     * Finalize the in-progress streaming user bubble with the definitive transcript text.
+     * If no streaming bubble exists, adds a normal message instead.
+     */
+    fun finalizeStreamingUserMessage(text: String) {
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val id = streamingUserMessageId
+            streamingUserMessageId = null
+            if (id != null) {
+                _messages.value = _messages.value.map {
+                    if (it.id == id) it.copy(text = text, isStreaming = false) else it
+                }
+            } else {
+                _messages.value = _messages.value + ConversationMessage(text = text, isUser = true)
+            }
+        }
+    }
+
+    /**
+     * Start or update a streaming AI message bubble (grows in place as words arrive).
+     */
+    fun startOrUpdateStreamingAiMessage(text: String) {
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val id = streamingAiMessageId
+            if (id == null) {
+                val newId = UUID.randomUUID().toString()
+                streamingAiMessageId = newId
+                _messages.value = _messages.value + ConversationMessage(
+                    id = newId, text = text, isUser = false, isStreaming = true
+                )
+            } else {
+                _messages.value = _messages.value.map { if (it.id == id) it.copy(text = text) else it }
+            }
+        }
+    }
+
+    /**
+     * Finalize the in-progress streaming AI bubble with the definitive transcript text.
+     * If no streaming bubble exists, adds a normal message instead.
+     */
+    fun finalizeStreamingAiMessage(text: String) {
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val id = streamingAiMessageId
+            streamingAiMessageId = null
+            if (id != null) {
+                _messages.value = _messages.value.map {
+                    if (it.id == id) it.copy(text = text, isStreaming = false) else it
+                }
+            } else {
+                _messages.value = _messages.value + ConversationMessage(text = text, isUser = false)
+            }
+        }
+    }
+
+    /**
+     * Cancel any in-progress streaming bubbles (e.g. on barge-in or session end).
+     * Removes partial-only messages; keeps finalized ones.
+     */
+    fun cancelStreamingMessages() {
+        viewModelScope.launch {
+            val userIdToRemove = streamingUserMessageId
+            val aiIdToRemove = streamingAiMessageId
+            streamingUserMessageId = null
+            streamingAiMessageId = null
+            if (userIdToRemove != null || aiIdToRemove != null) {
+                _messages.value = _messages.value.filter {
+                    it.id != userIdToRemove && it.id != aiIdToRemove
+                }
+            }
         }
     }
 

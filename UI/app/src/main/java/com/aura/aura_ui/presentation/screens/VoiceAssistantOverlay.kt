@@ -1142,14 +1142,16 @@ private fun InputBar(
                         colors = colors,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    // Show live transcript text while user speaks, or phase label.
-                    // For Gemini Live: PROCESSING = task automation running (not conversational).
+                    // Phase verb shown beneath the waveform.
+                    // LISTENING with no transcript → empty: the waveform animation already
+                    // communicates listening state; showing "Listening" alongside the mic
+                    // button is redundant and the user explicitly doesn't want it.
                     val phaseLabel = when {
                         state.isListening && state.partialTranscript.isNotBlank() ->
                             state.partialTranscript
-                        state.isListening -> "Listening"
-                        state.isProcessing -> if (state.isGeminiLiveSession) "Executing task..." else "Thinking"
-                        state.isResponding -> "Speaking"
+                        state.isListening -> ""
+                        state.isProcessing -> if (state.isGeminiLiveSession) "Executing task..." else "Thinking..."
+                        state.isResponding -> "Speaking..."
                         else -> ""
                     }
                     if (phaseLabel.isNotBlank()) {

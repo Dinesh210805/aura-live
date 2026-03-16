@@ -493,6 +493,7 @@ async def execute_aura_task_from_streaming(
     Returns:
         Final task state.
     """
+    cmd_logger = None
     try:
         logger.info(
             f"Executing streaming task (thread: {thread_id}, session: {session_id})"
@@ -634,7 +635,7 @@ async def execute_aura_task_from_streaming(
         logger.error(f"Failed to execute AURA streaming task: {e}")
         # Finalize and clear logger on error too
         try:
-            if 'cmd_logger' in locals() and cmd_logger:
+            if cmd_logger:
                 cmd_logger.finalize(status="error")
         except Exception as finalize_err:
             logger.error(f"Failed to finalize command log on error: {finalize_err}")
@@ -673,9 +674,10 @@ async def execute_aura_task_from_text(
     Returns:
         Final task state.
     """
+    cmd_logger = None
     try:
         logger.info(f"Executing text task (thread: {thread_id})")
-        
+
         # Create NEW log file for this execution
         exec_config = config or {}
         should_track = track_workflow or exec_config.get("track_workflow", False)
@@ -786,7 +788,7 @@ async def execute_aura_task_from_text(
         logger.error(f"Graph execution failed: {e}")
         # Finalize and clear logger on error too
         try:
-            if 'cmd_logger' in locals() and cmd_logger:
+            if cmd_logger:
                 cmd_logger.finalize(status="error")
         except Exception as finalize_err:
             logger.error(f"Failed to finalize command log on error: {finalize_err}")
@@ -797,7 +799,7 @@ async def execute_aura_task_from_text(
             "status": "failed",
             "error_message": f"Task execution failed: {str(e)}",
             "spoken_response": "I'm sorry, I encountered an error processing your request.",
-            "execution_time": time.time() - time.time(),
+            "execution_time": time.time() - (start_time if "start_time" in locals() else time.time()),
             "debug_info": {"error": str(e), "type": type(e).__name__},
         }
 
@@ -817,9 +819,10 @@ async def execute_aura_task(
     Returns:
         Final task state.
     """
+    cmd_logger = None
     try:
         logger.info(f"Executing audio task (thread: {thread_id})")
-        
+
         initial_state = _create_initial_state(
             input_type="audio", raw_audio=raw_audio, config=config
         )
@@ -894,7 +897,7 @@ async def execute_aura_task(
         logger.error(f"Task execution failed: {e}")
         # Finalize and clear logger on error too
         try:
-            if 'cmd_logger' in locals() and cmd_logger:
+            if cmd_logger:
                 cmd_logger.finalize(status="error")
         except Exception as finalize_err:
             logger.error(f"Failed to finalize command log on error: {finalize_err}")

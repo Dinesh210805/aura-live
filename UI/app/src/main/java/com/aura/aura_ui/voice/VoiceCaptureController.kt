@@ -151,6 +151,8 @@ class VoiceCaptureController(
                                 response: Response?,
                             ) {
                                 Log.e(TAG, "WebSocket error: ${t.message}")
+                                // Restore keyboard so it's never permanently hidden after a drop
+                                AuraAccessibilityService.instance?.restoreKeyboard()
                                 scope.launch {
                                     viewModel.updateServerConnection(false)
                                     viewModel.setError("Connection failed: ${t.message}")
@@ -164,6 +166,8 @@ class VoiceCaptureController(
                                 reason: String,
                             ) {
                                 Log.d(TAG, "WebSocket closing: $reason")
+                                // Session ending — restore keyboard so IME is available again
+                                AuraAccessibilityService.instance?.restoreKeyboard()
                                 scope.launch {
                                     viewModel.updateServerConnection(false)
                                 }

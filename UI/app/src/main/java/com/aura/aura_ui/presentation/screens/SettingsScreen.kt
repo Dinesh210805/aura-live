@@ -114,13 +114,17 @@ fun AuraSettingsScreen(
         val voiceId = voicePrefs.getString("selected_voice_id", "en-US-AriaNeural") ?: "en-US-AriaNeural"
         mutableStateOf(getVoiceDisplayName(voiceId))
     }
-    
-    // Refresh voice name when returning from voice settings
+    var geminiLiveVoiceName by remember {
+        mutableStateOf(voicePrefs.getString("gemini_live_voice", "Charon") ?: "Charon")
+    }
+
+    // Refresh voice names when returning from voice settings
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 val voiceId = voicePrefs.getString("selected_voice_id", "en-US-AriaNeural") ?: "en-US-AriaNeural"
                 selectedVoiceName = getVoiceDisplayName(voiceId)
+                geminiLiveVoiceName = voicePrefs.getString("gemini_live_voice", "Charon") ?: "Charon"
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -289,7 +293,7 @@ fun AuraSettingsScreen(
                     icon = Icons.Default.AutoAwesome,
                     iconTint = if (isDark) Color(0xFF4285F4) else Color(0xFF1A73E8),
                     title = "Gemini Live Mode",
-                    subtitle = "Bidirectional audio via Gemini 2.0",
+                    subtitle = "Voice: $geminiLiveVoiceName · Bidirectional audio",
                     isEnabled = geminiLiveEnabled,
                     onToggle = { enabled ->
                         geminiLiveEnabled = enabled

@@ -150,6 +150,12 @@ class FloatingMicOverlay(
     }
 
     fun updateExpandedState(state: OverlayState) {
+        // Per Google Live Update design guidelines: the bubble must NOT expand
+        // during automation (Processing). Force-collapse and let the system
+        // Live Update notification chip carry the status instead.
+        if (state == OverlayState.Processing && isExpanded) {
+            collapsePanel()
+        }
         expandedPanel?.updateState(state)
     }
 
@@ -472,77 +478,81 @@ class SiriOrbView(context: Context) : View(context) {
         val centerY = height / 2f
         val maxBarHeight = height / 2.5f
 
-        // Draw Siri's iconic multicolor waveform
-        if (currentState is VoiceSessionState.Listening ||
-            currentState is VoiceSessionState.Processing ||
-            currentState is VoiceSessionState.Responding
-        ) {
-            // Draw waveform bars with Siri colors
-            val barWidth = width.toFloat() / waveformBars
-
-            for (i in 0 until waveformBars) {
-                val x = i * barWidth + barWidth / 2
-                val barHeight = barHeights[i] * maxBarHeight * (1f + amplitude * 0.5f)
-
-                // Color based on position in gradient
-                val colorIndex =
-                    (i.toFloat() / waveformBars * siriColors.size).toInt()
+        when {
+            // Waveform ONLY during active audio: user speaking or AI speaking.
+            // Processing (automation) must NOT trigger the waveform — the orb
+            // must stay compact per Google Live Update design guidelines.
+            currentState is VoiceSessionState.Listening ||
+            currentState is VoiceSessionState.Responding -> {
+                val barWidth = width.toFloat() / waveformBars
+                for (i in 0 until waveformBars) {
+                    val x = i * barWidth + barWidth / 2
+                    val barHeight = barHeights[i] * maxBarHeight * (1f + amplitude * 0.5f)
+                    val colorIndex = (i.toFloat() / waveformBars * siriColors.size).toInt()
                         .coerceIn(0, siriColors.size - 1)
-                waveformPaint.color = siriColors[colorIndex]
+                    waveformPaint.color = siriColors[colorIndex]
+                    val halfHeight = barHeight / 2
+                    canvas.drawRoundRect(
+                        x - barWidth * 0.25f,
+                        centerY - halfHeight,
+                        x + barWidth * 0.25f,
+                        centerY + halfHeight,
+                        barWidth * 0.25f,
+                        barWidth * 0.25f,
+                        waveformPaint,
+                    )
+                }
+            }
 
-                // Draw vertical bar
-                val halfHeight = barHeight / 2
-                canvas.drawRoundRect(
-                    x - barWidth * 0.25f,
-                    centerY - halfHeight,
-                    x + barWidth * 0.25f,
-                    centerY + halfHeight,
-                    barWidth * 0.25f,
-                    barWidth * 0.25f,
-                    waveformPaint,
+            // Processing (automation running): compact pulsing ring — stays the
+            // same size as the idle orb. The Live Update notification chip in the
+            // status bar carries the execution status instead.
+            currentState is VoiceSessionState.Processing -> {
+                val radius = min(width, height) / 3f
+                val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+
+                // Subtle amber glow to signal "working" without expanding
+                glowPaint.color = Color.parseColor("#30F59E0B")
+                canvas.drawCircle(centerX, centerY, radius * 1.4f, glowPaint)
+                glowPaint.color = Color.parseColor("#50F59E0B")
+                canvas.drawCircle(centerX, centerY, radius * 1.1f, glowPaint)
+
+                // Solid amber orb — same compact size as idle
+                orbPaint.shader = null
+                orbPaint.color = Color.parseColor("#F59E0B")
+                canvas.drawCircle(centerX, centerY, radius, orbPaint)
+
+                // Glass highlight
+                val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.WHITE; alpha = 60
+                }
+                canvas.drawCircle(
+                    centerX - radius * 0.3f, centerY - radius * 0.3f,
+                    radius * 0.4f, highlightPaint,
                 )
             }
-        } else {
-            // Draw simple glowing orb when idle (Siri-style)
-            val radius = min(width, height) / 3f
 
-            // Outer glow layers
-            val glowPaint =
-                Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    style = Paint.Style.FILL
+            // Idle: simple glowing orb (Siri-style)
+            else -> {
+                val radius = min(width, height) / 3f
+                val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+                glowPaint.color = Color.parseColor("#20FFFFFF")
+                canvas.drawCircle(centerX, centerY, radius * 1.4f, glowPaint)
+                glowPaint.color = Color.parseColor("#40C0C0C0")
+                canvas.drawCircle(centerX, centerY, radius * 1.2f, glowPaint)
+
+                val gradient = SweepGradient(centerX, centerY, siriColors, null)
+                orbPaint.shader = gradient
+                canvas.drawCircle(centerX, centerY, radius, orbPaint)
+
+                val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.WHITE; alpha = 80
                 }
-
-            // Multiple glow layers for soft effect
-            glowPaint.color = Color.parseColor("#20FFFFFF")
-            canvas.drawCircle(centerX, centerY, radius * 1.4f, glowPaint)
-
-            glowPaint.color = Color.parseColor("#40C0C0C0")
-            canvas.drawCircle(centerX, centerY, radius * 1.2f, glowPaint)
-
-            // Create multicolor gradient orb
-            val gradient =
-                SweepGradient(
-                    centerX,
-                    centerY,
-                    siriColors,
-                    null,
+                canvas.drawCircle(
+                    centerX - radius * 0.3f, centerY - radius * 0.3f,
+                    radius * 0.4f, highlightPaint,
                 )
-
-            orbPaint.shader = gradient
-            canvas.drawCircle(centerX, centerY, radius, orbPaint)
-
-            // Add glass highlight
-            val highlightPaint =
-                Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    color = Color.WHITE
-                    alpha = 80
-                }
-            canvas.drawCircle(
-                centerX - radius * 0.3f,
-                centerY - radius * 0.3f,
-                radius * 0.4f,
-                highlightPaint,
-            )
+            }
         }
     }
 }

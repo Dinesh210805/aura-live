@@ -77,6 +77,7 @@ import com.aura.aura_ui.presentation.screens.VoiceAssistantCallbacks
 import com.aura.aura_ui.presentation.screens.VoiceAssistantOverlay
 import com.aura.aura_ui.presentation.screens.VoiceAssistantState
 import com.aura.aura_ui.ui.theme.AuraUITheme
+import com.aura.aura_ui.voice.ListeningModeController
 import com.aura.aura_ui.voice.VoiceCaptureController
 import com.aura.aura_ui.functiongemma.FunctionGemmaManager
 import dagger.hilt.EntryPoint
@@ -1230,6 +1231,8 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
                     }
                     else -> { }
                 }
+                // Always return to PASSIVE so wake word re-arms after dismiss
+                ListeningModeController.getInstance(this@AuraOverlayService).transitionToPassive()
                 hide(this@AuraOverlayService)
             },
             onMicClick = {

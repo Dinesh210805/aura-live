@@ -110,6 +110,12 @@ fun FloatingAssistantBubble(
         label = "bubble_size"
     )
     
+    // Bubble must stay collapsed while the AI is actively working.
+    // THINKING / RESPONDING / any isProcessing state = no user interaction needed.
+    val forceCollapsed = state.isProcessing ||
+        state.phase == ConversationPhase.THINKING ||
+        state.phase == ConversationPhase.RESPONDING
+
     Box(
         modifier = modifier
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
@@ -122,7 +128,7 @@ fun FloatingAssistantBubble(
             }
     ) {
         AnimatedContent(
-            targetState = state.isExpanded,
+            targetState = state.isExpanded && !forceCollapsed,
             transitionSpec = {
                 fadeIn(animationSpec = tween(200)) togetherWith
                         fadeOut(animationSpec = tween(200))
@@ -187,67 +193,80 @@ private fun CollapsedBubble(
         else -> BubbleColors.Primary
     }
     
-    Box(
-        modifier = modifier
-            .size(64.dp)
-            .graphicsLayer {
-                scaleX = pulseScale
-                scaleY = pulseScale
-            }
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // Outer glow
+        // Orb
         Box(
             modifier = Modifier
                 .size(64.dp)
-                .graphicsLayer { alpha = glowAlpha }
-                .shadow(16.dp, CircleShape)
-                .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            stateColor.copy(alpha = 0.6f),
-                            stateColor.copy(alpha = 0.1f),
-                            Color.Transparent
-                        )
-                    )
-                )
-        )
-        
-        // Main bubble
-        Surface(
-            modifier = Modifier.size(56.dp),
-            shape = CircleShape,
-            color = BubbleColors.Background,
-            shadowElevation = 8.dp,
-            tonalElevation = 4.dp
+                .graphicsLayer {
+                    scaleX = pulseScale
+                    scaleY = pulseScale
+                }
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
         ) {
+            // Outer glow
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .size(64.dp)
+                    .graphicsLayer { alpha = glowAlpha }
+                    .shadow(16.dp, CircleShape)
+                    .clip(CircleShape)
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                stateColor.copy(alpha = 0.2f),
-                                BubbleColors.Background
+                                stateColor.copy(alpha = 0.6f),
+                                stateColor.copy(alpha = 0.1f),
+                                Color.Transparent
                             )
                         )
-                    ),
-                contentAlignment = Alignment.Center
+                    )
+            )
+
+            // Main bubble
+            Surface(
+                modifier = Modifier.size(56.dp),
+                shape = CircleShape,
+                color = BubbleColors.Background,
+                shadowElevation = 8.dp,
+                tonalElevation = 4.dp
             ) {
-                Icon(
-                    imageVector = when {
-                        state.isListening -> Icons.Default.Mic
-                        state.isProcessing -> Icons.Default.AutoAwesome
-                        else -> Icons.Default.AutoAwesome
-                    },
-                    contentDescription = "AURA",
-                    tint = stateColor,
-                    modifier = Modifier.size(28.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    stateColor.copy(alpha = 0.2f),
+                                    BubbleColors.Background
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = when {
+                            // GraphicEq = sound-bar waveform — no mic icon alongside text
+                            state.isListening -> Icons.Default.GraphicEq
+                            // VolumeUp makes it clear AURA is currently speaking
+                            state.phase == ConversationPhase.RESPONDING -> Icons.Default.VolumeUp
+                            // AutoAwesome covers THINKING, EXECUTING, IDLE
+                            else -> Icons.Default.AutoAwesome
+                        },
+                        contentDescription = "AURA",
+                        tint = stateColor,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
         }
+
+        // Phase alert pill — compact label shown beneath the orb, no expansion needed
+        LiveAlertPill(state = state, stateColor = stateColor)
     }
 }
 
@@ -518,6 +537,60 @@ private fun BubbleProcessingIndicator(
             text = "Thinking...",
             style = MaterialTheme.typography.labelSmall,
             color = BubbleColors.Processing
+        )
+    }
+}
+
+// ============================================================================
+// LIVE ALERT PILL
+// Compact phase-label shown beneath the collapsed orb.
+// Defines the verb for each phase — no expansion required.
+// ============================================================================
+
+/**
+ * Phase alert verbs:
+ *   LISTENING  → "Listening" (or partial transcript if available)
+ *   THINKING   → "Thinking..."
+ *   EXECUTING  → "Executing..."   (isProcessing outside Gemini Live)
+ *   RESPONDING → "Speaking"
+ *   ERROR      → "Error"
+ *   IDLE       → (hidden)
+ */
+@Composable
+private fun LiveAlertPill(
+    state: FloatingBubbleState,
+    stateColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val alertText = when {
+        state.phase == ConversationPhase.LISTENING && state.partialTranscript.isNotBlank() ->
+            state.partialTranscript
+                .take(22)
+                .let { if (state.partialTranscript.length > 22) "$it…" else it }
+        state.phase == ConversationPhase.LISTENING -> "Listening"
+        state.isProcessing -> "Executing..."
+        state.phase == ConversationPhase.THINKING -> "Thinking..."
+        state.phase == ConversationPhase.RESPONDING -> "Speaking"
+        state.phase == ConversationPhase.ERROR -> "Error"
+        else -> ""
+    }
+
+    AnimatedVisibility(
+        visible = alertText.isNotBlank(),
+        enter = fadeIn(animationSpec = tween(200)) + expandVertically(),
+        exit = fadeOut(animationSpec = tween(150)) + shrinkVertically(),
+        modifier = modifier,
+    ) {
+        Text(
+            text = alertText,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+            color = stateColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(stateColor.copy(alpha = 0.15f))
+                .padding(horizontal = 8.dp, vertical = 3.dp)
         )
     }
 }

@@ -26,6 +26,14 @@ def update_status(existing: Optional[str], new: str) -> str:
     return new
 
 
+# Custom reducer for end_time - first writer wins (preserve actual completion time)
+def set_once(existing: Optional[float], new: float) -> float:
+    """Accept the first non-None value; ignore subsequent writes."""
+    if existing is not None:
+        return existing
+    return new
+
+
 # Custom reducer for current_step - take maximum value
 def update_step(existing: Optional[int], new: int) -> int:
     """Update current step with maximum value to handle concurrent updates."""
@@ -105,8 +113,8 @@ class TaskState(TypedDict):
     start_time: Optional[float]
     """Timestamp when the task started processing."""
 
-    end_time: Annotated[Optional[float], update_status]
-    """Timestamp when the task completed or failed."""
+    end_time: Annotated[Optional[float], set_once]
+    """Timestamp when the task completed or failed. Uses first-writer-wins to preserve actual completion time."""
 
     task_id: Optional[str]
     """Unique identifier for this task instance."""

@@ -235,17 +235,7 @@ class GestureExecutor:
 
     async def _execute_tap(self, action: Dict[str, Any]) -> GestureResult:
         """Execute tap gesture with explicit pixel coordinates."""
-        # Phase 5: Require explicit format field
-        coord_format = action.get("format")
-        if not coord_format:
-            logger.error("❌ Missing format field in tap action")
-            return GestureResult(
-                success=False,
-                gesture_type="tap",
-                execution_time=0,
-                strategy_used="none",
-                error="Missing format field - coordinates must declare format"
-            )
+        coord_format = action.get("format") or "pixels"
         
         coordinates = self._extract_coordinates(action)
         if not coordinates:
@@ -292,17 +282,7 @@ class GestureExecutor:
 
     async def _execute_swipe(self, action: Dict[str, Any]) -> GestureResult:
         """Execute swipe gesture with explicit pixel coordinates."""
-        # Phase 5: Require explicit format field
-        coord_format = action.get("format")
-        if not coord_format:
-            logger.error("❌ Missing format field in swipe action")
-            return GestureResult(
-                success=False,
-                gesture_type="swipe",
-                execution_time=0,
-                strategy_used="none",
-                error="Missing format field - coordinates must declare format"
-            )
+        coord_format = action.get("format") or "pixels"
         
         # Extract coordinates - support multiple formats
         coords = action.get("coordinates", {})
@@ -326,6 +306,15 @@ class GestureExecutor:
             x2, y2 = action["x2"], action["y2"]
         
         if x1 is None or y1 is None or x2 is None or y2 is None:
+            # No explicit coordinates — check for direction-based swipe (e.g. target="up")
+            direction = (
+                action.get("direction")
+                or action.get("target")
+                or action.get("parameters", {}).get("direction", "")
+            )
+            if direction and str(direction).lower() in ("up", "down", "left", "right"):
+                logger.info(f"📍 Swipe with no coords — routing to scroll direction={direction}")
+                return await self._execute_scroll({**action, "direction": str(direction).lower()})
             return GestureResult(
                 success=False,
                 gesture_type="swipe",
@@ -423,17 +412,7 @@ class GestureExecutor:
 
     async def _execute_long_press(self, action: Dict[str, Any]) -> GestureResult:
         """Execute long press gesture with explicit pixel coordinates."""
-        # Phase 5: Require explicit format field
-        coord_format = action.get("format")
-        if not coord_format:
-            logger.error("❌ Missing format field in long_press action")
-            return GestureResult(
-                success=False,
-                gesture_type="long_press",
-                execution_time=0,
-                strategy_used="none",
-                error="Missing format field - coordinates must declare format"
-            )
+        coord_format = action.get("format") or "pixels"
         
         coordinates = self._extract_coordinates(action)
         if not coordinates:
@@ -477,7 +456,11 @@ class GestureExecutor:
         )
 
     async def _execute_type(self, action: Dict[str, Any]) -> GestureResult:
-        """Execute text input."""
+        """Execute text input, optionally followed by Enter/Search IME action.
+
+        Set ``auto_submit: true`` in the action dict to automatically press
+        Enter after typing (useful for search bars and single-field forms).
+        """
         text = action.get("text") or action.get("content", "")
         if not text:
             return GestureResult(
@@ -487,22 +470,30 @@ class GestureExecutor:
                 strategy_used="none",
                 error="No text provided"
             )
-        
+
         gesture_data = {
             "action": "type",
             "text": text,
             "timestamp": time.time()
         }
-        
+
         strategy, success, error = await self._send_gesture(gesture_data)
-        
+
+        # Optional: press Enter/Search after typing (e.g. search bars, single-field forms)
+        if success and action.get("auto_submit", False):
+            await asyncio.sleep(0.3)  # brief pause so the IME registers the text
+            enter_data = {"action": "press_enter", "timestamp": time.time()}
+            _, enter_ok, enter_err = await self._send_gesture(enter_data)
+            if not enter_ok:
+                logger.warning(f"auto_submit Enter failed: {enter_err}")
+
         return GestureResult(
             success=success,
             gesture_type="type",
             execution_time=0,
             strategy_used=strategy,
             error=error,
-            details={"text_length": len(text)}
+            details={"text_length": len(text), "auto_submit": action.get("auto_submit", False)}
         )
 
     async def _execute_app_launch(self, action: Dict[str, Any]) -> GestureResult:
@@ -756,6 +747,11 @@ class GestureExecutor:
             # Screenshot
             "screenshot": "screenshot",
             "take_screenshot": "screenshot",
+            # Keyboard / IME
+            "press_enter": "press_enter",
+            "press_search": "press_search",
+            "dismiss_keyboard": "dismiss_keyboard",
+            "restore_keyboard": "restore_keyboard",
         }
         
         mapped_action = system_action_map.get(action_type)

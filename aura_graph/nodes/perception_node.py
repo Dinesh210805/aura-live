@@ -143,21 +143,24 @@ async def perception_node(state: TaskState) -> Dict[str, Any]:
                     )
                     # Success - break out of retry loop
                     break
-                except ValueError as e:
+                except (ValueError, asyncio.TimeoutError, ConnectionError, OSError) as e:
                     last_error = e
                     error_msg = str(e)
-                    
-                    # Check if it's an empty UI tree error (app still loading)
-                    if "no elements" in error_msg.lower() or "empty" in error_msg.lower():
-                        if attempt < PERCEPTION_MAX_RETRIES:
-                            logger.warning(
-                                f"⏳ Perception attempt {attempt}/{PERCEPTION_MAX_RETRIES} failed "
-                                f"(UI tree empty), retrying in {PERCEPTION_RETRY_DELAY_SECONDS}s..."
-                            )
-                            await asyncio.sleep(PERCEPTION_RETRY_DELAY_SECONDS)
-                            continue
-                    
-                    # Other errors - fail immediately
+
+                    # Always retry on transient network/timeout errors
+                    is_transient = isinstance(e, (asyncio.TimeoutError, ConnectionError, OSError))
+                    # Retry on empty UI tree errors (app still loading)
+                    is_empty_tree = "no elements" in error_msg.lower() or "empty" in error_msg.lower()
+
+                    if (is_transient or is_empty_tree) and attempt < PERCEPTION_MAX_RETRIES:
+                        logger.warning(
+                            f"⏳ Perception attempt {attempt}/{PERCEPTION_MAX_RETRIES} failed "
+                            f"({type(e).__name__}), retrying in {PERCEPTION_RETRY_DELAY_SECONDS}s..."
+                        )
+                        await asyncio.sleep(PERCEPTION_RETRY_DELAY_SECONDS)
+                        continue
+
+                    # Non-retryable ValueError or exhausted retries - fail
                     raise
             
             if bundle is None:

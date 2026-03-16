@@ -38,6 +38,7 @@ Enable with:
 import asyncio
 import base64
 import logging
+import re
 from typing import Optional
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -46,6 +47,30 @@ from utils.logger import get_logger
 from services.command_logger import get_command_logger, clear_execution_logger
 
 logger = get_logger(__name__)
+
+# ---------------------------------------------------------------------------
+# Thinking-content filter
+# ---------------------------------------------------------------------------
+# Gemini 2.5 (and other thinking-capable models) emit reasoning tokens as
+# text parts BEFORE generating the spoken audio response. These are internal
+# chain-of-thought fragments and must never be shown in the chat transcript.
+# They are identifiable by markdown bold headings (**Heading**) and verbose
+# reasoning prose that the model never actually speaks aloud.
+
+_THINKING_HEADER_RE = re.compile(r"^\*\*[^*\n]+\*\*", re.MULTILINE)
+
+
+def _is_thinking_content(text: str) -> bool:
+    """Return True if *text* looks like model reasoning rather than spoken output."""
+    stripped = text.strip()
+    # Pattern 1: starts with a **Bold Title** (chain-of-thought section header)
+    if _THINKING_HEADER_RE.match(stripped):
+        return True
+    # Pattern 2: contains multiple **Bold** headers inline (thinking paragraphs)
+    if len(_THINKING_HEADER_RE.findall(stripped)) >= 2:
+        return True
+    return False
+
 
 # ---------------------------------------------------------------------------
 # ADK imports — guarded so the server still starts if google-adk is absent
@@ -69,6 +94,7 @@ try:
     from google.adk.agents.live_request_queue import LiveRequestQueue as _LiveRequestQueue  # type: ignore[assignment]
     from google.adk.agents.run_config import RunConfig as _RunConfig, StreamingMode as _StreamingMode  # type: ignore[assignment]
     from google.genai.types import Blob as _Blob, Part as _Part, Content as _Content, Modality as _Modality  # type: ignore[assignment]
+    from google.genai.types import SpeechConfig as _SpeechConfig, VoiceConfig as _VoiceConfig, PrebuiltVoiceConfig as _PrebuiltVoiceConfig  # type: ignore[assignment]
 
     # VAD / turn-detection types (available in google-genai ≥ 0.8)
     try:
@@ -177,6 +203,11 @@ After execute_aura_task:
   - success=false: briefly explain and suggest rephrasing.
 
 Style: short spoken sentences, no lists, no markdown.
+
+LANGUAGE RULE:
+  - Always respond in the same language the user spoke. If the user speaks Malayalam, respond in Malayalam. If English, respond in English.
+  - NEVER translate the user's speech or your own responses to a different language unless explicitly asked.
+  - The transcript displayed to the user must reflect the actual spoken language — do not transliterate or convert scripts.
 """,
             tools=[aura_tool] if aura_tool is not None else [],
         )
@@ -207,7 +238,7 @@ Style: short spoken sentences, no lists, no markdown.
 # ---------------------------------------------------------------------------
 
 
-async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
+async def handle_live_websocket(websocket: WebSocket, session_id: str, voice: str | None = None) -> None:
     """
     Bidirectional Gemini Live session handler for a connected Android device.
 
@@ -280,10 +311,11 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
 
     # ── Build RunConfig with VAD and transcription ────────────────────────────
     # VAD settings:
-    #   prefix_padding_ms=200  — 200 ms of sustained speech before turn starts.
+    #   prefix_padding_ms=100  — 100 ms of sustained speech before turn starts.
     #                            Low enough to catch short commands; still filters
-    #                            brief echo bursts (~50–100 ms) from speaker reverb.
-    #   silence_duration_ms=700 — 700 ms silence = end of user turn (responsive).
+    #                            brief echo bursts (~50 ms) from speaker reverb.
+    #   silence_duration_ms=400 — 400 ms silence = end of user turn.
+    #                             Reduced from 700 ms to cut round-trip latency by ~300 ms.
     #   start_of_speech_sensitivity: use DEFAULT (MEDIUM) — LOW was too aggressive
     #                                and prevented normal-volume speech from registering.
     #   START_OF_ACTIVITY_INTERRUPTS — barge-in: user speech stops AURA mid-sentence.
@@ -293,8 +325,8 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
         try:
             _aad_kwargs: dict = {
                 "disabled": False,
-                "prefix_padding_ms": 200,   # 200 ms — catches short commands, filters echo
-                "silence_duration_ms": 700, # 700 ms silence = end of user turn
+                "prefix_padding_ms": 100,   # 100 ms — catches short commands, filters echo
+                "silence_duration_ms": 400, # 400 ms silence = end of user turn (low latency)
                 # start_of_speech_sensitivity intentionally omitted → server default (MEDIUM)
                 # LOW required shouting to trigger; MEDIUM works at normal speaking volume.
             }
@@ -303,17 +335,46 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                 activity_handling=_ActivityHandling.START_OF_ACTIVITY_INTERRUPTS,
                 turn_coverage=_TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY,
             )
-            logger.info("[/ws/live] VAD: RealtimeInputConfig applied (200 ms prefix, 700 ms silence, default sensitivity, barge-in ON)")
+            logger.info("[/ws/live] VAD: RealtimeInputConfig applied (100 ms prefix, 400 ms silence, default sensitivity, barge-in ON)")
         except Exception as _vad_exc:
             logger.warning(f"[/ws/live] Could not build RealtimeInputConfig: {_vad_exc} — using defaults")
 
     _transcription_cfg = None
     if _VAD_TYPES_AVAILABLE and _AudioTranscriptionConfig is not None:
         try:
-            _transcription_cfg = _AudioTranscriptionConfig()
+            # language_code="auto" is supported in google-genai ≥ 1.x to preserve
+            # the spoken language in transcription without translating to English.
+            # Falls back to no-arg construction on older SDK versions.
+            try:
+                import inspect as _inspect
+                _atc_sig = _inspect.signature(_AudioTranscriptionConfig.__init__)
+                if "language_code" in _atc_sig.parameters:
+                    _transcription_cfg = _AudioTranscriptionConfig(language_code="auto")
+                    logger.info("[/ws/live] AudioTranscriptionConfig: language_code='auto' (preserves spoken language)")
+                else:
+                    _transcription_cfg = _AudioTranscriptionConfig()
+                    logger.info("[/ws/live] AudioTranscriptionConfig: no language_code param — using defaults")
+            except Exception:
+                _transcription_cfg = _AudioTranscriptionConfig()
         except Exception as _tc_exc:
             logger.warning(f"[/ws/live] AudioTranscriptionConfig() failed: {_tc_exc}")
             _transcription_cfg = None
+
+    # ── Build speech config (voice selection) ────────────────────────────────
+    # `voice` param overrides GEMINI_LIVE_VOICE env var for this connection only.
+    # Available prebuilt voices: Aoede, Charon, Fenrir, Kore, Puck,
+    #   Schedar, Gacrux, Pulcherrima, Achird, Zubenelgenubi
+    _speech_cfg = None
+    try:
+        voice_name = voice or getattr(settings, "gemini_live_voice", "Charon") or "Charon"
+        _speech_cfg = _SpeechConfig(
+            voice_config=_VoiceConfig(
+                prebuilt_voice_config=_PrebuiltVoiceConfig(voice_name=voice_name)
+            )
+        )
+        logger.info(f"[/ws/live] Voice: {voice_name}")
+    except Exception as _vc_exc:
+        logger.warning(f"[/ws/live] Could not build SpeechConfig: {_vc_exc} — using model default voice")
 
     # Build RunConfig kwargs — ONLY include optional fields when the config object
     # is not None. Passing None for output_audio_transcription silently disables
@@ -323,6 +384,8 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
         "response_modalities": ["AUDIO"],
         "streaming_mode": _StreamingMode.BIDI,
     }
+    if _speech_cfg is not None:
+        _run_config_kwargs["speech_config"] = _speech_cfg
     if _transcription_cfg is not None:
         _run_config_kwargs["output_audio_transcription"] = _transcription_cfg
         _run_config_kwargs["input_audio_transcription"] = _transcription_cfg
@@ -451,19 +514,79 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
     async def send_to_device() -> None:
         """Consume Gemini Live events and relay them to the Android app."""
         # ── Per-turn transcript accumulators ─────────────────────────────────
-        # User: Gemini sends partial then corrected input_transcription events.
-        #   We track ONLY THE LATEST (overwrite each time) so corrections replace
-        #   partials instead of accumulating "ഹ ലോ ദേർ ഹലോ ദേർ" duplicates.
-        #   IMPORTANT: user final transcript is flushed when AI audio STARTS
-        #   (not at turn_complete) because audio arrival is a reliable signal that
-        #   the user's turn is over. Waiting for turn_complete risks the next
-        #   turn's input_transcription fragments appending to the unflushed buffer.
-        # AI: Accumulate streaming fragments, send as ONE message at turn end.
-        user_transcript_buf: str = ""      # growing accumulated string sent as partials
-        user_transcript_latest: str = ""   # final corrected sentence (used at turn_complete)
-        ai_transcript_buf: list[str] = []  # AI response fragments this turn
-        ai_text_parts_buf: list[str] = []  # text content parts (fallback when transcription empty)
-        user_transcript_flushed: bool = False  # True once user final sent this turn
+        # These accumulate across ALL sub-turns in a single AI response.
+        # They are only reset when a SILENT turn_complete fires (no audio in
+        # the current event) or when new user input arrives after the AI spoke.
+        # This is critical for native-audio models (e.g. gemini-2.5-flash-native-audio)
+        # which fire turn_complete after every audio segment — resetting on each
+        # sub-turn would fragment the transcript into word-per-bubble chaos.
+        user_transcript_buf: str = ""      # growing accumulated user sentence
+        user_transcript_latest: str = ""   # last corrected full user sentence
+        ai_transcript_buf: list[str] = []  # output_audio_transcription fragments this response
+        user_transcript_flushed: bool = False  # True once user final sent this response
+        ai_audio_sent: bool = False            # True once any AI audio chunk has been sent
+        _deferred_flush_task: asyncio.Task | None = None  # delayed flush for audio+turn_complete edge case
+
+        async def _flush_response(source: str) -> None:
+            """Send is_final=True transcripts for both user and AI, then reset all buffers."""
+            nonlocal user_transcript_flushed, user_transcript_buf, user_transcript_latest
+            nonlocal ai_transcript_buf, ai_audio_sent
+
+            # User transcript — only if not already flushed at audio-start
+            _deferred_user_log_text: str | None = None
+            if not user_transcript_flushed:
+                full_user = user_transcript_latest.strip()
+                if full_user:
+                    await websocket.send_json({
+                        "type": "transcript",
+                        "text": full_user,
+                        "is_user": True,
+                        "is_final": True,
+                    })
+                    _deferred_user_log_text = full_user
+
+            # AI transcript — joined from all accumulated fragments
+            full_ai_text = " ".join(
+                frag for frag in ai_transcript_buf
+                if frag and not _is_thinking_content(frag)
+            ).strip()
+            if full_ai_text:
+                await websocket.send_json({
+                    "type": "transcript",
+                    "text": full_ai_text,
+                    "is_user": False,
+                    "is_final": True,
+                })
+
+            await websocket.send_json({"type": "task_progress", "status": "idle"})
+
+            logger.info(
+                f"[/ws/live] response_flush [{source}] → "
+                f"ai={full_ai_text[:60]!r} buf_frags={len(ai_transcript_buf)}"
+            )
+            cmd_logger = _get_live_command_logger()
+            if cmd_logger:
+                if _deferred_user_log_text:
+                    cmd_logger.log_agent_decision(
+                        agent_name="GeminiLive",
+                        decision_type="LIVE_TRANSCRIPT",
+                        details={"speaker": "user", "text": _deferred_user_log_text,
+                                 "source": source, "session_id": session_id},
+                    )
+                if full_ai_text:
+                    cmd_logger.log_agent_decision(
+                        agent_name="GeminiLive",
+                        decision_type="LIVE_TRANSCRIPT",
+                        details={"speaker": "assistant", "text": full_ai_text,
+                                 "source": "output_transcription", "session_id": session_id},
+                    )
+
+            # Reset ALL per-response buffers
+            ai_transcript_buf.clear()
+            user_transcript_buf = ""
+            user_transcript_latest = ""
+            user_transcript_flushed = False
+            ai_audio_sent = False
 
         try:
             async for event in runner.run_live(
@@ -472,6 +595,12 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                 run_config=run_config,
                 live_request_queue=live_queue,
             ):
+                # Cancel any pending deferred flush — a new event arrived so the
+                # model is still active; we'll reschedule it if needed below.
+                if _deferred_flush_task is not None and not _deferred_flush_task.done():
+                    _deferred_flush_task.cancel()
+                    _deferred_flush_task = None
+
                 # Tool call in flight — notify app that a task is executing
                 if event.get_function_calls():
                     await websocket.send_json({
@@ -481,20 +610,17 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
 
                 # ── Extract audio, transcript, and turn-complete from event ───
                 audio_chunks: list[bytes] = []
-                is_final = False
 
                 # Pull server_content early — needed for audio, transcription, and
                 # turn-complete detection on every path below.
                 server_content = getattr(event, "server_content", None)
 
                 # ── PRIMARY audio path: server_content.model_turn.parts ──────────
-                # This matches the Google demo pattern (gemini_live.py):
-                #   if server_content.model_turn:
-                #       for part in server_content.model_turn.parts:
-                #           if part.inline_data: audio_output_callback(part.inline_data.data)
                 # In ADK runner.run_live() events, Gemini Live audio arrives in
                 # server_content.model_turn.parts[].inline_data, NOT in event.content.
-                # event.content is the ADK-level agent content (text/tool responses).
+                # Text parts from model_turn are intentionally skipped — on thinking-
+                # capable models they contain reasoning tokens (**Heading** / chain-of-
+                # thought prose) that the model never actually speaks aloud.
                 if server_content:
                     model_turn = getattr(server_content, "model_turn", None)
                     if model_turn:
@@ -504,14 +630,8 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                                 mime = getattr(inline, "mime_type", "") or ""
                                 if "audio" in mime:
                                     audio_chunks.append(inline.data)
-                            # Text parts from model_turn (used as AI transcript fallback)
-                            part_text = getattr(part, "text", None)
-                            if part_text:
-                                ai_text_parts_buf.append(part_text)
 
                 # ── FALLBACK audio path: event.content.parts ─────────────────────
-                # Some ADK versions / non-live tool-response events surface audio
-                # or text here instead. Check both to be safe.
                 content = getattr(event, "content", None)
                 if content:
                     for part in (getattr(content, "parts", None) or []):
@@ -520,24 +640,21 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                             mime = getattr(inline, "mime_type", "") or ""
                             if "audio" in mime:
                                 audio_chunks.append(inline.data)
-                        part_text = getattr(part, "text", None)
-                        if part_text:
-                            ai_text_parts_buf.append(part_text)
 
                 # ── Transcript from output_transcription (AI speech → text) ──────
-                # Check server_content.output_transcription first (raw genai path),
-                # then event.output_transcription (ADK-normalised path).
                 transcript_text: str | None = None
                 if server_content:
                     ot = getattr(server_content, "output_transcription", None)
-                    transcript_text = getattr(ot, "text", None) if ot else None
+                    _ot_text = getattr(ot, "text", None) if ot else None
+                    if _ot_text and not _is_thinking_content(_ot_text):
+                        transcript_text = _ot_text
                 if not transcript_text:
                     transcription = getattr(event, "output_transcription", None)
-                    transcript_text = getattr(transcription, "text", None) if transcription else None
+                    _t_text = getattr(transcription, "text", None) if transcription else None
+                    if _t_text and not _is_thinking_content(_t_text):
+                        transcript_text = _t_text
 
                 # ── Input transcription (user speech → text) ─────────────────────
-                # Check event.server_content.input_transcription (newer ADK) then
-                # event.input_transcription (older ADK / direct genai path).
                 input_text: str | None = None
                 if server_content:
                     it = getattr(server_content, "input_transcription", None)
@@ -546,38 +663,29 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                     it2 = getattr(event, "input_transcription", None)
                     input_text = getattr(it2, "text", None) if it2 else None
 
-                # ── Turn-complete detection (three methods, first one wins) ─────────
-                # Method 1: server_content.turn_complete — present in raw genai path
-                # and some ADK builds.
-                is_final = bool(getattr(server_content, "turn_complete", False)) if server_content else False
-
-                # Method 2: ADK Event.is_final_response() — reliable in ADK runner.run_live()
-                # because run_live() sets event.partial=False only on the last event of a
-                # model turn. Falls back gracefully if the method is absent.
-                if not is_final:
-                    try:
-                        fn = getattr(event, "is_final_response", None)
-                        if callable(fn):
-                            is_final = bool(fn())
-                    except Exception:
-                        pass
-
-                # Method 3: top-level turn_complete on the event object (some ADK versions
-                # expose it here instead of on server_content).
-                if not is_final:
-                    is_final = bool(getattr(event, "turn_complete", False))
+                # ── Turn-complete detection ───────────────────────────────────────
+                # IMPORTANT: event.is_final_response() is intentionally NOT used here.
+                # That method was designed for single-turn batch requests. In bidi live
+                # streaming (especially with native-audio thinking models), it returns
+                # True for every audio-bearing event — treating each audio chunk as a
+                # "final" response. This caused every word to appear as a separate
+                # finalized bubble instead of accumulating in one growing bubble.
+                # Only server_content.turn_complete and event.turn_complete are reliable
+                # end-of-model-turn signals in the live streaming context.
+                is_turn_complete = (
+                    bool(getattr(server_content, "turn_complete", False)) if server_content else False
+                )
+                if not is_turn_complete:
+                    is_turn_complete = bool(getattr(event, "turn_complete", False))
 
                 # Relay barge-in interruption to the client immediately.
-                # When the user starts speaking mid-response Gemini sets
-                # server_content.interrupted=True before sending turn_complete.
-                # The Android client uses this to clear its audio queue and
-                # stop playback right away rather than waiting for the queue drain.
                 is_interrupted = bool(getattr(server_content, "interrupted", False)) if server_content else False
                 if is_interrupted:
                     await websocket.send_json({"type": "interrupted"})
+                    # Barge-in ends the current response — flush what we have
+                    if ai_audio_sent or ai_transcript_buf:
+                        await _flush_response("interrupted")
 
-                # INFO-level audio log so we can confirm chunks are flowing without
-                # needing DEBUG mode. Logged once per event that carries audio.
                 if audio_chunks:
                     total_bytes = sum(len(c) for c in audio_chunks)
                     logger.info(f"[/ws/live] audio: {len(audio_chunks)} chunk(s), {total_bytes} bytes")
@@ -585,39 +693,33 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                     logger.debug(f"[/ws/live] output_transcription: {transcript_text[:80]!r}")
                 if input_text:
                     logger.debug(f"[/ws/live] input_transcription: {input_text[:80]!r}")
-                if is_final:
-                    logger.info("[/ws/live] turn_complete detected")
-                if is_interrupted:
-                    logger.debug("[/ws/live] interrupted received")
+                if is_turn_complete:
+                    logger.info(f"[/ws/live] turn_complete (has_audio={bool(audio_chunks)}, "
+                                f"has_transcript={bool(transcript_text)})")
+
+                # ── New user input: implicit end of previous AI response ──────────
+                # If the user starts speaking and AI has already sent audio, flush
+                # the accumulated AI response before processing the new user input.
+                # This handles the case where the deferred flush hasn't fired yet.
+                if input_text and ai_audio_sent:
+                    await _flush_response("new_user_input")
 
                 # ── Build user transcript incrementally for "typing" animation ──
-                # Gemini sends input_transcription in two modes:
-                #   FRAGMENTS — short word/chunk additions: ' Hey', ',', ' can', ' you hear me?'
-                #   CORRECTION — full corrected sentence: ' Hey, can you hear me?'
-                # Detect: if the new text starts with the same prefix as what we've already
-                # accumulated, it's a correction (replace). Otherwise it's a new fragment (append).
-                # This is more reliable than tracking audio event ordering.
                 if input_text:
                     new_stripped = input_text.strip()
                     buf_stripped = user_transcript_buf.strip()
                     if buf_stripped:
-                        # Check if the first N chars of the accumulated buffer appear at the
-                        # start of the new text — if so, Gemini is sending a corrected full sentence.
                         check_len = min(6, len(buf_stripped))
                         is_correction = new_stripped.lower().startswith(buf_stripped[:check_len].lower())
                     else:
                         is_correction = False
 
                     if is_correction:
-                        # Full corrected sentence — replace buffer (keeps display accurate)
                         user_transcript_buf = new_stripped
                     else:
-                        # Fragment — append to grow the sentence
                         user_transcript_buf = (user_transcript_buf + input_text)
 
                     user_transcript_latest = user_transcript_buf
-                    # Always send the current FULL accumulated string so the client
-                    # shows a growing sentence, not individual fragments.
                     await websocket.send_json({
                         "type": "transcript",
                         "text": user_transcript_buf.strip(),
@@ -625,124 +727,81 @@ async def handle_live_websocket(websocket: WebSocket, session_id: str) -> None:
                         "is_final": False,
                     })
 
-                # ── Accumulate AI transcript fragments (non-final events only) ──
-                # On the turn_complete event, transcript_text is the clean finalized
-                # version — skip adding it to the buffer; use it directly at flush time.
-                if transcript_text and not is_final:
+                # ── Accumulate AI transcript fragments and stream live ────────────
+                # Always accumulate into ai_transcript_buf regardless of turn_complete.
+                # The buffer is only reset at _flush_response(), not at each sub-turn.
+                if transcript_text:
                     ai_transcript_buf.append(transcript_text)
+                    if not is_turn_complete:
+                        # Stream the growing sentence as a partial for "typing" animation
+                        growing_ai_text = " ".join(ai_transcript_buf).strip()
+                        if growing_ai_text and not _is_thinking_content(growing_ai_text):
+                            await websocket.send_json({
+                                "type": "transcript",
+                                "text": growing_ai_text,
+                                "is_user": False,
+                                "is_final": False,
+                            })
 
-                # ── Relay audio chunks ────────────────────────────────────────
-                # The first audio chunk signals that the AI has started responding —
-                # the user's turn is definitively over. Flush the final user transcript
-                # NOW rather than waiting for turn_complete, because new input_transcription
-                # fragments from the NEXT user turn can arrive before turn_complete fires
-                # and would contaminate the still-open buffer, merging multiple turns
-                # into a single message.
+                # ── Relay audio chunks ────────────────────────────────────────────
+                # First audio chunk signals the user's turn is definitively over —
+                # flush the final user transcript NOW (not at turn_complete) to avoid
+                # contamination from the next turn's input_transcription fragments.
+                _deferred_log_flush_text: str | None = None
                 if audio_chunks and not user_transcript_flushed:
                     user_transcript_flushed = True
                     flush_text = user_transcript_latest.strip()
                     if flush_text:
-                        cmd_logger = _get_live_command_logger()
-                        if cmd_logger:
-                            cmd_logger.log_agent_decision(
-                                agent_name="GeminiLive",
-                                decision_type="LIVE_TRANSCRIPT",
-                                details={
-                                    "speaker": "user",
-                                    "text": flush_text,
-                                    "source": "input_transcription_at_audio_start",
-                                    "session_id": session_id,
-                                },
-                            )
                         await websocket.send_json({
                             "type": "transcript",
                             "text": flush_text,
                             "is_user": True,
                             "is_final": True,
                         })
+                        _deferred_log_flush_text = flush_text
                         logger.debug(f"[/ws/live] User transcript flushed at audio start: {flush_text[:60]!r}")
+
+                if audio_chunks:
+                    ai_audio_sent = True
 
                 for chunk in audio_chunks:
                     encoded = base64.b64encode(chunk).decode("ascii")
-                    await websocket.send_json({
-                        "type": "audio_response",
-                        "data": encoded,
-                    })
+                    await websocket.send_json({"type": "audio_response", "data": encoded})
 
-                # ── Flush transcripts as ONE message each at turn end ─────────
-                if is_final:
-                    # User transcript — only send if not already flushed at audio-start.
-                    # This catches the case where Gemini is silent (no audio chunks
-                    # arrive) so the audio-start flush never fires.
-                    if not user_transcript_flushed:
-                        full_user_text = user_transcript_latest.strip()
-                        if full_user_text:
-                            cmd_logger = _get_live_command_logger()
-                            if cmd_logger:
-                                cmd_logger.log_agent_decision(
-                                    agent_name="GeminiLive",
-                                    decision_type="LIVE_TRANSCRIPT",
-                                    details={
-                                        "speaker": "user",
-                                        "text": full_user_text,
-                                        "source": "input_transcription_at_turn_complete",
-                                        "session_id": session_id,
-                                    },
-                                )
-                            await websocket.send_json({
-                                "type": "transcript",
-                                "text": full_user_text,
-                                "is_user": True,
-                                "is_final": True,
-                            })
+                if _deferred_log_flush_text:
+                    cmd_logger = _get_live_command_logger()
+                    if cmd_logger:
+                        cmd_logger.log_agent_decision(
+                            agent_name="GeminiLive",
+                            decision_type="LIVE_TRANSCRIPT",
+                            details={"speaker": "user", "text": _deferred_log_flush_text,
+                                     "source": "input_transcription_at_audio_start",
+                                     "session_id": session_id},
+                        )
 
-                    # AI transcript — prefer output_audio_transcription events (most
-                    # accurate). Fall back to accumulated text content parts (present when
-                    # model generates text alongside audio), then joined streaming fragments.
-                    full_ai_text = ""
-                    if transcript_text:
-                        full_ai_text = transcript_text.strip()
-                    elif ai_transcript_buf:
-                        full_ai_text = " ".join(ai_transcript_buf).strip()
-                    elif ai_text_parts_buf:
-                        full_ai_text = "".join(ai_text_parts_buf).strip()
+                # ── Handle turn_complete ──────────────────────────────────────────
+                # Native-audio models fire turn_complete after EVERY audio segment
+                # (micro-turns), not just at the end of the full response.
+                # Strategy:
+                #   - Silent turn_complete (no audio in this event) → model is done →
+                #     flush immediately as is_final=True.
+                #   - Audio+turn_complete (micro-turn) → model still speaking →
+                #     don't flush yet; schedule a 500 ms deferred flush that will be
+                #     cancelled if more events arrive.
+                if is_turn_complete:
+                    has_audio_this_event = bool(audio_chunks)
 
-                    logger.info(
-                        f"[/ws/live] turn_complete → ai_text={full_ai_text[:60]!r} "
-                        f"(transcription={bool(transcript_text)}, "
-                        f"buf={len(ai_transcript_buf)}, text_parts={len(ai_text_parts_buf)})"
-                    )
-                    if full_ai_text:
-                        cmd_logger = _get_live_command_logger()
-                        if cmd_logger:
-                            cmd_logger.log_agent_decision(
-                                agent_name="GeminiLive",
-                                decision_type="LIVE_TRANSCRIPT",
-                                details={
-                                    "speaker": "assistant",
-                                    "text": full_ai_text,
-                                    "source": "output_transcription",
-                                    "session_id": session_id,
-                                },
-                            )
-                        await websocket.send_json({
-                            "type": "transcript",
-                            "text": full_ai_text,
-                            "is_user": False,
-                            "is_final": True,
-                        })
-
-                    # Reset all per-turn buffers
-                    ai_transcript_buf.clear()
-                    ai_text_parts_buf.clear()
-                    user_transcript_buf = ""
-                    user_transcript_latest = ""
-                    user_transcript_flushed = False
-
-                    await websocket.send_json({
-                        "type": "task_progress",
-                        "status": "idle",
-                    })
+                    if not has_audio_this_event:
+                        # Silent turn_complete — model has finished speaking
+                        await _flush_response("silent_turn_complete")
+                    else:
+                        # Audio arrived in same event as turn_complete (micro-turn or
+                        # last-chunk-of-response pattern). Schedule a deferred flush
+                        # that fires only if no further events arrive within 500 ms.
+                        async def _deferred_flush():
+                            await asyncio.sleep(0.5)
+                            await _flush_response("deferred_turn_complete")
+                        _deferred_flush_task = asyncio.create_task(_deferred_flush())
 
         except WebSocketDisconnect:
             logger.info(f"[/ws/live] Device disconnected during send: {session_id}")

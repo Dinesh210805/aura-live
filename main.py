@@ -274,9 +274,10 @@ if settings.gemini_live_enabled:
     async def live_websocket_endpoint(
         websocket: _WS,
         session_id: str = "default",
+        voice: str = "",
     ):
         """Gemini Live bidirectional audio + vision session endpoint."""
-        await handle_live_websocket(websocket, session_id)
+        await handle_live_websocket(websocket, session_id, voice=voice or None)
 
     logger.info("Gemini Live /ws/live endpoint registered")
 else:
@@ -330,6 +331,18 @@ async def test_suite(request: Request):
         return HTMLResponse(content=content)
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Test suite not found</h1>", status_code=404)
+
+
+@app.get("/live-test")
+async def gemini_live_test(request: Request):
+    """Serve the Gemini Live browser test interface."""
+    try:
+        import aiofiles
+        async with aiofiles.open("test_gemini_live.html", "r", encoding="utf-8") as f:
+            content = await f.read()
+        return HTMLResponse(content=content)
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>test_gemini_live.html not found</h1>", status_code=404)
 
 
 def run_server() -> None:

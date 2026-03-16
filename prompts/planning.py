@@ -200,7 +200,7 @@ You MUST only use action types from this exact list. Any other action type will 
     {{
       "description": "What to do",
       "action_type": "ONE OF: tap, type, press_enter, dismiss_keyboard, swipe, scroll, back, open_app, wait, ask_user",
-      "target": "element or text"
+      "target": "For tap/open_app: the element label or app name to interact with. For type: THE EXACT TEXT TO TYPE (e.g. 'iphone 17'), NOT the field name."
     }}
   ]
 }}

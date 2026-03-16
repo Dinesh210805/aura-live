@@ -371,6 +371,14 @@ class Settings(BaseSettings):
         env="GEMINI_LIVE_ENABLED",
         description="Enable /ws/live endpoint with Gemini Live bidi streaming (Phase 2)",
     )
+    gemini_live_voice: str = Field(
+        default="Charon",
+        env="GEMINI_LIVE_VOICE",
+        description=(
+            "Prebuilt voice name for Gemini Live responses. "
+            "Available: Aoede, Charon, Fenrir, Kore, Puck, Schedar, Gacrux, Pulcherrima, Achird, Zubenelgenubi"
+        ),
+    )
 
     # Vertex AI routing (optional second GCP service for scoring)
     use_vertex_ai: bool = Field(

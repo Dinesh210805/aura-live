@@ -39,6 +39,24 @@ private const val TAG = "VoiceSettingsScreen"
 private const val PREFS_NAME = "aura_voice_settings"
 private const val KEY_SELECTED_VOICE = "selected_voice_id"
 private const val DEFAULT_VOICE = "en-US-AriaNeural"
+private const val KEY_GEMINI_LIVE_VOICE = "gemini_live_voice"
+private const val DEFAULT_GEMINI_VOICE = "Charon"
+
+// Gemini Live prebuilt voice definitions
+private data class GeminiVoice(val name: String, val description: String, val gender: String)
+
+private val GEMINI_LIVE_VOICES = listOf(
+    GeminiVoice("Charon",         "Deep & authoritative",    "male"),
+    GeminiVoice("Fenrir",         "Expressive & animated",   "male"),
+    GeminiVoice("Puck",           "Upbeat & bright",         "male"),
+    GeminiVoice("Gacrux",         "Mature & measured",       "male"),
+    GeminiVoice("Achird",         "Casual & friendly",       "male"),
+    GeminiVoice("Zubenelgenubi",  "Relaxed & casual",        "male"),
+    GeminiVoice("Aoede",          "Bright & clear",          "female"),
+    GeminiVoice("Kore",           "Firm & confident",        "female"),
+    GeminiVoice("Schedar",        "Even & composed",         "female"),
+    GeminiVoice("Pulcherrima",    "Forward & expressive",    "female"),
+)
 
 // Local voice definitions - no backend needed
 private val LOCAL_VOICES = listOf(
@@ -147,6 +165,7 @@ fun VoiceSettingsScreen(
     val voices = remember { LOCAL_VOICES }
     val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
     var currentVoiceId by remember { mutableStateOf(prefs.getString(KEY_SELECTED_VOICE, DEFAULT_VOICE) ?: DEFAULT_VOICE) }
+    var geminiLiveVoice by remember { mutableStateOf(prefs.getString(KEY_GEMINI_LIVE_VOICE, DEFAULT_GEMINI_VOICE) ?: DEFAULT_GEMINI_VOICE) }
     var previewingVoiceId by remember { mutableStateOf<String?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
@@ -324,6 +343,41 @@ fun VoiceSettingsScreen(
                         )
                     }
                     
+                    // ── Gemini Live Voice section ─────────────────────────────
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "GEMINI LIVE VOICE",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Normal,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = labelSecondary,
+                            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Used when Gemini Live Mode is enabled in Settings",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = labelSecondary.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                        )
+                    }
+
+                    items(GEMINI_LIVE_VOICES) { voice ->
+                        GeminiVoiceCard(
+                            voice = voice,
+                            isSelected = voice.name == geminiLiveVoice,
+                            isDark = isDark,
+                            onSelect = {
+                                hapticFeedback(AuraHapticType.LIGHT)
+                                prefs.edit().putString(KEY_GEMINI_LIVE_VOICE, voice.name).apply()
+                                geminiLiveVoice = voice.name
+                                Log.d(TAG, "Gemini Live voice selected: ${voice.name}")
+                            }
+                        )
+                    }
+
                     item {
                         Spacer(modifier = Modifier.height(32.dp))
                     }
@@ -424,6 +478,108 @@ private fun CurrentVoiceHeader(
                     text = if (isPreviewing) "Stop Preview" else "Play Preview",
                     style = MaterialTheme.typography.labelLarge
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GeminiVoiceCard(
+    voice: GeminiVoice,
+    isSelected: Boolean,
+    isDark: Boolean,
+    onSelect: () -> Unit,
+) {
+    val groupBackground = if (isDark) AppleColors.Dark.Surface else AppleColors.Light.Surface
+    val labelPrimary = if (isDark) AppleColors.LabelDark.Primary else AppleColors.LabelLight.Primary
+    val labelSecondary = if (isDark) AppleColors.LabelDark.Secondary else AppleColors.LabelLight.Secondary
+    val accentColor = if (isDark) Color(0xFF4285F4) else Color(0xFF1A73E8) // Google blue for Gemini
+    val selectedBorderColor by animateColorAsState(
+        targetValue = if (isSelected) accentColor else Color.Transparent,
+        animationSpec = tween(200),
+        label = "gemini_border_color"
+    )
+    val genderColor = if (voice.gender == "female") {
+        if (isDark) AppleColors.PinkDark else AppleColors.Pink
+    } else {
+        if (isDark) AppleColors.BlueDark else AppleColors.Blue
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .border(
+                width = if (isSelected) 2.dp else 0.dp,
+                color = selectedBorderColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(onClick = onSelect),
+        color = groupBackground,
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Avatar
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(genderColor.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Voice info
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = voice.name,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = labelPrimary,
+                    )
+                    if (isSelected) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Selected",
+                            tint = accentColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = voice.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = labelSecondary,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = genderColor.copy(alpha = 0.15f),
+                ) {
+                    Text(
+                        text = voice.gender.replaceFirstChar { it.uppercaseChar() },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = genderColor,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
             }
         }
     }

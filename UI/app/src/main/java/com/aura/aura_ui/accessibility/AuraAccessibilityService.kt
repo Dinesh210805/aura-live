@@ -338,6 +338,7 @@ class AuraAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         AgentLogger.UI.w("Service interrupted")
+        restoreKeyboard()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
@@ -1574,6 +1575,12 @@ class AuraAccessibilityService : AccessibilityService() {
 
     private fun cleanup() {
         gestureInjector.cancelAll()
+        // Always restore keyboard show-mode before tearing down — dismissKeyboard()
+        // is called inline after every type gesture to suppress the IME during
+        // automation. If the session ends without an explicit restore_keyboard
+        // command (app killed, WebSocket drop, etc.) the keyboard would stay
+        // permanently hidden until the accessibility service is toggled.
+        restoreKeyboard()
         // Command polling removed - all commands now use WebSocket
         serviceScope.cancel()
         screenCaptureManager.cleanup()

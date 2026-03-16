@@ -677,6 +677,15 @@ class Coordinator:
                     }, agent_name="Planner")
                     self._broadcast_start(session_id, goal)
                     continue
+                else:
+                    goal.aborted = True
+                    goal.abort_reason = "Max replan attempts exceeded (screen mismatch)"
+                    _cmd_logger.log_agent_decision("REPLAN_LIMIT_EXCEEDED", {
+                        "reason": "screen_mismatch",
+                        "replan_count": replan_count,
+                        "max": MAX_REPLAN_ATTEMPTS,
+                    }, agent_name="Coordinator")
+                    break
 
             if action_type in NO_TARGET_ACTIONS:
                 # Already decided above — no coordinates needed

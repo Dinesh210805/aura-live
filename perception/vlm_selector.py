@@ -71,9 +71,11 @@ Labeled regions on screen:
 
 User wants to interact with: "{intent}"
 
-Look at the screenshot and pick the letter whose red box covers the element the user wants.
+Step 1 — In one sentence, describe what screen/app you see and which labeled region looks like the target.
+Step 2 — Output JSON with your selection.
+
 Respond with JSON only — no extra text:
-{{"label": "X", "description": "one sentence describing what this screen shows"}}
+{{"thinking": "I see [screen type]. Region X looks like [target] because [reason].", "label": "X", "description": "one sentence describing what this screen shows"}}
 
 Use NONE as the label if no region matches."""
 
@@ -86,11 +88,14 @@ Labeled regions on screen:
 
 The user wants to: "{intent}"
 
-Choose the labeled region whose red box best covers the element the user wants to interact with.
-If multiple match, pick the most likely one. If none match, use NONE.
+Step 1 — Describe what you see on screen in one sentence.
+Step 2 — Identify which labeled region best matches the user's intent and why.
+Step 3 — Output your selection as JSON.
 
 Respond with JSON only:
-{{"label": "X", "description": "one sentence describing what this screen shows"}}"""
+{{"thinking": "I see [screen]. Region X matches because [reason].", "label": "X", "description": "one sentence describing what this screen shows"}}
+
+If multiple match, pick the most likely one. If none match, use NONE."""
 
     def __init__(
         self,

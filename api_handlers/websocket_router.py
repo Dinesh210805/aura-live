@@ -12,7 +12,6 @@ import time
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from services.conversation_manager import ConversationManager
-from services.step_executor import get_step_executor
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -1215,60 +1214,9 @@ async def websocket_conversation(websocket: WebSocket):
                                         except Exception as e:
                                             logger.warning(f"Error stopping bg reader: {e}")
 
-                                    # NOTE: The action plan has already been executed by the graph's execute_node
-                                    # via real_device_executor. No need to execute it again here.
-                                    # The graph returns executed_steps, not a plan to execute.
-                                    action_plan = result.get("plan", [])
-                                    step_execution_result = None
-
-                                    # DISABLED: Duplicate execution removed
-                                    # The graph already executed the plan and sent commands to Android
-                                    if False and action_plan and len(action_plan) > 0:
-                                        logger.info(
-                                            f"📋 Executing {len(action_plan)} step action plan via WebSocket"
-                                        )
-
-                                        # Create step executor context
-                                        step_exec = get_step_executor()
-                                        context = step_exec.create_context(
-                                            session_id, websocket
-                                        )
-
-                                        try:
-                                            # Execute the plan step by step
-                                            step_execution_result = (
-                                                await step_exec.execute_plan(
-                                                    context, action_plan
-                                                )
-                                            )
-
-                                            # Update response based on execution result
-                                            if (
-                                                step_execution_result["success_rate"]
-                                                >= 0.8
-                                            ):
-                                                response_text = result.get(
-                                                    "spoken_response",
-                                                    "Task completed successfully",
-                                                )
-                                            else:
-                                                failed_count = step_execution_result[
-                                                    "failed_steps"
-                                                ]
-                                                response_text = f"I completed some steps but {failed_count} steps failed. {result.get('spoken_response', '')}"
-
-                                        except Exception as step_error:
-                                            logger.error(
-                                                f"Step execution error: {step_error}"
-                                            )
-                                            response_text = f"I encountered an error while executing the task: {step_error}"
-
-                                        finally:
-                                            step_exec.remove_context(session_id)
-                                    else:
-                                        response_text = result.get(
-                                            "spoken_response", "Task completed"
-                                        )
+                                    response_text = result.get(
+                                        "spoken_response", "Task completed"
+                                    )
 
                                     automation_result = {
                                         "status": result.get("status", "completed"),
@@ -1276,7 +1224,6 @@ async def websocket_conversation(websocket: WebSocket):
                                         "execution_time": result.get(
                                             "execution_time", 0.0
                                         ),
-                                        "step_execution": step_execution_result,
                                     }
 
                                 # Store conversation turn with error tracking
@@ -1404,13 +1351,6 @@ async def websocket_conversation(websocket: WebSocket):
                                     f"Failed to update accessibility service: {e}"
                                 )
 
-                            # Forward to step executor if waiting
-                            step_exec = get_step_executor()
-                            step_exec.handle_ui_snapshot(
-                                session_id,
-                                {"tree": ui_tree, "screenshot_base64": screenshot_b64},
-                            )
-
                             await websocket.send_json(
                                 {
                                     "type": "ui_snapshot_ack",
@@ -1493,18 +1433,6 @@ async def websocket_conversation(websocket: WebSocket):
                             ui_after = msg_json.get("ui_after", {})
                             logger.info(
                                 f"📱 Step {step_id} result: {'✅' if success else '❌'} {error or ''}"
-                            )
-
-                            # Forward to step executor
-                            step_exec = get_step_executor()
-                            step_exec.handle_step_result(
-                                session_id,
-                                {
-                                    "step_id": step_id,
-                                    "success": success,
-                                    "error": error,
-                                    "ui_after": ui_after,
-                                },
                             )
 
                         elif msg_type == "gesture_ack":

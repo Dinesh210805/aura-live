@@ -362,7 +362,7 @@ class Settings(BaseSettings):
 
     # Gemini Live bidirectional audio+vision streaming
     gemini_live_model: str = Field(
-        default="gemini-2.0-flash-live-001",
+        default="gemini-live-2.5-flash-native-audio",
         env="GEMINI_LIVE_MODEL",
         description="Gemini Live model for bidirectional audio+vision streaming",
     )

@@ -55,8 +55,11 @@ If the command chains 3+ distinct actions OR uses connectors like "then", "and t
 → {{"action":"general_interaction","content":"<full command>","confidence":0.85,"parameters":{{"delegate_to_planner":true}}}}
 Do NOT try to parse recipient/content from multi-step commands — let the planner decompose them.
 
-OUTPUT ONLY JSON:
-{{"action":"...","recipient":"...","content":"...","parameters":{{}},"confidence":0.0-1.0}}"""
+━━━ SCOPE ━━━
+You ONLY classify the command into a single action type. You do NOT decompose multi-step goals — that is the Planner's job.
+
+OUTPUT ONLY JSON (include thinking first, it is ignored after parsing):
+{{"thinking":"brief reasoning about what action type fits","action":"...","recipient":"...","content":"...","parameters":{{}},"confidence":0.0-1.0,"ambiguities":[]}}"""
 
 _CONTEXT_SECTION = """
 ━━━ CONVERSATION CONTEXT ━━━

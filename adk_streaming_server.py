@@ -32,7 +32,7 @@ settings so it cannot break the existing pipeline during development.
 
 Enable with:
     GEMINI_LIVE_ENABLED=true
-    GEMINI_LIVE_MODEL=gemini-2.0-flash-live-001
+    GEMINI_LIVE_MODEL=gemini-live-2.5-flash-native-audio
 """
 
 import asyncio
@@ -165,7 +165,7 @@ def _get_runner():
 
     # Use the live-capable model; fall back to root_agent's model only if the
     # setting is empty (which would be a misconfiguration).
-    live_model = getattr(settings, "gemini_live_model", None) or "gemini-2.5-flash-native-audio-preview-12-2025"
+    live_model = getattr(settings, "gemini_live_model", None) or "gemini-live-2.5-flash-native-audio"
 
     # Build a live-specific agent that uses the bidi-capable model
     # but still has access to the AURA tool for device control.
@@ -205,11 +205,9 @@ After execute_aura_task:
 Style: short spoken sentences, no lists, no markdown.
 
 LANGUAGE RULE:
-  - DEFAULT LANGUAGE IS ENGLISH. Always respond in English unless the user explicitly and clearly asks you to switch to another language (e.g. "speak to me in Hindi", "reply in Tamil").
-  - Do NOT infer language from accent, pronunciation style, or ambiguous audio. Indian English accents are English — respond in English.
-  - NEVER switch to Hindi, Tamil, Malayalam, or any other language just because a word or phrase sounded like it. When in doubt, use English.
-  - If the user genuinely and clearly speaks a full sentence in a specific language, you may respond in that language. One ambiguous word is not enough.
-  - Do not mix languages mid-response (e.g. no Hindi words inside an English sentence).
+  - Detect the language the user is speaking and respond in that same language.
+  - Transcribe and reply in whatever language the user speaks — do not force English.
+  - If the user switches language mid-conversation, follow them.
 """,
             tools=[aura_tool] if aura_tool is not None else [],
         )
@@ -357,14 +355,11 @@ async def handle_live_websocket(
         # Locking to en-US prevents auto-detection from drifting to Hindi/other scripts
         # on Indian devices where the accent triggers incorrect language detection.
         try:
-            # The Gemini Live API does NOT support language_codes in AudioTranscriptionConfig
-            # at runtime — the field exists in the SDK types but the API rejects it.
-            # Language is controlled exclusively via the agent's system instruction.
-            # See: https://ai.google.dev/gemini-api/docs/live-guide (transcription section)
+            # No language_codes — let Gemini auto-detect whatever language the user speaks.
             _transcription_cfg = _AudioTranscriptionConfig()
             _input_transcription_cfg = _AudioTranscriptionConfig()
             logger.info(
-                "[/ws/live] AudioTranscriptionConfig: enabled (language locked via system instruction)"
+                "[/ws/live] AudioTranscriptionConfig: enabled (auto-detect language)"
             )
         except Exception as _tc_exc:
             logger.warning(f"[/ws/live] AudioTranscriptionConfig() failed: {_tc_exc}")

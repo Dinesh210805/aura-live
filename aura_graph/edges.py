@@ -88,9 +88,6 @@ def should_continue_after_intent_parsing(
     state: TaskState,
 ) -> Literal[
     "perception",
-    "parallel_processing",
-    "analyze_ui",
-    "create_plan",
     "execute",
     "speak",
     "error_handler",
@@ -173,9 +170,9 @@ def should_continue_after_intent_parsing(
         if any(keyword in transcript for keyword in ui_keywords):
             logger.info(f"Messaging action '{action}' with UI keywords - routing to perception")
             return "perception"
-        # Otherwise, skip perception (will use deep link)
-        logger.info(f"Messaging action '{action}' - using deep link, routing to create_plan")
-        return "create_plan"
+        # Otherwise, skip perception (will use deep link via coordinator)
+        logger.info(f"Messaging action '{action}' - using deep link, routing to coordinator")
+        return "coordinator"
     
     # UI actions with complex params → perception then universal_agent
     if has_complex_params:
@@ -266,80 +263,6 @@ def should_continue_after_perception(
     # After successful perception, route to Coordinator for all actions
     logger.info("Perception successful, routing to coordinator")
     return "coordinator"
-
-
-def should_continue_after_ui_analysis(
-    state: TaskState,
-) -> Literal["coordinator", "speak", "error_handler"]:
-    """
-    Determine next step after UI analysis (legacy node).
-
-    Args:
-        state: Current task state.
-
-    Returns:
-        Next node to execute.
-    """
-    status = state.get("status", "")
-
-    # Only check UI-analysis-specific failures
-    if status in ("ui_analysis_failed", "failed"):
-        logger.info("UI analysis failed, routing to error handler")
-        return "error_handler"
-
-    logger.info("UI analysis successful, routing to coordinator")
-    return "coordinator"
-
-
-def route_after_parallel_processing(
-    state: TaskState,
-) -> Literal["coordinator", "speak", "error_handler"]:
-    """
-    Determine next step after parallel UI and validation processing.
-
-    Args:
-        state: Current task state.
-
-    Returns:
-        Next node to execute.
-    """
-    status = state.get("status", "")
-
-    # Only check parallel-processing-specific failures
-    if status in ("parallel_failed", "failed"):
-        logger.info("Parallel processing failed, routing to error handler")
-        return "error_handler"
-
-    logger.info("Parallel processing successful, routing to coordinator")
-    return "coordinator"
-
-
-def should_continue_after_planning(
-    state: TaskState,
-) -> Literal["execute", "error_handler"]:
-    """
-    Determine next step after planning.
-
-    Args:
-        state: Current task state.
-
-    Returns:
-        Next node to execute.
-    """
-    plan = state.get("plan", [])
-    status = state.get("status", "")
-
-    # Only check planning-specific failures via status field
-    if status == "planning_failed":
-        logger.info("Planning failed, routing to error handler")
-        return "error_handler"
-
-    if not plan or len(plan) == 0:
-        logger.info("No plan created, routing to error handler")
-        return "error_handler"
-
-    logger.info(f"Plan created with {len(plan)} steps, routing to execute")
-    return "execute"
 
 
 def should_continue_after_execution(

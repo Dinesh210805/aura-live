@@ -192,18 +192,48 @@ class PerceptionController:
             ui_tree: Optional[UITreePayload] = None
             screenshot: Optional[ScreenshotPayload] = None
 
-            if modality in (PerceptionModality.UI_TREE, PerceptionModality.HYBRID):
-                ui_tree = await self.ui_tree_service.request_ui_tree(request_id, reason)
-                
-                # RETRY LOGIC: If UI tree is empty (0 elements), wait and retry
-                # This handles transient states like screen transitions
-                # FIXED: FIX-005 — was 3 retries × 0.5s = 1.5s; now configurable, default 1 × 0.3s = 0.3s
-                from config.settings import get_settings as _get_settings
-                _perc_settings = _get_settings()
-                max_retries = _perc_settings.ui_tree_max_retries
-                retry_delay = _perc_settings.ui_tree_retry_delay_seconds
+            from config.settings import get_settings as _get_settings
+            _perc_settings = _get_settings()
+            max_retries = _perc_settings.ui_tree_max_retries
+            retry_delay = _perc_settings.ui_tree_retry_delay_seconds
+
+            if modality == PerceptionModality.HYBRID:
+                # Fetch UI tree and screenshot concurrently — halves latency vs sequential
+                logger.info("🚀 HYBRID: requesting UI tree + screenshot concurrently")
+                ui_tree, screenshot = await asyncio.gather(
+                    self.ui_tree_service.request_ui_tree(request_id, reason),
+                    self.screenshot_service.request_screenshot(request_id, reason),
+                )
+
+                # Retry empty UI tree (screenshot already in hand, no extra wait needed)
                 retry_count = 0
-                
+                while ui_tree is not None and not ui_tree.elements and retry_count < max_retries:
+                    retry_count += 1
+                    logger.warning(f"⚠️ UI tree empty, retrying ({retry_count}/{max_retries})...")
+                    await asyncio.sleep(retry_delay)
+                    ui_tree = await self.ui_tree_service.request_ui_tree(
+                        f"{request_id}-r{retry_count}",
+                        f"{reason} (retry {retry_count})"
+                    )
+
+                if ui_tree is not None and not ui_tree.elements:
+                    logger.warning(f"⚠️ UI tree still empty after {max_retries} retries, using screenshot only")
+                    modality = PerceptionModality.VISION
+                    ui_tree = None
+
+                # If concurrent screenshot failed, try once more before giving up
+                if screenshot is None:
+                    logger.warning("⚠️ Concurrent screenshot fetch failed, retrying...")
+                    screenshot = await self.screenshot_service.request_screenshot(
+                        f"{request_id}-ss", reason
+                    )
+
+            elif modality == PerceptionModality.UI_TREE:
+                ui_tree = await self.ui_tree_service.request_ui_tree(request_id, reason)
+
+                # RETRY LOGIC: If UI tree is empty (0 elements), wait and retry
+                # FIXED: FIX-005 — was 3 retries × 0.5s = 1.5s; now configurable, default 1 × 0.3s = 0.3s
+                retry_count = 0
                 while ui_tree is not None and not ui_tree.elements and retry_count < max_retries:
                     retry_count += 1
                     logger.warning(
@@ -211,18 +241,17 @@ class PerceptionController:
                     )
                     await asyncio.sleep(retry_delay)
                     ui_tree = await self.ui_tree_service.request_ui_tree(
-                        f"{request_id}-r{retry_count}", 
+                        f"{request_id}-r{retry_count}",
                         f"{reason} (retry {retry_count})"
                     )
-                
+
                 if ui_tree is not None and not ui_tree.elements:
                     logger.warning(
                         f"⚠️ UI tree still empty after {max_retries} retries, trying screenshot fallback"
                     )
-                    # Escalate to VISION mode as fallback
                     modality = PerceptionModality.VISION
                     ui_tree = None
-                
+
                 if ui_tree is None and modality == PerceptionModality.UI_TREE:
                     # If Android indicates UI tree is unreliable for this screen/app, escalate to vision.
                     failure_info = self.ui_tree_service.last_validation_failure or {}
@@ -234,9 +263,10 @@ class PerceptionController:
                     else:
                         raise ValueError("UI tree requested but retrieval failed")
 
-            if modality in (PerceptionModality.VISION, PerceptionModality.HYBRID):
+            # Screenshot needed for VISION mode (or HYBRID that downgraded without one)
+            if modality == PerceptionModality.VISION and screenshot is None:
                 screenshot = await self.screenshot_service.request_screenshot(request_id, reason)
-                if screenshot is None and modality == PerceptionModality.VISION:
+                if screenshot is None:
                     # FIXED: FIX-008 — do not silently fall back to UI_TREE.
                     # Caller selected VISION because UI_TREE was insufficient for this screen.
                     # Raise so the retry/error system can make an informed decision.

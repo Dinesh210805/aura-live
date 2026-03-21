@@ -40,13 +40,21 @@ TARGET: "{target}"
 {context_hint}
 SCREEN: {width}x{height}px
 
-━━━ ANALYSIS APPROACH ━━━
-1. Identify screen type (home, settings, chat, player, etc.)
-2. Look for target using:
-   - Text labels (exact or semantic match)
-   - Icons (gear=settings, arrow=back, >>=skip)
-   - Common positions (nav at bottom, actions at top-right)
-3. If multiple candidates, choose most likely by context
+━━━ STEP-BY-STEP REASONING (do this before outputting JSON) ━━━
+Step 1 — Describe what you see on screen in 1-2 sentences (app name, screen type, key visible elements).
+Step 2 — Identify which visible element best matches the TARGET description. Consider text labels, icons, and common positions.
+Step 3 — Output the result JSON below.
+
+━━━ COMMON ICONS ━━━
+- Skip/Forward: >>, >, right arrow, "Skip"
+- Back: <, ←, left arrow
+- Menu: ☰ hamburger, ⋮ three dots
+- Profile: 👤 person silhouette
+- Search: 🔍 magnifying glass
+- Settings: ⚙️ gear/cog
+- Send: Paper plane, right arrow (blue/green)
+- Like: ❤️ heart, 👍 thumbs up
+- Share: ↗️ up-right arrow
 
 ━━━ COMMON ICONS ━━━
 - Skip/Forward: >>, >, right arrow, "Skip"

@@ -1486,12 +1486,24 @@ def attach_command_logger_handler():
 _current_logger: Optional[CommandLogger] = None
 
 
+class _NullCommandLogger:
+    """No-op logger returned before any request is received.
+
+    Absorbs all method calls silently so startup/warmup code that calls
+    get_command_logger() never creates a log file on disk.
+    A real CommandLogger is only created when create_new_execution_logger()
+    is called at the start of an actual request.
+    """
+    def __getattr__(self, name):
+        return lambda *args, **kwargs: None
+
+
+_NULL_LOGGER = _NullCommandLogger()
+
+
 def get_command_logger(execution_id: str = None) -> CommandLogger:
-    """Get or create a command logger for current execution."""
-    global _current_logger
-    if _current_logger is None:
-        _current_logger = CommandLogger(execution_id=execution_id)
-    return _current_logger
+    """Return the active request logger, or a no-op stub if no request is active."""
+    return _current_logger if _current_logger is not None else _NULL_LOGGER
 
 
 def create_new_execution_logger(execution_id: str = None) -> CommandLogger:

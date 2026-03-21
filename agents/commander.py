@@ -62,7 +62,7 @@ class CommanderAgent:
                 prompt = INTENT_PARSING_PROMPT.format(transcript=transcript)
             result = self.llm_service.run(
                 prompt,
-                max_tokens=300,
+                max_tokens=400,
                 response_format={"type": "json_object"},
             )
             
@@ -89,6 +89,11 @@ class CommanderAgent:
                     result = result[start:end]
 
             intent_data = json.loads(result.strip())
+            # Strip scratchpad fields not part of IntentObject
+            thinking = intent_data.pop("thinking", None)
+            ambiguities = intent_data.pop("ambiguities", None)
+            if thinking:
+                logger.debug(f"Commander thinking: {thinking[:80]}")
             intent_data["action"] = self._normalize_action(intent_data.get("action", "general_interaction"))
             intent_data = self._normalize_intent_fields(intent_data)
             

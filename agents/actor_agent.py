@@ -78,6 +78,30 @@ class ActorAgent:
         # Merge extra params
         action.update(params)
 
+        # Auto-inject default screen-center coordinates for directional swipes.
+        # GestureExecutor requires start_x/y + end_x/y; passing only target="down"
+        # triggers "Invalid swipe coordinates - missing start_x/y or end_x/y".
+        if (
+            action_type == "swipe"
+            and target in ("up", "down", "left", "right")
+            and "start_x" not in action
+        ):
+            cx, cy = 540, 1200  # Screen-center baseline (1080×2400 device)
+            swipe_map = {
+                "down":  (cx, cy - 400, cx, cy + 400),
+                "up":    (cx, cy + 400, cx, cy - 400),
+                "left":  (cx + 300, cy, cx - 300, cy),
+                "right": (cx - 300, cy, cx + 300, cy),
+            }
+            sx, sy, ex, ey = swipe_map[target]
+            action["start_x"] = sx
+            action["start_y"] = sy
+            action["end_x"] = ex
+            action["end_y"] = ey
+            logger.debug(
+                f"Actor: injected swipe coords for '{target}': ({sx},{sy})→({ex},{ey})"
+            )
+
         try:
             result: GestureResult = await self.executor._execute_single_action(action)
             duration = (time.time() - start) * 1000

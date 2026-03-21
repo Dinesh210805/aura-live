@@ -244,6 +244,7 @@ class Coordinator:
         replan_count = 0
         recovery_injection_count = 0
         consecutive_gesture_failures = 0
+        consecutive_verification_failures = 0
         running_screen_context = ""
         _cmd_logger = get_command_logger()
 
@@ -1463,6 +1464,36 @@ class Coordinator:
                 logger.warning(
                     f"Coordinator: proceed-tap postcondition failed for '{subgoal.target}'"
                 )
+
+            # Track consecutive VLM verification failures → trigger early replan
+            if not verification_passed:
+                consecutive_verification_failures += 1
+                if consecutive_verification_failures >= 2 and replan_count < MAX_REPLAN_ATTEMPTS:
+                    logger.warning(
+                        f"Coordinator: {consecutive_verification_failures} consecutive verification "
+                        f"failures — triggering early replan (reason: {verification_reason[:80]})"
+                    )
+                    _cmd_logger.log_agent_decision("EARLY_REPLAN_TRIGGERED", {
+                        "consecutive_failures": consecutive_verification_failures,
+                        "subgoal": subgoal.description,
+                        "reason": verification_reason[:120],
+                    }, agent_name="Coordinator")
+                    consecutive_verification_failures = 0
+                    obstacle = (
+                        f"VLM verification failed {consecutive_verification_failures + 2} times. "
+                        f"Last reason: {verification_reason}. Subgoal: {subgoal.description}."
+                    )
+                    recovery_subgoals = self.planner.replan(
+                        goal, obstacle,
+                        perception=screen_state.perception_bundle if screen_state else None,
+                        step_history=step_memory,
+                    )[:3]
+                    self._apply_replan(goal, recovery_subgoals)
+                    replan_count += 1
+                    self._broadcast_start(session_id, goal)
+                    continue
+            else:
+                consecutive_verification_failures = 0
 
             if verification_passed:
                 # AI-writer escape: if we just tapped a compose-area target and the

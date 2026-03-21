@@ -20,30 +20,23 @@ from utils.logger import get_logger
 from services.command_logger import create_new_execution_logger, clear_execution_logger
 
 from .edges import (
-    route_after_parallel_processing,
     route_from_start,
     should_continue_after_error_handling,
     should_continue_after_execution,
     should_continue_after_intent_parsing,
     should_continue_after_perception,
-    should_continue_after_planning,
     should_continue_after_speak,
     should_continue_after_stt,
-    should_continue_after_ui_analysis,
     should_continue_after_validation,
     should_continue_after_retry_router,
 )
 from .core_nodes import (
-    analyze_ui_node,  # Legacy - kept for backward compatibility
     error_handler_node,
     execute_node,
     initialize_nodes,
-    parallel_ui_and_validation_node,
     parse_intent_node,
-    plan_node,
     speak_node,
     stt_node,
-    validate_intent_node,
 )
 
 # Import from nodes package (specialized goal-driven nodes)
@@ -129,13 +122,7 @@ def create_aura_graph() -> StateGraph:
         logger.info("Adding nodes to graph")
         graph.add_node("stt", stt_node)
         graph.add_node("parse_intent", parse_intent_node)
-        graph.add_node("validate_intent", validate_intent_node)  # New validation node
-        graph.add_node("perception", perception_node)  # New Perception Controller node
-        graph.add_node("analyze_ui", analyze_ui_node)  # VESTIGIAL: FIX-016 — no active edges route here. Remove after confirming no edge cases.
-        graph.add_node(
-            "parallel_processing", parallel_ui_and_validation_node
-        )  # VESTIGIAL: FIX-016 — no active edges route here. Remove after confirming no edge cases.
-        graph.add_node("create_plan", plan_node)  # VESTIGIAL: FIX-016 — no active edges route here. Remove after confirming no edge cases.
+        graph.add_node("perception", perception_node)
         graph.add_node("execute", execute_node)
         graph.add_node("speak", speak_node)
         graph.add_node("error_handler", error_handler_node)
@@ -171,18 +158,15 @@ def create_aura_graph() -> StateGraph:
         )
 
         # Add conditional edges from intent parsing
-        # All actions now route through UniversalAgent
         graph.add_conditional_edges(
             "parse_intent",
             should_continue_after_intent_parsing,
             {
-                "perception": "perception",  # UI actions get perception first
-                "parallel_processing": "parallel_processing",  # Legacy: Fan-out to parallel UI + validation
-                "analyze_ui": "analyze_ui",  # Legacy: Direct UI analysis for simple cases
+                "perception": "perception",
                 "execute": "execute",
                 "speak": "speak",
                 "error_handler": "error_handler",
-                "coordinator": "coordinator",  # Multi-agent execution path
+                "coordinator": "coordinator",
             },
         )
 
@@ -197,38 +181,6 @@ def create_aura_graph() -> StateGraph:
             },
         )
 
-        # Add conditional edges from parallel processing (fan-in)
-        graph.add_conditional_edges(
-            "parallel_processing",
-            route_after_parallel_processing,
-            {
-                "coordinator": "coordinator",
-                "speak": "speak",
-                "error_handler": "error_handler",
-            },
-        )
-
-        # Add conditional edges from validation (for non-parallel path)
-        graph.add_edge("validate_intent", "analyze_ui")
-
-        # Add conditional edges from UI analysis
-        graph.add_conditional_edges(
-            "analyze_ui",
-            should_continue_after_ui_analysis,
-            {
-                "coordinator": "coordinator",
-                "speak": "speak",
-                "error_handler": "error_handler",
-            },
-        )
-
-        # Add conditional edges from planning
-        graph.add_conditional_edges(
-            "create_plan",
-            should_continue_after_planning,
-            {"execute": "execute", "error_handler": "error_handler"},
-        )
-
         # Add conditional edges from execution
         # UPDATED: Routes to validate_outcome for goal-driven validation loop
         graph.add_conditional_edges(
@@ -237,9 +189,8 @@ def create_aura_graph() -> StateGraph:
             {
                 "speak": "speak",
                 "error_handler": "error_handler",
-                "perception": "perception",  # For retries with fresh perception
-                "analyze_ui": "analyze_ui",  # Legacy: For retries
-                "validate_outcome": "validate_outcome",  # NEW: Post-action validation
+                "perception": "perception",
+                "validate_outcome": "validate_outcome",
             },
         )
         
@@ -279,8 +230,7 @@ def create_aura_graph() -> StateGraph:
             "error_handler",
             should_continue_after_error_handling,
             {
-                "perception": "perception",  # For retries with fresh perception
-                "analyze_ui": "analyze_ui",  # Legacy: For retries
+                "perception": "perception",
                 "speak": "speak",
                 END: END
             },
@@ -398,7 +348,7 @@ def compile_aura_graph(checkpointer: Any = None) -> Any:
         perception_controller = get_perception_controller(screen_vlm=perceiver_agent)
         perceiver_agent.perception_controller = perception_controller
         actor_agent = ActorAgent(gesture_executor)
-        verifier_agent = VerifierAgent(perception_controller)
+        verifier_agent = VerifierAgent(perception_controller, llm_service=llm_service)
         task_progress_service = get_task_progress_service()
 
         from services.reactive_step_generator import ReactiveStepGenerator
@@ -686,17 +636,39 @@ async def execute_aura_task_from_text(
         initial_state = _create_initial_state(
             input_type="text", transcript=text_input, config=exec_config
         )
-        
+
+        # Inject session/conversation context — same as streaming path so
+        # multi-turn awareness (has_introduced, turn counter) works via ADK too.
+        from services.conversation_session import get_session_manager
+        session_manager = get_session_manager()
+        effective_session_id = thread_id or "default_session"
+        session = session_manager.get_session(effective_session_id)
+        session.update()
+        session_context = session.get_context()
+        initial_state.update(
+            {
+                "session_id": effective_session_id,
+                "conversation_turn": session_context["conversation_turn"],
+                "has_introduced": session_context["has_introduced"],
+                "is_follow_up": session_context["is_follow_up"],
+                "last_interaction_time": session_context["last_interaction_time"],
+            }
+        )
+
         # Create new execution logger with task_id
         task_id = initial_state.get("task_id", "unknown")
         cmd_logger = create_new_execution_logger(execution_id=task_id)
-        
+
         # Log text command
         cmd_logger.log_command(
             command=text_input,
             input_type="text",
-            session_id=initial_state.get("session_id"),
-            metadata={"text_length": len(text_input), "config": config}
+            session_id=effective_session_id,
+            metadata={
+                "text_length": len(text_input),
+                "conversation_turn": session_context["conversation_turn"],
+                "config": config,
+            }
         )
 
         # Add any config parameters to state
@@ -929,44 +901,42 @@ def get_graph_info() -> Dict[str, Any]:
         "nodes": [
             "stt",
             "parse_intent",
-            "validate_intent",
-            "analyze_ui",
-            "parallel_processing",
-            "create_plan",
+            "perception",
             "execute",
             "speak",
             "error_handler",
+            "decompose_goal",
+            "validate_outcome",
+            "retry_router",
+            "next_subgoal",
+            "coordinator",
         ],
         "entry_point": "stt",
         "edges": {
-            "start": ["stt", "error_handler"],
+            "start": ["stt", "parse_intent", "error_handler"],
             "stt": ["parse_intent", "error_handler"],
-            "parse_intent": [
-                "parallel_processing",
-                "analyze_ui",
-                "speak",
-                "error_handler",
-            ],
-            "parallel_processing": ["create_plan", "speak", "error_handler"],
-            "validate_intent": ["analyze_ui"],
-            "analyze_ui": ["create_plan", "speak", "error_handler"],
-            "create_plan": ["execute", "error_handler"],
-            "execute": ["speak", "error_handler", "analyze_ui"],
-            "error_handler": ["analyze_ui", "speak", "END"],
+            "parse_intent": ["perception", "execute", "speak", "error_handler", "coordinator"],
+            "perception": ["speak", "error_handler", "coordinator"],
+            "execute": ["speak", "error_handler", "perception", "validate_outcome"],
+            "validate_outcome": ["next_subgoal", "retry_router", "speak"],
+            "retry_router": ["perception", "execute", "speak"],
+            "next_subgoal": ["perception"],
+            "decompose_goal": ["perception"],
+            "coordinator": ["speak"],
+            "error_handler": ["perception", "speak", "END"],
             "speak": ["END"],
         },
-        "parallel_nodes": ["parallel_processing"],
         "agents": {
             "commander": {
                 "model": f"groq/{settings.default_llm_model}",
                 "role": "intent_parsing",
             },
-            "navigator": {
+            "coordinator": {
                 "model": settings.planning_model,
-                "role": "ui_analysis_planning",
+                "role": "multi_agent_execution",
             },
             "responder": {
-                "model": settings.crewai_model,
+                "model": f"groq/{settings.default_llm_model}",
                 "role": "feedback_generation",
             },
             "screen_vlm": {
@@ -978,10 +948,10 @@ def get_graph_info() -> Dict[str, Any]:
                 "role": "intent_validation",
             },
         },
-        "architecture": "hybrid_parallel",
+        "architecture": "coordinator_parallel",
         "supports_checkpointing": True,
         "supports_streaming": True,
-        "version": "2.0.0",
+        "version": "3.0.0",
     }
 
 

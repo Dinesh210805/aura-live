@@ -42,6 +42,8 @@ class ScreenVLM:
         elements: list,
         screen_width: int = 1080,
         screen_height: int = 1920,
+        target: str = "",
+        max_elements: int = 20,
     ) -> tuple:
         """Draw numbered SoM boxes onto a screenshot and return (annotated_b64, filtered_elements).
 
@@ -49,6 +51,9 @@ class ScreenVLM:
         actually annotated on the image, in the same order as their numbered labels.
         Callers MUST use this list (not the original unfiltered elements) when
         building text prompts so that element numbers match the image annotations.
+
+        If `target` is provided, elements are ranked by text similarity to the target
+        and capped at `max_elements` before annotation, reducing VLM label confusion.
 
         Falls back to (original_screenshot_b64, []) if cv2 is unavailable or annotation fails.
         """
@@ -58,6 +63,7 @@ class ScreenVLM:
             import base64 as _b64
             import cv2
             import numpy as np
+            from difflib import SequenceMatcher
 
             screen_area = screen_width * screen_height
             meaningful = []
@@ -72,6 +78,20 @@ class ScreenVLM:
                 if (right - left) * (bottom - top) > screen_area * 0.6:
                     continue
                 meaningful.append((el, left, top, right, bottom))
+
+            # Rank by text similarity to target, cap at max_elements to reduce VLM confusion
+            if target and len(meaningful) > max_elements:
+                tgt = target.lower()
+                def _sim(item):
+                    el = item[0]
+                    label = " ".join(filter(None, [
+                        el.get("text", ""), el.get("contentDescription", ""),
+                        el.get("resourceId", "").split("/")[-1].replace("_", " "),
+                    ])).lower()
+                    return SequenceMatcher(None, tgt, label).ratio()
+                meaningful.sort(key=_sim, reverse=True)
+                meaningful = meaningful[:max_elements]
+                logger.debug(f"SoM filter: kept {max_elements}/{len(elements)} elements for target='{target[:40]}'")
 
             if not meaningful:
                 return screenshot_b64, []

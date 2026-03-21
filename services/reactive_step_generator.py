@@ -182,6 +182,15 @@ class ReactiveStepGenerator:
             description = parsed.get("description") or f"[{action_type}] {target or ''}"
             phase_complete = bool(parsed.get("phase_complete", False))
             goal_complete = bool(parsed.get("goal_complete", False))
+
+            # Deterministic post-parse override: if the LLM misses an obvious
+            # completion signal in the screen (e.g. navigation already active),
+            # detect it here so the loop terminates rather than spinning forever.
+            if not goal_complete:
+                goal_complete = self._detect_goal_achieved_from_screen(
+                    screen_context, goal.original_utterance
+                )
+
             returned_screen_context = parsed.get("screen_context", "")
             prev_step_ok = bool(parsed.get("prev_step_ok", True))
             prev_step_issue = (parsed.get("prev_step_issue") or "").strip()
@@ -602,6 +611,79 @@ class ReactiveStepGenerator:
             or getattr(el, "viewIdResourceName", None)
             or ""
         )
+
+    # ── Deterministic goal-completion detection ───────────────────────────────
+
+    _NAVIGATION_GOAL_KEYWORDS = frozenset({
+        "navigate", "navigation", "directions", "go to", "route to",
+        "take me to", "drive to", "get directions", "open maps", "find route",
+    })
+
+    # Signals that ONLY appear on an active navigation screen, not on the
+    # route-preview screen that still shows a "Start" button.
+    _ACTIVE_NAV_SIGNALS = (
+        "towards",           # green next-maneuver banner: "towards Madugarai Rd"
+        "arriving at",       # arrival imminent
+        "navigation started",
+        "on your route",
+        "continue on",
+        "take the",          # turn-by-turn instructions
+    )
+
+    # Regex to detect a duration (e.g. "3hr 45min", "12 min", "1 hour 20 minutes")
+    _TIME_RE = re.compile(r"\b\d+\s*(hr|min|hour|minute)s?\b", re.IGNORECASE)
+    # Regex to detect a distance (e.g. "182 km", "5.3 mi", "400 m")
+    _DIST_RE = re.compile(r"\b\d+[\d.]*\s*(km|mi|miles?|meters?)\b", re.IGNORECASE)
+
+    def _detect_goal_achieved_from_screen(
+        self,
+        screen_context: str,
+        original_utterance: str,
+    ) -> bool:
+        """
+        Deterministic post-parse override.
+
+        Returns True when the screen unambiguously shows the goal has been
+        achieved, even if the LLM returned goal_complete=False.
+
+        Currently handles:
+        - Navigation tasks: screen shows an active turn-by-turn route with ETA
+          and/or a "towards X Rd" next-maneuver banner.
+        """
+        if not screen_context:
+            return False
+
+        ctx = screen_context.lower()
+        utterance = (original_utterance or "").lower()
+
+        # ── Navigation goal detection ─────────────────────────────────────────
+        is_nav_goal = any(kw in utterance for kw in self._NAVIGATION_GOAL_KEYWORDS)
+        if not is_nav_goal:
+            return False
+
+        # Strong positive: a maneuver banner or explicit "navigation started" text
+        has_strong_signal = any(sig in ctx for sig in self._ACTIVE_NAV_SIGNALS)
+
+        # Weak positive: ETA + distance shown together (only valid during routing)
+        has_time = bool(self._TIME_RE.search(ctx))
+        has_distance = bool(self._DIST_RE.search(ctx))
+        has_eta_combo = has_time and has_distance
+
+        if not has_strong_signal and not has_eta_combo:
+            return False
+
+        # Negative guard: route-preview screen still shows a "Start" button —
+        # navigation has NOT started yet.  Match only the button label, not
+        # the word "start" appearing in other contexts.
+        preview_indicators = ["start navigation", "tap start", "press start"]
+        if any(ind in ctx for ind in preview_indicators):
+            return False
+
+        logger.info(
+            "🎯 Goal-achieved override: active navigation detected in screen context "
+            f"(strong={has_strong_signal}, eta_combo={has_eta_combo})"
+        )
+        return True
 
     # ─────────────────────────────────────────────────────────────────────────
 

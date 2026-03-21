@@ -7,12 +7,13 @@ in the same VLM call that proposes the next step.
 """
 
 import asyncio
-from typing import Any, Dict, List, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from services.ui_signature import compute_ui_signature
 from utils.logger import get_logger
 
 if TYPE_CHECKING:
+    from services.llm import LLMService
     from services.perception_controller import PerceptionController
 
 logger = get_logger(__name__)
@@ -65,8 +66,9 @@ ERROR_INDICATORS = [
 class VerifierAgent:
     """Captures post-action state and detects error screens."""
 
-    def __init__(self, perception_controller: "PerceptionController"):
+    def __init__(self, perception_controller: "PerceptionController", llm_service: Optional["LLMService"] = None):
         self.perception_controller = perception_controller
+        self.llm_service = llm_service
 
     async def capture_post_state(self, intent: Dict[str, Any], action_type: str | None = None) -> Tuple[Any, str, List]:
         """
@@ -106,3 +108,52 @@ class VerifierAgent:
             if any(ind in combined for ind in ERROR_INDICATORS):
                 return True
         return False
+
+    async def semantic_verify(self, action_desc: str, elements: List[Dict], success_hint: str = "") -> tuple[bool, str]:
+        """
+        LLM second-pass: verify semantically that the action produced the expected result.
+        Falls back to (True, "no llm") if LLM service is unavailable.
+
+        Returns (passed: bool, reason: str).
+        """
+        if not self.llm_service:
+            return True, "no llm service"
+        if not elements:
+            return True, "no elements to check"
+
+        # Build a compact element summary (top 15, text + contentDesc only)
+        lines = []
+        for el in elements[:15]:
+            text = (el.get("text") or "").strip()
+            desc = (el.get("contentDescription") or "").strip()
+            label = text or desc
+            if label:
+                lines.append(label)
+
+        el_summary = "\n".join(f"- {l}" for l in lines) if lines else "(no text elements)"
+        hint_line = f"\nExpected outcome: {success_hint}" if success_hint else ""
+
+        prompt = (
+            f"Action just executed: {action_desc}{hint_line}\n\n"
+            f"Current screen elements:\n{el_summary}\n\n"
+            f"Did this action succeed based on the screen state? "
+            f"Answer YES or NO followed by one sentence reason."
+        )
+
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            from functools import partial
+            loop = asyncio.get_event_loop()
+            with ThreadPoolExecutor(max_workers=1) as ex:
+                result = await loop.run_in_executor(
+                    ex,
+                    partial(self.llm_service.run, prompt, max_tokens=60)
+                )
+            result = (result or "").strip().upper()
+            passed = result.startswith("YES")
+            reason = result[:120]
+            logger.debug(f"Verifier semantic_verify: {passed} — {reason[:60]}")
+            return passed, reason
+        except Exception as e:
+            logger.warning(f"Verifier semantic_verify failed (non-fatal): {e}")
+            return True, "llm check failed"

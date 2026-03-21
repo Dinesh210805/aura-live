@@ -9,7 +9,11 @@
       "Bash(python:*)",
       "WebFetch(domain:ai.google.dev)",
       "WebFetch(domain:googleapis.github.io)",
-      "WebFetch(domain:discuss.ai.google.dev)"
+      "WebFetch(domain:discuss.ai.google.dev)",
+      "Bash(grep -n \"class.*Reflexion\\\\|class.*Recovery\\\\|class.*Failure\" \"d:/PROJECTS/Gemini Live Hackathon/aura-live/services/\"*.py)",
+      "Bash(grep \"\\\\.py$\")",
+      "Bash(grep -r \"def run_aura_task\\\\|async def run_aura_task\" 'D:\\\\PROJECTS\\\\Gemini Live Hackathon\\\\aura-live' --include=*.py)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

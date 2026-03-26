@@ -713,6 +713,23 @@ async def websocket_audio_stream_final(websocket: WebSocket):
 
                     # Execute task if transcript available
                     if transcript and len(transcript.strip()) > 0 and app_instance:
+                        # G7: barge-in — if HITL is waiting for user input, route the
+                        # transcript as the answer instead of launching a new task.
+                        try:
+                            from services.hitl_service import get_hitl_service as _get_hitl
+                            if _get_hitl().register_voice_answer(transcript):
+                                logger.info(
+                                    f"🎙️ Voice transcript routed to HITL: '{transcript[:60]}'"
+                                )
+                                await websocket.send_json({
+                                    "type": "hitl_voice_answer",
+                                    "text": transcript,
+                                    "timestamp": time.time(),
+                                })
+                                continue
+                        except Exception as _hitl_barge_err:
+                            logger.debug(f"HITL barge-in check failed: {_hitl_barge_err}")
+
                         try:
                             # Pre-flight screen capture permission gate
                             if not await _ensure_screen_capture_ready(websocket):

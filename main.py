@@ -103,8 +103,14 @@ async def lifespan(app: FastAPI):
         logger.info("Compiling LangGraph application...")
 
         from aura_graph.graph import compile_aura_graph
+        from langgraph.checkpoint.memory import MemorySaver
 
-        graph_app = compile_aura_graph()
+        # MemorySaver keeps TaskState across invocations within the same server
+        # session (same thread_id = same conversation thread).
+        # Upgrade to SqliteSaver (langgraph-checkpoint-sqlite) for persistence
+        # across server restarts.
+        checkpointer = MemorySaver()
+        graph_app = compile_aura_graph(checkpointer=checkpointer)
         app.state.graph_app = graph_app
         logger.info("LangGraph application compiled")
 

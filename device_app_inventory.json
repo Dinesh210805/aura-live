@@ -114,7 +114,7 @@
           "package_name": "com.google.android.apps.labs.language.tailwind",
           "app_name": "NotebookLM",
           "is_system_app": false,
-          "version_name": "1.30.10.881878419",
+          "version_name": "1.31.8.885459785",
           "deep_links": [],
           "intent_filters": [
             {
@@ -176,7 +176,7 @@
           "package_name": "com.microsoft.appmanager",
           "app_name": "Link to Windows",
           "is_system_app": true,
-          "version_name": "1.26021.118.0",
+          "version_name": "1.26022.70.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -496,7 +496,7 @@
           "package_name": "com.oneplus.account",
           "app_name": "OnePlus Account",
           "is_system_app": true,
-          "version_name": "EXP_9.18.0_be0674f",
+          "version_name": "EXP_9.19.0_ce5ea76",
           "deep_links": [],
           "intent_filters": []
         },
@@ -777,7 +777,7 @@
           "package_name": "com.google.android.apps.docs.editors.slides",
           "app_name": "Slides",
           "is_system_app": false,
-          "version_name": "1.26.111.01.90",
+          "version_name": "1.26.121.00.90",
           "deep_links": [],
           "intent_filters": [
             {
@@ -996,7 +996,7 @@
           "package_name": "com.openai.chatgpt",
           "app_name": "ChatGPT",
           "is_system_app": false,
-          "version_name": "1.2026.069",
+          "version_name": "1.2026.076",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1254,7 +1254,7 @@
           "package_name": "in.amazon.mShop.android.shopping",
           "app_name": "Amazon",
           "is_system_app": false,
-          "version_name": "32.5.0.300",
+          "version_name": "32.6.0.300",
           "deep_links": [
             "upi"
           ],
@@ -1388,7 +1388,7 @@
           "package_name": "com.android.vending",
           "app_name": "Google Play Store",
           "is_system_app": true,
-          "version_name": "50.5.19-31 [0] [PR] 879778031",
+          "version_name": "50.6.23-31 [0] [PR] 883399050",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1466,7 +1466,7 @@
           "package_name": "de.mdiener.rain.usa",
           "app_name": "Rain Alarm",
           "is_system_app": false,
-          "version_name": "6.1.0",
+          "version_name": "6.2.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1505,7 +1505,7 @@
           "package_name": "com.flipkart.android",
           "app_name": "Flipkart",
           "is_system_app": false,
-          "version_name": "9.0",
+          "version_name": "9.1",
           "deep_links": [
             "flipkart"
           ],
@@ -1592,7 +1592,7 @@
           "package_name": "com.brave.browser",
           "app_name": "Brave",
           "is_system_app": false,
-          "version_name": "1.88.133",
+          "version_name": "1.88.134",
           "deep_links": [
             "http",
             "https"
@@ -1719,7 +1719,7 @@
           "package_name": "com.vasooldrive.android",
           "app_name": "Vasool Drive",
           "is_system_app": false,
-          "version_name": "26.3.2",
+          "version_name": "26.3.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1937,7 +1937,7 @@
           "package_name": "com.pinterest",
           "app_name": "Pinterest",
           "is_system_app": false,
-          "version_name": "14.10.0",
+          "version_name": "14.11.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2054,7 +2054,7 @@
           "package_name": "com.google.android.apps.tachyon",
           "app_name": "Meet",
           "is_system_app": true,
-          "version_name": "350.0.880709068.duo.android_20260309.00_p0",
+          "version_name": "350.0.882277882.duo.android_20260309.00_p1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2108,7 +2108,7 @@
           "package_name": "com.supercell.clashofclans",
           "app_name": "Clash of Clans",
           "is_system_app": false,
-          "version_name": "18.200.9",
+          "version_name": "18.200.19",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2243,7 +2243,7 @@
           "package_name": "com.facebook.services",
           "app_name": "Meta Services",
           "is_system_app": true,
-          "version_name": "157.0.35",
+          "version_name": "158.0.36",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2679,7 +2679,7 @@
           "package_name": "com.twitter.android",
           "app_name": "X",
           "is_system_app": false,
-          "version_name": "11.74.0-release.0",
+          "version_name": "11.75.1-release.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2812,7 +2812,7 @@
           "package_name": "free.vpn.unblock.proxy.turbovpn",
           "app_name": "Turbo VPN",
           "is_system_app": false,
-          "version_name": "4.2.9.6",
+          "version_name": "4.2.9.8",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2897,7 +2897,7 @@
           "package_name": "com.lenskart.app",
           "app_name": "Lenskart",
           "is_system_app": false,
-          "version_name": "5.5.1",
+          "version_name": "5.5.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2936,7 +2936,7 @@
           "package_name": "com.google.android.webview",
           "app_name": "Android System WebView",
           "is_system_app": true,
-          "version_name": "145.0.7632.162",
+          "version_name": "146.0.7680.119",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3109,7 +3109,7 @@
           "package_name": "com.android.chrome",
           "app_name": "Chrome",
           "is_system_app": true,
-          "version_name": "146.0.7680.153",
+          "version_name": "146.0.7680.164",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3193,7 +3193,7 @@
           "package_name": "com.google.android.gms",
           "app_name": "Google Play services",
           "is_system_app": true,
-          "version_name": "26.10.35 (260400-885717106)",
+          "version_name": "26.11.33 (260400-887465546)",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3375,7 +3375,7 @@
           "package_name": "ai.x.grok",
           "app_name": "Grok",
           "is_system_app": false,
-          "version_name": "1.1.44-release.01",
+          "version_name": "1.1.45-release.01",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3634,7 +3634,7 @@
           "package_name": "com.google.android.calendar",
           "app_name": "Calendar",
           "is_system_app": true,
-          "version_name": "2026.10.0-880339319-release",
+          "version_name": "2026.11.2-886054769-release",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3697,7 +3697,7 @@
           "package_name": "com.microsoft.office.officehubrow",
           "app_name": "M365 Copilot",
           "is_system_app": false,
-          "version_name": "16.0.19901.20004",
+          "version_name": "16.0.19908.20006",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4108,7 +4108,7 @@
           "package_name": "com.microsoft.copilot",
           "app_name": "Copilot",
           "is_system_app": false,
-          "version_name": "30.0.440309001",
+          "version_name": "30.0.440319001",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4123,7 +4123,7 @@
           "package_name": "com.chess",
           "app_name": "Chess",
           "is_system_app": false,
-          "version_name": "4.9.29-googleplay",
+          "version_name": "4.9.30-googleplay",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4146,7 +4146,7 @@
           "package_name": "org.mozilla.firefox",
           "app_name": "Firefox",
           "is_system_app": false,
-          "version_name": "148.0.2",
+          "version_name": "149.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4308,7 +4308,7 @@
           "package_name": "com.google.android.apps.nbu.paisa.user",
           "app_name": "GPay",
           "is_system_app": true,
-          "version_name": "322.1.2 (arm64-v8a_release_flutter)",
+          "version_name": "323.1.1 (arm64-v8a_release_flutter)",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4448,7 +4448,7 @@
           "package_name": "com.anthropic.claude",
           "app_name": "Claude",
           "is_system_app": false,
-          "version_name": "1.260316.47",
+          "version_name": "1.260323.7",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4479,7 +4479,7 @@
           "package_name": "com.google.android.apps.chromecast.app",
           "app_name": "Home",
           "is_system_app": false,
-          "version_name": "4.11.56.2",
+          "version_name": "4.12.52.1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4540,7 +4540,7 @@
           "package_name": "com.coloros.video",
           "app_name": "Videos (System)",
           "is_system_app": true,
-          "version_name": "9.22.1.0",
+          "version_name": "9.23.1.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4594,7 +4594,7 @@
           "package_name": "com.rapido.passenger",
           "app_name": "Rapido",
           "is_system_app": false,
-          "version_name": "8.99.0",
+          "version_name": "8.100.0",
           "deep_links": [
             "geo"
           ],
@@ -4901,7 +4901,7 @@
           "package_name": "com.google.android.apps.work.clouddpc",
           "app_name": "Device Policy",
           "is_system_app": true,
-          "version_name": "152.26.7 (10604740)",
+          "version_name": "153.41.3 (10619160)",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4986,7 +4986,7 @@
           "package_name": "com.oppo.quicksearchbox",
           "app_name": "Global Search",
           "is_system_app": true,
-          "version_name": "16.8.0",
+          "version_name": "16.9.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4994,7 +4994,7 @@
           "package_name": "in.swiggy.android",
           "app_name": "Swiggy",
           "is_system_app": false,
-          "version_name": "4.104.0",
+          "version_name": "4.105.1",
           "deep_links": [
             "swiggy"
           ],
@@ -5018,7 +5018,7 @@
           "package_name": "com.azure.authenticator",
           "app_name": "Authenticator",
           "is_system_app": false,
-          "version_name": "6.2602.0889",
+          "version_name": "6.2603.1485",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5261,7 +5261,7 @@
           "package_name": "com.heytap.htms",
           "app_name": "Mobile Services",
           "is_system_app": true,
-          "version_name": "2.3.6_473100f_260122_OS15Oversea_sea",
+          "version_name": "2.3.7_4ee2ef8_260312_OS15Oversea_sea",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5308,7 +5308,7 @@
           "package_name": "notion.id",
           "app_name": "Notion",
           "is_system_app": false,
-          "version_name": "0.6.3735",
+          "version_name": "0.6.3743",
           "deep_links": [
             "notion"
           ],
@@ -5513,7 +5513,7 @@
           "package_name": "com.microsoft.teams",
           "app_name": "Teams",
           "is_system_app": false,
-          "version_name": "1416/1.0.0.2026033106",
+          "version_name": "1416/1.0.0.2026044202",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5590,7 +5590,7 @@
           "package_name": "com.google.android.inputmethod.latin",
           "app_name": "Gboard",
           "is_system_app": true,
-          "version_name": "16.9.1.873986071-release-arm64-v8a",
+          "version_name": "17.0.9.880768217-release-arm64-v8a",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5598,7 +5598,7 @@
           "package_name": "com.google.android.apps.restore",
           "app_name": "Android Switch",
           "is_system_app": true,
-          "version_name": "1.0.872357473",
+          "version_name": "1.0.882455745",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5610,11 +5610,11 @@
           ]
         }
       ],
-      "last_updated": 1774075302184,
+      "last_updated": 1774519197465,
       "app_count": 534
     }
   },
   "_metadata": {
-    "last_updated": 1774075302184
+    "last_updated": 1774519197465
   }
 }

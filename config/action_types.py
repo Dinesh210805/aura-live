@@ -208,11 +208,20 @@ ACTION_REGISTRY: Dict[str, ActionMeta] = {
     # CONVERSATIONAL (no device action)
     # =========================================================================
     "greeting": ActionMeta(is_conversational=True),
+    "greet": ActionMeta(is_conversational=True),
+    "greetings": ActionMeta(is_conversational=True),
+    "hello": ActionMeta(is_conversational=True),
+    "hi": ActionMeta(is_conversational=True),
     "help": ActionMeta(is_conversational=True),
     "general_interaction": ActionMeta(is_conversational=True),
+    "general_query": ActionMeta(is_conversational=True),
+    "provide_help": ActionMeta(is_conversational=True),
+    "none": ActionMeta(is_conversational=True),
     "status": ActionMeta(is_conversational=True),
     "thanks": ActionMeta(is_conversational=True),
     "goodbye": ActionMeta(is_conversational=True),
+    "chitchat": ActionMeta(is_conversational=True),
+    "conversation": ActionMeta(is_conversational=True),
     
     # =========================================================================
     # HUMAN-IN-THE-LOOP (ask user questions during execution)

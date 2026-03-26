@@ -48,7 +48,12 @@ Use the "thinking" field as a scratchpad. Work through these steps in order befo
    • CHECKED / SELECTED → toggle / tab is already in that state. Do NOT tap if goal already matches.
    • hint='...' → field is EMPTY (placeholder text). text='...' → field already HAS content.
    • id=... → use resource-id to precisely identify a field when text labels are ambiguous or duplicated.
-   • Badge numbers [1]..[N] on the annotated screenshot match [N] in the element list — use both to confirm identity.
+   • Badge numbers [1]..[N] on the annotated screenshot match [N] in the element list — use them to target ANY gesture:
+     - element_id: N      → precise target for tap / long_press (resolves to that element's center pixel)
+     - from_element: N    → swipe/scroll START point (from that element's center)
+     - to_element: N      → swipe END point (to that element's center), optional
+     - direction + distance_frac → when no to_element: "down" moves finger downward 0.0–1.0 × screen height
+     Always prefer element_id / from_element over free-text target when the element is visible in the annotated image.
 
 ④ DECIDE — Pick the single most efficient next action grounded in the screenshot + element flags.
 
@@ -97,9 +102,27 @@ FAILURE RECOVERY
 - If LAST FAILURE shows the same action_type + target failed once → change approach: scroll, try a different label, re-navigate.
 - If the same action has failed 2 or more times → escalate: go back, restart from a known screen, or take a completely different path. Do NOT repeat a failed action a third time.
 
+SAFETY — COMMIT ACTIONS
+Actions that are irreversible or have side effects MUST be confirmed before execution:
+  send | delete | remove | purchase | pay | uninstall | clear data | factory reset
+If the goal is ambiguous for a commit action (e.g. "delete the thing" with multiple matches) →
+use ask_user to confirm BEFORE tapping the destructive button.
+If the user has already explicitly stated the intent → proceed, but set description to reflect the commit clearly.
+
 {contextual_rules}
-━━━ AVAILABLE ACTIONS ━━━
-open_app | tap | type | press_enter | dismiss_keyboard | swipe | scroll_down | scroll_up | back | wait
+{actions_block}
+
+━━━ ASK_USER RULE ━━━
+Use ask_user ONLY when you cannot proceed without human input:
+- Screen shows a disambiguation dialog (e.g. "Select SIM", "Choose account", "Pick a contact") and the user's command did not specify which one.
+- A required field value is missing (recipient, amount, password, etc.) and cannot be inferred.
+- A commit action (send/delete/pay) is ambiguous and needs explicit confirmation.
+
+When using ask_user:
+- target = the EXACT question to ask the user (plain conversational English, ≤120 chars).
+- options = list of available choices VISIBLE on screen right now (e.g. ["SIM 1 - Airtel", "SIM 2 - Jio"]).
+  Extract option text from the visible element labels — ONLY include real options shown on screen.
+  Leave options as [] if there are no discrete choices (user must type a free answer).
 
 ━━━ OUTPUT ━━━
 Respond ONLY with a valid JSON object. No text outside the JSON.
@@ -107,8 +130,19 @@ Respond ONLY with a valid JSON object. No text outside the JSON.
 {
   "thinking": "<scratchpad: ① verify prev → ② blockers → ③ read UI flags → ④ decision>",
   "memory": "<1-3 sentences: fields confirmed, items found, key state accumulated across turns>",
+
+  "gesture": "tap",
   "action_type": "tap",
-  "target": "<element label, or exact text to type>",
+
+  "element_id": null,
+  "from_element": null,
+  "to_element": null,
+  "direction": "",
+  "distance_frac": 0.5,
+  "duration_ms": 400,
+
+  "target": "<text to type (type action) | element label fallback | ask_user question>",
+  "options": [],
   "field_hint": "<field label for type actions, empty string otherwise>",
   "description": "<one line for logging>",
   "screen_context": "<App | Screen | [mini-player: track + Pause/Play if visible] | KEYBOARD: Hidden/Visible | [any overlay]>",
@@ -117,6 +151,16 @@ Respond ONLY with a valid JSON object. No text outside the JSON.
   "verification_passed": true,
   "verification_reason": "<one sentence: screenshot evidence for previous action result>"
 }
+
+Gesture coordinate rules:
+• gesture="tap"       + element_id=N   → taps center of element [N]
+• gesture="long_press"+ element_id=N   → long-press on element [N]
+• gesture="swipe"     + from_element=M + to_element=N → swipe from [M] center to [N] center
+• gesture="swipe"     + from_element=M + direction="down" + distance_frac=0.6
+                                        → swipe finger DOWN 60% of screen height from [M]
+  direction is PHYSICAL finger movement: "down"=finger moves down, "up"=finger moves up
+  (scroll content DOWN = finger moves UP → use direction="up" for scroll_down effect)
+• Fallback (no element visible): set element_id=null, use action_type + target label as before
 
 ━━━ EXAMPLES ━━━
 
@@ -215,6 +259,7 @@ _USER_TEMPLATE = """\
 GOAL:           {goal}
 PHASE:          {phase}
 SCREEN:         {screen_context}
+MEMORY:         {agent_memory}
 HISTORY:        {steps_done}
 LAST FAILURE:   {last_failure}
 PENDING:        {pending_commits}
@@ -239,13 +284,17 @@ How to use this list:
 
 
 def _build_system(screen_context: str, phase: str) -> str:
-    """Build system prompt with contextual rules injected."""
+    """Build system prompt with contextual rules and action list injected from registry."""
+    from config.gesture_tools import get_rsg_actions_prompt
+
     rules = get_contextual_rules(screen_context or "", phase or "")
-    if rules:
-        rules_block = f"\n━━━ CONTEXTUAL RULES (for this screen) ━━━\n{rules}\n"
-    else:
-        rules_block = ""
-    return REACTIVE_STEP_SYSTEM.replace("{contextual_rules}", rules_block)
+    rules_block = f"\n━━━ CONTEXTUAL RULES (for this screen) ━━━\n{rules}\n" if rules else ""
+
+    return (
+        REACTIVE_STEP_SYSTEM
+        .replace("{contextual_rules}", rules_block)
+        .replace("{actions_block}", get_rsg_actions_prompt())
+    )
 
 
 def get_reactive_step_messages(
@@ -258,13 +307,28 @@ def get_reactive_step_messages(
     ui_hints: str = "",
     ui_elements: str = "",
     prev_action: str = "None (first step)",
+    agent_memory: str = "",
+    model: str | None = None,
+    task_id: str | None = None,
 ) -> tuple:
-    """Return (system_prompt, user_prompt) for the system/user message split."""
+    """Return (system_prompt, user_prompt) for the system/user message split.
+
+    Args:
+        model:   LLM model ID — injected into runtime metadata appended to system prompt.
+        task_id: Task/session ID — injected into runtime metadata for log correlation.
+    """
+    from prompts.builder import build_runtime_line
+
     system = _build_system(screen_context, phase)
+    # Append compact runtime metadata line (OpenClaw-style) for debugging
+    runtime = build_runtime_line("ReactiveStep", model=model, task_id=task_id)
+    system = system + f"\n\n{runtime}"
+
     user = _USER_TEMPLATE.format(
         goal=goal,
         phase=phase,
         screen_context=screen_context or "Screen not yet observed — use phase intent and step history",
+        agent_memory=agent_memory or "None yet",
         steps_done=steps_done or "None yet",
         last_failure=last_failure or "None",
         pending_commits=pending_commits or "None",
@@ -284,6 +348,7 @@ def get_reactive_step_prompt(
     ui_hints: str = "",
     ui_elements: str = "",
     prev_action: str = "None (first step)",
+    agent_memory: str = "",
 ) -> str:
     """Single-string prompt for the text-only LLM path (backward compat)."""
     system = _build_system(screen_context, phase)
@@ -294,6 +359,7 @@ def get_reactive_step_prompt(
         goal=goal,
         phase=phase,
         screen_context=screen_context or "Screen not yet observed — use phase intent and step history",
+        agent_memory=agent_memory or "None yet",
         steps_done=steps_done or "None yet",
         last_failure=last_failure or "None",
         pending_commits=pending_commits or "None",

@@ -557,7 +557,9 @@ class VoiceCaptureController(
                     val isFinal = json.optBoolean("final", false)
 
                     if (isFinal) {
-                        viewModel.addUserMessage(transcript)
+                        // Promote the streaming bubble to final in-place (no duplicate).
+                        // Falls back to a new bubble if no streaming bubble exists.
+                        viewModel.finalizeStreamingUserMessage(transcript)
                         viewModel.updatePartialTranscript("")
 
                         // Post-Whisper local intercept: try keyword routing before waiting for
@@ -582,6 +584,8 @@ class VoiceCaptureController(
                             // HYBRID: local intent already fired by tryQuickRoute; let server respond.
                         }
                     } else {
+                        // Grow the streaming bubble in-place as words arrive.
+                        viewModel.startOrUpdateStreamingUserMessage(transcript)
                         viewModel.updatePartialTranscript(transcript)
                     }
                 }
@@ -739,9 +743,29 @@ class VoiceCaptureController(
                 }
                 
                 "hitl_question" -> {
-                    // Backend requests user input via HITL dialog
-                    Log.i(TAG, "🙋 HITL question received")
-                    HITLHandler.handleMessage(json)
+                    // Backend requests user input via HITL dialog.
+                    // Speak the TTS announcement first (if provided) so the user hears
+                    // "I have a question — which SIM card should I use?" before the
+                    // dialog card animates in.
+                    Log.i(TAG, "HITL question received")
+                    val ttsText = json.optString("tts_text", "")
+                    if (ttsText.isNotEmpty() && !deviceControlOnly) {
+                        val voicePrefs = context.getSharedPreferences(
+                            "aura_voice_settings", Context.MODE_PRIVATE
+                        )
+                        val voiceId = voicePrefs.getString(
+                            "selected_voice_id", "en-US-AriaNeural"
+                        ) ?: "en-US-AriaNeural"
+                        ttsManager.speak(ttsText, voiceId) {
+                            // Show the dialog only after TTS finishes so the user
+                            // isn't reading and listening at the same time.
+                            scope.launch(Dispatchers.Main) {
+                                HITLHandler.handleMessage(json)
+                            }
+                        }
+                    } else {
+                        HITLHandler.handleMessage(json)
+                    }
                 }
                 
                 "hitl_dismiss" -> {
@@ -1013,9 +1037,10 @@ class VoiceCaptureController(
                     isAborted = isAborted
                 )
 
-                // Auto-minimize after showing skeleton steps briefly (first time only)
+                // Minimize immediately when automation starts — overlay must not be
+                // visible during task execution (it would cover the screen being automated).
+                // The overlay restores only when the final goal is complete.
                 if (!isComplete && !isAborted && currentTask <= 1) {
-                    kotlinx.coroutines.delay(2500)
                     AuraOverlayService.minimize(context)
                 }
                 

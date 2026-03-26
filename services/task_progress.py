@@ -168,23 +168,59 @@ class TaskProgressService:
         progress = self._sessions.get(session_id)
         if not progress:
             return None
-        
+
+        # Idempotency guard: once the task is done/aborted, ignore further step
+        # completions. The coordinator calls _broadcast_step for every reactive
+        # sub-step even after all high-level phases complete, which would
+        # re-set is_complete=True and re-broadcast BUBBLE_EXPAND on every step.
+        if progress.is_complete or progress.is_aborted:
+            logger.debug(
+                f"complete_current_step: session={session_id} already "
+                f"{'complete' if progress.is_complete else 'aborted'} — skipping"
+            )
+            return progress
+
         # Mark current as completed/failed
         if progress.current_index < len(progress.items):
             progress.items[progress.current_index].status = "completed" if success else "failed"
         
         # Advance to next
         progress.current_index += 1
-        
+
         if progress.current_index < len(progress.items):
             progress.items[progress.current_index].status = "in_progress"
-        else:
-            progress.is_complete = True
-        
+        # NOTE: do NOT set is_complete here — that happens only when the coordinator
+        # explicitly calls finish_task(), after all reactive sub-steps are done.
+        # Setting it here would fire BUBBLE_EXPAND as soon as the last skeleton
+        # phase is ticked off, even though execution is still continuing.
+
         # Broadcast update (handles both sync and async contexts)
         _run_async_safe(self._broadcast_progress(progress))
-        
+
         logger.info(f"✅ Step {progress.current_index}/{len(progress.items)} complete")
+        return progress
+
+    def finish_task(self, session_id: str) -> Optional[TaskProgress]:
+        """
+        Explicitly mark a task as fully complete and broadcast BUBBLE_EXPAND.
+
+        Called by the coordinator after the execution loop exits — the only
+        correct time to set is_complete=True, since reactive sub-steps may
+        continue after the last skeleton phase is ticked off.
+        """
+        progress = self._sessions.get(session_id)
+        if not progress:
+            return None
+        if progress.is_complete or progress.is_aborted:
+            return progress
+
+        # Ensure all items are marked completed
+        for item in progress.items:
+            if item.status not in ("completed", "failed"):
+                item.status = "completed"
+
+        progress.is_complete = True
+        _run_async_safe(self._broadcast_progress(progress))
         return progress
     
     def abort_task(self, session_id: str, reason: str = "aborted") -> Optional[TaskProgress]:
@@ -218,6 +254,18 @@ class TaskProgressService:
         self._sessions.pop(session_id, None)
         self._cancel_events.pop(session_id, None)
     
+    async def _send_to_all(self, message: dict) -> None:
+        """Send a JSON message to all connected WebSockets and prune dead connections."""
+        dead_sockets = []
+        for ws in self._websockets:
+            try:
+                await ws.send_json(message)
+            except Exception as e:
+                logger.debug(f"Failed to send to WebSocket: {e}")
+                dead_sockets.append(ws)
+        for ws in dead_sockets:
+            self._websockets.discard(ws)
+
     async def _broadcast_progress(self, progress: TaskProgress) -> None:
         """Broadcast progress to all connected WebSockets."""
         message = {
@@ -238,55 +286,47 @@ class TaskProgressService:
             "is_complete": progress.is_complete,
             "is_aborted": progress.is_aborted
         }
-        
-        dead_sockets = []
-        for ws in self._websockets:
-            try:
-                await ws.send_json(message)
-            except Exception as e:
-                logger.debug(f"Failed to send to WebSocket: {e}")
-                dead_sockets.append(ws)
-        
-        # Clean up dead connections
-        for ws in dead_sockets:
-            self._websockets.discard(ws)
-    
+
+        # Log bubble-expand events for traceability.
+        # The Android overlay (bubble) restores to visible when is_complete or is_aborted
+        # fires — log exactly what goal and steps were shown so future issues can be traced.
+        if progress.is_complete:
+            steps_summary = " | ".join(
+                f"[{item.status}] {item.description}" for item in progress.items
+            )
+            logger.info(
+                f"🔓 BUBBLE_EXPAND goal='{progress.goal_description}' "
+                f"steps=[{steps_summary}]"
+            )
+        elif progress.is_aborted:
+            reached = progress.current_index
+            logger.warning(
+                f"🚫 BUBBLE_EXPAND (aborted) goal='{progress.goal_description}' "
+                f"reached_step={reached}/{len(progress.items)}"
+            )
+
+        await self._send_to_all(message)
+
     def get_progress(self, session_id: str) -> Optional[TaskProgress]:
         """Get current progress for a session."""
         return self._sessions.get(session_id)
-    
+
     def emit_agent_status(self, agent: str, output: str) -> None:
         """
         Emit an agent status update to all connected clients.
-        
+
         Shows real-time agent pipeline activity in Android UI.
-        
+
         Args:
             agent: Name of the agent (e.g., "ReasoningEngine", "Commander")
             output: Short status output (e.g., "Opening Spotify...")
         """
         _run_async_safe(self._broadcast_agent_status(agent, output))
         logger.info(f"🤖 Agent status: {agent}: {output[:50]}...")
-    
+
     async def _broadcast_agent_status(self, agent: str, output: str) -> None:
         """Broadcast agent status to all connected WebSockets."""
-        message = {
-            "type": "agent_status",
-            "agent": agent,
-            "output": output,
-        }
-        
-        dead_sockets = []
-        for ws in self._websockets:
-            try:
-                await ws.send_json(message)
-            except Exception as e:
-                logger.debug(f"Failed to send agent status: {e}")
-                dead_sockets.append(ws)
-        
-        # Clean up dead connections
-        for ws in dead_sockets:
-            self._websockets.discard(ws)
+        await self._send_to_all({"type": "agent_status", "agent": agent, "output": output})
 
 
 # Singleton instance

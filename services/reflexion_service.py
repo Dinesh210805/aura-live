@@ -142,10 +142,39 @@ class ReflexionService:
 
     @staticmethod
     def _goal_key(goal: str) -> str:
-        """Normalize goal string into a safe filename key."""
+        """
+        Bucket lessons by action type inferred from the goal text.
+
+        "send message to john" and "whatsapp john about meeting" both map to
+        'send_message', so they share a lesson pool — no vector DB needed.
+        Falls back to a 3-word slug when no action bucket matches.
+        """
         import re
-        normalized = goal.lower().strip()[:80]
-        return re.sub(r'[^a-z0-9]+', '_', normalized).strip('_') or "unknown"
+
+        # Match on ACTION VERBS only — not app names.
+        # open_app must come before send_message so "open WhatsApp" hits "open" first.
+        _ACTION_BUCKETS: list[tuple[str, list[str]]] = [
+            ("open_app",       ["open", "launch", "start"]),
+            ("send_message",   ["send", "message", "text", "sms"]),
+            ("make_call",      ["call", "dial", "phone", "ring"]),
+            ("play_media",     ["play", "listen", "watch", "stream", "music", "video", "song", "podcast"]),
+            ("search",         ["search", "find", "look up", "google", "browse"]),
+            ("navigate",       ["navigate", "directions", "route", "maps"]),
+            ("take_screenshot",["screenshot", "capture screen"]),
+            ("settings",       ["setting", "toggle", "enable", "disable", "turn on", "turn off", "wifi",
+                                 "bluetooth", "volume", "brightness"]),
+            ("email",          ["email", "mail", "compose"]),
+            ("social",         ["post", "tweet", "like", "share", "comment"]),
+        ]
+
+        text = goal.lower().strip()
+        for bucket, keywords in _ACTION_BUCKETS:
+            if any(kw in text for kw in keywords):
+                return bucket
+
+        # Fallback: first 3 meaningful words as slug
+        words = re.findall(r'[a-z]+', text)[:3]
+        return "_".join(words) or "unknown"
 
 
 # Module-level singleton

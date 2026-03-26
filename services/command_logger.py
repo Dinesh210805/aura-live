@@ -283,6 +283,63 @@ class CommandLogger:
             pass
         self._terminal_file_handler = None
 
+    def _build_log_switch_options(self) -> str:
+        """Build HTML <option> tags for switching between available HTML logs."""
+        import html as _html
+
+        try:
+            log_files = sorted(
+                self.log_dir.glob("command_log_*.html"),
+                key=lambda p: p.name,
+                reverse=True,
+            )
+            if self.log_file.exists() and self.log_file not in log_files:
+                log_files.insert(0, self.log_file)
+
+            if not log_files:
+                return '<option value="">No logs available</option>'
+
+            current_name = self.log_file.name
+            options = []
+            for log_path in log_files:
+                file_name = log_path.name
+                display_name = file_name.replace("command_log_", "").replace(".html", "")
+                selected_attr = " selected" if file_name == current_name else ""
+                options.append(
+                    f'<option value="{_html.escape(file_name)}"{selected_attr}>{_html.escape(display_name)}</option>'
+                )
+            return "\n".join(options)
+        except Exception as e:
+            logger.debug(f"Could not build log switch options: {e}")
+            return '<option value="">Current log</option>'
+
+    def _refresh_log_switchers(self):
+        """Refresh log switcher options in all generated HTML logs that support it."""
+        options_html = self._build_log_switch_options()
+        pattern = re.compile(
+            r"(<!-- LOG_SWITCH_OPTIONS_START -->)(.*?)(<!-- LOG_SWITCH_OPTIONS_END -->)",
+            re.DOTALL,
+        )
+
+        for log_html in self.log_dir.glob("command_log_*.html"):
+            try:
+                with open(log_html, "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                if not pattern.search(content):
+                    continue
+
+                updated = pattern.sub(
+                    lambda m: f"{m.group(1)}\n{options_html}\n{m.group(3)}",
+                    content,
+                    count=1,
+                )
+                if updated != content:
+                    with open(log_html, "w", encoding="utf-8") as f:
+                        f.write(updated)
+            except Exception as e:
+                logger.debug(f"Could not refresh log switcher for {log_html}: {e}")
+
     def _write_header(self):
         """Write HTML log file header."""
         css = """
@@ -428,6 +485,9 @@ class CommandLogger:
         #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: #060a0d; border-bottom: 1px solid var(--border); padding: 7px 24px; display: flex; align-items: center; gap: 14px; }
         #topbar-title { color: var(--blue); font-weight: 700; font-size: 13px; white-space: nowrap; }
         #topbar-exec { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .log-switch-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .log-switch-select { background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; color: var(--text); font-size: 11px; padding: 3px 8px; min-width: 230px; max-width: 320px; }
+        .log-switch-select:focus { outline: none; border-color: var(--blue); }
         .ctrl-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; color: var(--muted2); font-size: 11px; padding: 3px 10px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s, color 0.15s; white-space: nowrap; }
         .ctrl-btn:hover { background: var(--border); color: var(--text); }
 
@@ -455,6 +515,7 @@ class CommandLogger:
         .vlm-screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid var(--orange); display: block; }
         .vlm-screenshot .screenshot-label { color: var(--orange); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
         """
+        log_switch_options = self._build_log_switch_options()
         js = """
         function toggle(id) {
             var el = document.getElementById(id);
@@ -484,6 +545,10 @@ class CommandLogger:
                 if (h) { var c = h.querySelector('.chevron'); if (c) c.classList.remove('rotated'); }
             });
         }
+        function switchLog(fileName) {
+            if (!fileName) return;
+            window.location.href = encodeURI(fileName);
+        }
         """
         with open(self.log_file, "w", encoding="utf-8") as f:
             f.write(f"""<!DOCTYPE html>
@@ -499,7 +564,13 @@ class CommandLogger:
 <div id="topbar">
   <span id="topbar-title">&#x1F916; AURA Log</span>
   <span id="topbar-exec">{self.execution_id}</span>
-  <div style="margin-left:auto;display:flex;gap:8px;">
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <label class="log-switch-label" for="log-switch">Logs</label>
+        <select id="log-switch" class="log-switch-select" onchange="switchLog(this.value)">
+            <!-- LOG_SWITCH_OPTIONS_START -->
+            {log_switch_options}
+            <!-- LOG_SWITCH_OPTIONS_END -->
+        </select>
     <button class="ctrl-btn" onclick="expandAll()">&#x25BC; Expand all</button>
     <button class="ctrl-btn" onclick="collapseAll()">&#x25B6; Collapse all</button>
   </div>
@@ -1389,6 +1460,8 @@ class CommandLogger:
             with open(log_path, "w", encoding="utf-8") as f:
                 f.write(content)
                 f.flush()
+
+            self._refresh_log_switchers()
             
             logger.info(f"📊 Log finalized: {self.llm_call_count} LLM, {self.vlm_call_count} VLM, {self.gesture_count} gestures")
             

@@ -100,11 +100,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
 /**
  * AuraOverlayService - System-wide overlay service for AURA voice assistant.
  * 
@@ -672,49 +672,42 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     
     // ── Live Alert pill animation helpers ──────────────────────────────────────
 
-    /** Map pipeline agent names → short verb for the notch chip text (≤10 chars). */
+    /** Map pipeline agent names → short evocative verb for the notch chip text (≤10 chars). */
     private fun agentToShortVerb(agent: String): String = when (agent.trim().uppercase()) {
-        "COMMANDER"  -> "Parsing"
-        "PLANNER"    -> "Planning"
+        "COMMANDER"  -> "Decoding"
+        "PLANNER"    -> "Charting"
         "REACTIVE"   -> "Thinking"
-        "PERCEIVER"  -> "Scanning"
-        "ACTOR"      -> "Acting"
-        "EXECUTOR"   -> "Acting"
-        "VERIFIER"   -> "Checking"
-        "RESPONDER"  -> "Responding"
-        "AURA"       -> "Running"
+        "PERCEIVER"  -> "Seeing"
+        "ACTOR"      -> "Tapping"
+        "EXECUTOR"   -> "Firing"
+        "VERIFIER"   -> "Confirming"
+        "RESPONDER"  -> "Crafting"
+        "AURA"       -> "Weaving"
         else         -> "Working"
     }
 
     /**
-     * Compose the chip text shown inside the notch pill (right side of camera hole).
-     * The timer lives on the LEFT via setUsesChronometer(); this returns only the verb part.
-     * Format: "Parsing" or "2/5 Scanning"
+     * Compose the chip text for the notch pill — just the current verb, no spinner.
+     * Spinners were removed: they caused excessive notify() calls (one per 350 ms)
+     * and the cycling characters appeared in PERCEIVER screenshots.
      */
-    private fun buildChipText(): String {
-        return if (_workingStepTotal > 0)
-            "${_workingStepCurrent}/${_workingStepTotal} $_workingVerb"
-        else
-            _workingVerb
-    }
+    private fun buildChipText(): String = _workingVerb
 
     /**
-     * Push a single Live Alert chip update. Called only when the verb or step count changes.
-     * The chronometer widget (setUsesChronometer) handles the timer ticking automatically,
-     * so there is no need to poll every second.
+     * Push a single Live Alert chip update.
+     * The animation loop has been removed — the chip updates once per agent/step
+     * transition instead of every 350 ms, reducing notification churn.
      */
     private fun pushLiveUpdate(statusText: String) {
-        val chip = buildChipText()
-        Log.i(TAG, "💠 pushLiveUpdate: chip='$chip', status='${statusText.take(60)}'")
+        Log.i(TAG, "💠 pushLiveUpdate: verb='$_workingVerb', status='${statusText.take(60)}'")
         _dotAnimJob?.cancel()
-        _dotAnimJob = serviceScope.launch {
-            updateNotificationForAutomation(
-                statusText = statusText,
-                chipText = chip,
-                stepCurrent = _workingStepCurrent,
-                stepTotal = _workingStepTotal
-            )
-        }
+        _dotAnimJob = null
+        updateNotificationForAutomation(
+            statusText = statusText,
+            chipText = buildChipText(),
+            stepCurrent = _workingStepCurrent,
+            stepTotal = _workingStepTotal
+        )
     }
 
     /**
@@ -923,15 +916,22 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // Build ProgressStyle directly (no reflection)
+            // Build ProgressStyle (required to obtain a promoted chip on Android 16+).
+            // IMPORTANT: setProgressIndeterminate(true) renders a scrolling animation bar
+            // that EXPANDS the Live Alert into a full banner — this causes the expanded
+            // notification to appear in PERCEIVER screenshots and block underlying UI.
+            // Fix: for indeterminate state, set progress=0 with indeterminate=false so the
+            // ProgressStyle is present (enabling promotion) but renders NO visible bar.
+            // Only show a real progress fill when we have deterministic step data.
             val progressStyle = Notification.ProgressStyle()
-            if (indeterminate || max <= 0) {
-                progressStyle.setProgressIndeterminate(true)
-                Log.i(TAG, "\u2705 ProgressStyle: indeterminate=true")
-            } else {
+            if (!indeterminate && max > 0) {
                 val scaledProgress = ((progress.toFloat() / max) * 100).toInt().coerceIn(0, 100)
                 progressStyle.setProgress(scaledProgress)
-                Log.i(TAG, "\u2705 ProgressStyle: progress=$scaledProgress (from $progress/$max)")
+                Log.i(TAG, "\u2705 ProgressStyle: determinate progress=$scaledProgress ($progress/$max)")
+            } else {
+                // No bar — stays compact. The spinner in setShortCriticalText signals activity.
+                progressStyle.setProgress(0)
+                Log.i(TAG, "\u2705 ProgressStyle: hidden (indeterminate suppressed to avoid expansion)")
             }
             progressStyle.setStyledByProgress(false)
 

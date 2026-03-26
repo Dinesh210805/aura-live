@@ -426,23 +426,8 @@ private fun ResponseSheet(
                         }
                     }
                     
-                    // Show partial transcript while listening OR while AI responds.
-                    // The final confirmed transcript arrives at turn_complete (after audio
-                    // finishes). Keeping the partial visible during RESPONDING lets the
-                    // user see what they said while the AI is speaking. It is cleared
-                    // automatically when the final transcript bubble is added to messages.
-                    if (state.partialTranscript.isNotBlank()) {
-                        item {
-                            OverlayMessageBubble(
-                                message = ConversationMessage(
-                                    text = state.partialTranscript,
-                                    isUser = true,
-                                    isPartial = true
-                                ),
-                                colors = colors,
-                            )
-                        }
-                    }
+                    // Partial transcript is now rendered via the streaming bubble in
+                    // messages (startOrUpdateStreamingUserMessage) — no separate item needed.
                 }
             }
         }
@@ -667,7 +652,38 @@ private fun OverlayMessageBubble(
     val isUser = message.isUser
     var showActions by remember { mutableStateOf(false) }
     val hapticFeedback = rememberHapticFeedback()
-    
+
+    // ── Typing animation ────────────────────────────────────────────────────
+    // For streaming bubbles: animate visible character count from 0 → full length
+    // each time the text grows. Non-streaming messages display instantly.
+    val targetChars = message.text.length
+    val animatedChars by animateIntAsState(
+        targetValue = if (message.isStreaming) targetChars else targetChars,
+        animationSpec = if (message.isStreaming) {
+            tween(durationMillis = (targetChars * 18).coerceIn(80, 600))
+        } else {
+            snap()
+        },
+        label = "typingChars"
+    )
+    val displayText = if (message.isStreaming) {
+        message.text.take(animatedChars)
+    } else {
+        message.text
+    }
+
+    // Blinking cursor — only animates for streaming bubbles; static 1f otherwise
+    val cursorAlpha by if (message.isStreaming) {
+        rememberInfiniteTransition(label = "cursor").animateFloat(
+            initialValue = 1f, targetValue = 0f,
+            animationSpec = infiniteRepeatable(tween(500), RepeatMode.Reverse),
+            label = "cursorAlpha"
+        )
+    } else {
+        remember { mutableFloatStateOf(1f) }
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
@@ -699,16 +715,34 @@ private fun OverlayMessageBubble(
                 Column(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
+                    // Main text — with inline cursor appended while streaming
+                    val shownText = if (message.isStreaming && animatedChars >= targetChars) {
+                        // Text fully typed — show blinking cursor
+                        buildString {
+                            append(displayText)
+                            append("\u2588") // block cursor ▉
+                        }
+                    } else {
+                        displayText
+                    }
+
                     Text(
-                        text = message.text,
+                        text = shownText,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             lineHeight = 20.sp
                         ),
-                        color = if (isUser) Color.White else colors.textPrimary
+                        color = if (isUser) {
+                            Color.White.copy(
+                                alpha = if (message.isStreaming && animatedChars >= targetChars)
+                                    0.7f + 0.3f * cursorAlpha else 1f
+                            )
+                        } else {
+                            colors.textPrimary
+                        }
                     )
-                    
-                    // Timestamp for non-partial messages
-                    if (!message.isPartial) {
+
+                    // Timestamp only on finalized messages
+                    if (!message.isPartial && !message.isStreaming) {
                         Text(
                             text = message.getRelativeTime(),
                             style = MaterialTheme.typography.labelSmall,
@@ -722,7 +756,7 @@ private fun OverlayMessageBubble(
                     }
                 }
             }
-            
+
             // Message Actions
             AnimatedVisibility(
                 visible = showActions && !message.isPartial,

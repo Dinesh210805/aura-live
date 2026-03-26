@@ -11,6 +11,10 @@ from typing_extensions import Annotated
 
 from utils.types import ActionResult, UIElement
 
+# Maximum number of executed_steps entries kept in TaskState (G12).
+# Older entries are dropped so the state dict doesn't grow unboundedly.
+MAX_EXECUTED_STEPS = 50
+
 
 # Custom reducer for error messages to handle multiple error sources
 def add_errors(existing: Optional[str], new: str) -> str:
@@ -32,6 +36,15 @@ def set_once(existing: Optional[float], new: float) -> float:
     if existing is not None:
         return existing
     return new
+
+
+# Custom reducer for executed_steps - append new entries, cap at MAX_EXECUTED_STEPS (G12)
+def cap_executed_steps(
+    existing: Optional[List[ActionResult]], new: Optional[List[ActionResult]]
+) -> List[ActionResult]:
+    """Merge executed_steps lists and keep only the most recent MAX_EXECUTED_STEPS entries."""
+    combined = list(existing or []) + list(new or [])
+    return combined[-MAX_EXECUTED_STEPS:]
 
 
 # Custom reducer for current_step - take maximum value
@@ -87,8 +100,8 @@ class TaskState(TypedDict):
     current_step: Annotated[Optional[int], update_step]
     """Index of the current step being executed (0-based). Uses max reducer to handle concurrent updates."""
 
-    executed_steps: Optional[List[ActionResult]]
-    """Log of actions that have been completed with their results."""
+    executed_steps: Annotated[Optional[List[ActionResult]], cap_executed_steps]
+    """Log of actions that have been completed with their results (capped at MAX_EXECUTED_STEPS)."""
 
     # Feedback and error handling
     feedback_message: Annotated[Optional[str], update_status]
@@ -170,22 +183,7 @@ class TaskState(TypedDict):
     screen_description: Optional[str]
     """Natural language description of the screen (from Screen Reader agent)."""
 
-    # Note: Deprecated - replaced by Perception Controller (see UI Perception Blueprint)
-    # Legacy UI modality fields - modality selection must be handled by
-    # Perception Controller, not graph nodes or agents.
-    ui_mode: Optional[str]
-    """DEPRECATED: UI modality - must be determined by Perception Controller."""
-
-    ui_confidence: Optional[float]
-    """DEPRECATED: UI confidence - must be provided by Perception Controller."""
-
-    visual_reference: Optional[bool]
-    """DEPRECATED: Visual reference flag - must be determined by Perception Controller."""
-
-    escalation_count: Optional[int]
-    """DEPRECATED: Escalation count - must be tracked by Perception Controller."""
-
-    # Conversation Context (NEW)
+    # Conversation Context
     conversation_turn: Optional[int]
     """Turn number in current conversation session (0 = first turn)."""
 

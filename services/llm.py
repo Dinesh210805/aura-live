@@ -111,6 +111,8 @@ class LLMService:
         prompt: str,
         provider: Optional[str] = None,
         model: Optional[str] = None,
+        caller_agent: str = "llm_service",  # G11: identify the calling agent in token tracker
+        system_prompt: Optional[str] = None,  # G15: optional system prompt for sub-agent calls
         **kwargs: Any,
     ) -> str:
         """
@@ -137,6 +139,11 @@ class LLMService:
         logger.info(
             f"Running LLM with provider: {target_provider}, model: {target_model}"
         )
+
+        # Thread caller_agent and system_prompt through kwargs (G11, G15)
+        kwargs["_caller_agent"] = caller_agent
+        if system_prompt:
+            kwargs["_system_prompt"] = system_prompt
 
         # Try the specified provider first
         try:
@@ -253,13 +260,19 @@ class LLMService:
         try:
             # Remove NVIDIA-specific parameters that Groq doesn't support
             kwargs.pop("thinking", None)
-            
             kwargs.pop("reasoning_effort", None)
             kwargs.pop("tools", None)
-            
+            _agent_name = kwargs.pop("_caller_agent", "llm_service")  # G11
+            _sys_prompt = kwargs.pop("_system_prompt", None)  # G15
+
+            messages = []
+            if _sys_prompt:
+                messages.append({"role": "system", "content": _sys_prompt})
+            messages.append({"role": "user", "content": prompt})
+
             create_params = {
                 "model": model,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": messages,
             }
 
             create_params.update(kwargs)
@@ -281,9 +294,9 @@ class LLMService:
                     f"Completion: {usage.completion_tokens}, "
                     f"Total: {usage.total_tokens}"
                 )
-                # Track in global tracker
+                # Track in global tracker (G11: use caller agent name)
                 token_tracker.track(
-                    agent="llm_service",
+                    agent=_agent_name,
                     model_type="llm",
                     provider="groq",
                     model=model,
@@ -343,18 +356,26 @@ class LLMService:
                 config_params["temperature"] = kwargs.pop("temperature")
             if "top_p" in kwargs:
                 config_params["top_p"] = kwargs.pop("top_p")
-            # Strip Groq-specific parameters
+            # Strip Groq-specific parameters and internal meta-params
             kwargs.pop("response_format", None)
             kwargs.pop("reasoning_effort", None)
             kwargs.pop("tools", None)
+            _agent_name = kwargs.pop("_caller_agent", "llm_service")  # G11
+            _sys_prompt = kwargs.pop("_system_prompt", None)  # G15
 
             # Create config object if we have parameters
             config = None
             if config_params and genai_types is not None:
                 config = genai_types.GenerateContentConfig(**config_params)
 
+            # G15: prepend system prompt to contents if provided
+            contents = f"{_sys_prompt}\n\n---\n\n{prompt}" if _sys_prompt else prompt
+            if _sys_prompt and config_params and genai_types is not None:
+                # Also set as system_instruction when using GenerateContentConfig
+                config_params["system_instruction"] = _sys_prompt
+                config = genai_types.GenerateContentConfig(**config_params)
             response = self.gemini_client.models.generate_content(
-                model=model, contents=prompt, config=config
+                model=model, contents=contents, config=config
             )
             
             response_text = response.text
@@ -373,9 +394,9 @@ class LLMService:
                     f"Completion: {usage.candidates_token_count}, "
                     f"Total: {usage.total_token_count}"
                 )
-                # Track in global tracker
+                # Track in global tracker (G11: use caller agent name)
                 token_tracker.track(
-                    agent="llm_service",
+                    agent=_agent_name,
                     model_type="llm",
                     provider="gemini",
                     model=model,

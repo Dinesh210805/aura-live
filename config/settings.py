@@ -176,6 +176,12 @@ class Settings(BaseSettings):
         env="FALLBACK_VLM_PROVIDER",
         description="Provider for fallback VLM model",
     )
+    vlm_timeout_seconds: int = Field(
+        default=30,
+        env="VLM_TIMEOUT_SECONDS",
+        description="Hard wall-clock timeout (seconds) for each VLM element-selection call. "
+                    "Prevents a slow provider response from stalling the entire coordinator loop.",
+    )
     default_stt_model: str = Field(
         default="whisper-large-v3-turbo",
         env="DEFAULT_STT_MODEL",

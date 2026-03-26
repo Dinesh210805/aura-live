@@ -1,5 +1,5 @@
 """
-AURA Centralized Prompts Module - v2.0.0
+AURA Centralized Prompts Module - v2.1.0
 
 All LLM prompts are versioned and centralized here for:
 - Easy maintenance and updates
@@ -8,9 +8,19 @@ All LLM prompts are versioned and centralized here for:
 - Token optimization tracking
 
 Version History:
+- v2.1.0 (2026-03-25): Modular builder (OpenClaw-inspired), safety sections, runtime metadata,
+                        VLM CoT preamble, verifier improvements, duplicate icons fix
 - v2.0.0 (2026-01-31): Centralized prompts, condensed reasoning, fixed hallucinations
 - v1.0.0 (legacy): Inline prompts in individual service files
 """
+
+# Modular Prompt Builder (v1.0 - OpenClaw-inspired)
+from .builder import (
+    PromptMode,
+    build_aura_agent_prompt,
+    build_runtime_line,
+    build_prompt_report,
+)
 
 # Personality (unchanged)
 from .personality import (
@@ -85,18 +95,24 @@ from .screen_reader import (
 
 # Current prompt versions for tracking
 PROMPT_VERSIONS = {
-    "reasoning": "2.0.0",
+    "builder": "1.0.0",
+    "reasoning": "2.1.0",
     "planning": "2.0.0",
     "classification": "2.0.0",
-    "vision": "3.0.0",
+    "vision": "3.1.0",
     "personality": "1.0.0",
     "screen_state": "1.0.0",
     "screen_reader": "1.0.0",
-    "reactive_step": "3.0.0",
+    "reactive_step": "4.1.0",
     "dynamic_rules": "1.0.0",
 }
 
 __all__ = [
+    # Builder
+    "PromptMode",
+    "build_aura_agent_prompt",
+    "build_runtime_line",
+    "build_prompt_report",
     # Personality
     "AURA_PERSONALITY",
     "EMOTIONAL_PATTERNS",

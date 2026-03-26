@@ -1,8 +1,12 @@
 """
-Reasoning Engine Prompts - v2.0.0
+Reasoning Engine Prompts - v2.1.0
 
 Condensed, focused prompts for action reasoning.
 Optimized for token efficiency and reduced hallucination.
+
+Changes from v2.1:
+- Added runtime metadata injection support in get_reasoning_prompt()
+- Added explicit safety reminder for commit/destructive actions
 
 Changes from v1:
 - Reduced from ~2000 tokens to ~800 tokens
@@ -141,11 +145,13 @@ SUBGOAL: {subgoal}
 HISTORY: {history}
 SCREEN: {width}x{height}px
 
-━━━ REASONING PROCESS ━━━
-1. OBSERVE: What app/screen? What's visible?
-2. GOAL SHORTCUT: Can I complete goal RIGHT NOW? (Play button + song loaded = TAP PLAY!)
-3. GOAL CHECK: Is the goal ALREADY achieved? (Pause visible = music playing)
-4. DECIDE: What action moves toward the goal?
+━━━ REASONING (required before output) ━━━
+Think through these steps silently before writing your answer:
+① OBSERVE: What app/screen is visible? List 2-3 key UI elements you can see.
+② GOAL SHORTCUT: Can I complete the goal RIGHT NOW from this screen?
+   (e.g. Play button + song loaded = TAP PLAY immediately)
+③ GOAL CHECK: Is the goal ALREADY achieved? (e.g. Pause visible = music IS playing)
+④ DECIDE: What single action moves closest to the goal? Pick the most direct path.
 
 ━━━ GOAL COMPLETION SIGNALS ━━━
 - "Pause" button visible → music IS playing → done
@@ -214,23 +220,30 @@ def get_reasoning_prompt(
     history: str,
     max_element_index: int = 20,
     loop_warning: Optional[str] = None,
+    model: Optional[str] = None,
+    task_id: Optional[str] = None,
 ) -> str:
     """
     Build the reasoning prompt with current context.
-    
+
     Args:
         observation: Current UI state observation
         context: Goal and subgoal context
         history: Action history summary
         max_element_index: Highest valid element index from UI tree
         loop_warning: Optional loop detection warning
-    
+        model: LLM model being used (injected into runtime metadata line)
+        task_id: Current task ID (for debugging correlation)
+
     Returns:
         Formatted prompt string
     """
+    from prompts.builder import build_runtime_line
+
     max_hint = f"0-{max_element_index} or -1" if max_element_index > 0 else "-1 (no elements)"
-    
-    return REASONING_PROMPT_V2.format(
+    runtime_line = build_runtime_line("Coordinator", model=model, task_id=task_id)
+
+    base = REASONING_PROMPT_V2.format(
         observation=observation,
         context=context,
         history=history,
@@ -238,6 +251,7 @@ def get_reasoning_prompt(
         max_index_hint=max_hint,
         max_index=max_element_index,
     )
+    return base + f"\n\n{runtime_line}"
 
 
 def build_loop_warning(loop_type: str, suggestion: str) -> str:

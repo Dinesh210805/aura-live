@@ -149,3 +149,44 @@ Deadline: **March 16, 2026 @ 5:00 PM PT**
 3. Deploy to Cloud Run and verify `/health` returns 200
 4. (Optional) Android `BuildConfig` for release WebSocket URL (Task 7)
 5. Make GitHub repo public before submitting to Devpost
+
+---
+
+## Known Gaps & Fix Status
+
+Identified 2026-03-25. Priority tiers: **P0** = critical correctness, **P1** = reliability, **P2** = observability, **P3** = nice-to-have.
+
+### P0 — Critical (fix immediately)
+
+| # | Gap | Location | Status |
+|---|-----|----------|--------|
+| G1 | **HITL never called** — coordinator falls through `ask_user`/`stuck` to actor (gesture executor), which tries to execute them as real gestures → crash or no-op | `agents/coordinator.py:559` | ✅ Fixed |
+| G2 | **History grows unboundedly** — `step_memory` list in coordinator has no cap; very long tasks overflow LLM context window | `agents/coordinator.py` | ✅ Fixed |
+| G3 | **No structured error taxonomy** — all failures map to string status codes; no per-error-type recovery strategies | `utils/error_types.py` (missing) | ✅ Fixed |
+| G4 | **No per-task token budget cap** — `TokenTracker` singleton has no budget enforcement; runaway tasks consume unlimited tokens | `utils/token_tracker.py` | ✅ Fixed |
+
+### P1 — Reliability
+
+| # | Gap | Location | Status |
+|---|-----|----------|--------|
+| G5 | **Retry ladder not per-subgoal** — `replan_count` was a task-level global; each new subgoal now resets it to 0 | `agents/coordinator.py` | ✅ Fixed |
+| G6 | **VLM timeout not surfaced** — `_try_cv_vlm` now runs `select_with_fallback` in a `ThreadPoolExecutor` with `vlm_timeout_seconds` (default 30 s) | `perception/perception_pipeline.py` | ✅ Fixed |
+| G7 | **No barge-in on HITL wait** — `HITLService.register_voice_answer()` resolves pending question; websocket router checks HITL before task dispatch | `services/hitl_service.py`, `api_handlers/websocket_router.py` | ✅ Fixed |
+| G8 | **`execute_aura_task_from_text` fires without graph init guard** — ADK `FunctionTool` can be called before `set_compiled_graph()` runs; raises cryptic `AttributeError` | `adk_agent.py` | ✅ Fixed (prior session) |
+
+### P2 — Observability
+
+| # | Gap | Location | Status |
+|---|-----|----------|--------|
+| G9 | **Token tracker resets on restart** — in-memory singleton; no persistence for cross-session budget analysis | `utils/token_tracker.py` | ✅ Fixed |
+| G10 | **No per-phase timing metrics** — phases have no start/end timestamps; can't diagnose slow phases post-mortem | `aura_graph/agent_state.py` | ✅ Fixed |
+| G11 | **Commander never logs token usage** — only coordinator/reactive calls go through token tracker | `agents/commander.py` | ✅ Fixed |
+
+### P3 — Nice-to-Have
+
+| # | Gap | Location | Status |
+|---|-----|----------|--------|
+| G12 | **`executed_steps` in TaskState grows unboundedly** — capped at 50 via custom `cap_executed_steps` LangGraph reducer | `aura_graph/state.py` | ✅ Fixed |
+| G13 | **No A/B prompt version tracking** — `PROMPT_VERSIONS` dict logged via `PROMPT_VERSIONS` command-logger event in `run_aura_task()` | `aura_graph/graph.py` | ✅ Fixed |
+| G14 | **VLM CoT preamble not in VISION_REASONING_PROMPT** — added ①②③④ think-before-output block matching `ELEMENT_SELECTION_PROMPT` style | `prompts/reasoning.py` | ✅ Fixed |
+| G15 | **`PromptMode.MINIMAL` unused** — verifier's `semantic_verify` now uses `build_aura_agent_prompt(mode=PromptMode.MINIMAL)` as system prompt; `LLMService.run()` now accepts `system_prompt` param | `agents/verifier_agent.py`, `services/llm.py` | ✅ Fixed |

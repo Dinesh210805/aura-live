@@ -37,7 +37,7 @@ class HITLDialogOverlay(
     
     companion object {
         private const val TAG = "HITLDialog"
-        
+
         // Question types matching backend
         const val TYPE_CONFIRMATION = "confirmation"
         const val TYPE_SINGLE_CHOICE = "single_choice"
@@ -45,6 +45,8 @@ class HITLDialogOverlay(
         const val TYPE_TEXT_INPUT = "text_input"
         const val TYPE_NOTIFICATION = "notification"
         const val TYPE_ACTION_REQUIRED = "action_required"
+        // Hybrid: tap an option button OR type a custom answer
+        const val TYPE_CHOICE_WITH_TEXT = "choice_with_text"
     }
     
     // UI Components
@@ -288,6 +290,9 @@ class HITLDialogOverlay(
             TYPE_ACTION_REQUIRED -> {
                 setupActionRequired(actionType)
             }
+            TYPE_CHOICE_WITH_TEXT -> {
+                setupChoiceWithText(options, metadata)
+            }
         }
         
         // Cancel button visibility
@@ -389,11 +394,75 @@ class HITLDialogOverlay(
         confirmButton.text = "Submit"
     }
     
+    private fun setupChoiceWithText(options: List<String>, metadata: Map<String, Any>) {
+        // Show radio buttons for the detected screen options + a text field below
+        // so the user can either tap an option or type a custom answer.
+        optionsContainer.visibility = View.VISIBLE
+        inputField.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
+
+        optionsContainer.removeAllViews()
+
+        // Radio group for the on-screen options
+        val radioGroup = RadioGroup(context)
+        options.forEachIndexed { _, option ->
+            val radioButton = RadioButton(context).apply {
+                text = option
+                textSize = 15f
+                setTextColor(Color.WHITE)
+                buttonTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#64D2FF"))
+                setPadding(16, 16, 16, 16)
+                id = View.generateViewId()
+            }
+            radioButton.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    selectedOption = option
+                    // Clear the text field when an option is chosen
+                    inputField.setText("")
+                }
+            }
+            radioGroup.addView(radioButton)
+        }
+        optionsContainer.addView(radioGroup)
+
+        // Divider label between radio group and text field
+        val divider = TextView(context).apply {
+            text = "— or type your own answer —"
+            textSize = 12f
+            setTextColor(Color.parseColor("#8E8E93"))
+            gravity = Gravity.CENTER
+            setPadding(0, 16, 0, 8)
+        }
+        optionsContainer.addView(divider, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+
+        // Text field placeholder from metadata
+        val placeholder = metadata["placeholder"] as? String ?: "Or type your answer…"
+        inputField.hint = placeholder
+        inputField.setText("")
+
+        // Typing clears the radio selection
+        inputField.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (!s.isNullOrEmpty()) {
+                    radioGroup.clearCheck()
+                    selectedOption = null
+                }
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        confirmButton.text = "Submit"
+    }
+
     private fun setupNotification() {
         optionsContainer.visibility = View.GONE
         inputField.visibility = View.GONE
         progressBar.visibility = View.GONE
-        
+
         confirmButton.text = "OK"
         cancelButton.visibility = View.GONE
     }
@@ -476,6 +545,12 @@ class HITLDialogOverlay(
             }
             TYPE_ACTION_REQUIRED -> {
                 response["action_completed"] = true
+            }
+            TYPE_CHOICE_WITH_TEXT -> {
+                // Prefer typed text if the user wrote something; otherwise use the tapped option
+                val typed = inputField.text.toString().trim()
+                response["text_input"] = typed
+                response["selected_option"] = if (typed.isEmpty()) selectedOption ?: "" else ""
             }
         }
         

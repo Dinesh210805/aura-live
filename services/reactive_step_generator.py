@@ -65,6 +65,9 @@ class ReactiveStepGenerator:
         ui_elements=None,
         prev_subgoal: Optional[Subgoal] = None,
         prev_action_succeeded: bool = True,
+        screen_width: int = 1080,
+        screen_height: int = 1920,
+        agent_memory: str = "",
     ) -> Optional[Subgoal]:
         """
         Generate the next concrete step for the current phase.
@@ -112,6 +115,7 @@ class ReactiveStepGenerator:
             goal=goal.original_utterance,
             phase=goal.current_phase.description,
             screen_context=screen_context,
+            agent_memory=agent_memory,
             steps_done=steps_done_str,
             pending_commits=", ".join(goal.pending_commits) if goal.pending_commits else "None",
             last_failure=self._last_failure_reason(step_history),
@@ -176,12 +180,118 @@ class ReactiveStepGenerator:
                 logger.warning("ReactiveStepGenerator: LLM returned unparseable response")
                 return None
 
+            # ── SoM coordinate resolution ──────────────────────────────────────
+            # Extract new schema gesture fields and resolve element_id / from_element
+            # references to concrete pixel coordinates BEFORE building the Subgoal.
+            # Backward-compatible: if these keys are absent the block is a no-op.
+            _gesture      = parsed.get("gesture")
+            _element_id   = parsed.get("element_id")
+            _from_element = parsed.get("from_element")
+            _to_element   = parsed.get("to_element")
+            _direction    = (parsed.get("direction") or "").lower().strip()
+            _distance_frac = float(parsed.get("distance_frac") or 0.5)
+            _duration_ms  = parsed.get("duration_ms")
+            _som_tap_coords = None          # (cx, cy) for tap / long_press
+            _som_swipe_params: dict = {}    # start_x/y + end_x/y for swipe
+
+            # "gesture" field (new schema) takes priority over legacy "action_type"
+            if _gesture:
+                parsed["action_type"] = _gesture
+
+            if ui_elements and (_element_id is not None or _from_element is not None):
+                from utils.ui_element_finder import get_element_center
+
+                def _som_center(idx):
+                    """1-indexed element_id → (cx, cy) or None."""
+                    try:
+                        i = int(idx)
+                        if 1 <= i <= len(ui_elements):
+                            return get_element_center(ui_elements[i - 1])
+                    except (ValueError, TypeError):
+                        pass
+                    return None
+
+                if _element_id is not None:
+                    _c = _som_center(_element_id)
+                    if _c:
+                        _som_tap_coords = _c
+                        logger.debug(f"SoM: element_id={_element_id} → coords={_c}")
+
+                elif _from_element is not None:
+                    _fc = _som_center(_from_element)
+                    if _fc:
+                        fx, fy = _fc
+                        _tc = _som_center(_to_element) if _to_element is not None else None
+                        if _tc:
+                            tx, ty = _tc
+                            _som_swipe_params = {
+                                "start_x": fx, "start_y": fy,
+                                "end_x": tx,   "end_y": ty,
+                            }
+                        elif _direction:
+                            _dh = int(_distance_frac * screen_height)
+                            _dw = int(_distance_frac * screen_width)
+                            _dir_delta = {
+                                "up":    (0, -_dh),
+                                "down":  (0,  _dh),
+                                "left":  (-_dw, 0),
+                                "right": ( _dw, 0),
+                            }
+                            _dx, _dy = _dir_delta.get(_direction, (0, _dh))
+                            _som_swipe_params = {
+                                "start_x": fx,        "start_y": fy,
+                                "end_x":   fx + _dx,  "end_y":   fy + _dy,
+                            }
+                        if _som_swipe_params and _duration_ms:
+                            _som_swipe_params["duration"] = int(_duration_ms)
+                        logger.debug(
+                            f"SoM: from_element={_from_element}→{_fc} "
+                            f"swipe_params={_som_swipe_params}"
+                        )
+            # Fallback: bare "swipe" + direction with no element anchoring.
+            # The new schema puts direction in the "direction" field, not "target".
+            # If SoM resolution produced no coords (no from_element), inject
+            # screen-center-based start/end so the executor always gets valid coords.
+            if (
+                not _som_swipe_params
+                and (_gesture == "swipe" or parsed.get("action_type") == "swipe")
+                and _direction in ("up", "down", "left", "right")
+            ):
+                cx = screen_width // 2
+                cy = screen_height // 2
+                _frac = _distance_frac or 0.4
+                _dh = int(_frac * screen_height)
+                _dw = int(_frac * screen_width)
+                _dir_delta = {
+                    "up":    (0, -_dh),
+                    "down":  (0,  _dh),
+                    "left":  (-_dw, 0),
+                    "right": ( _dw, 0),
+                }
+                _dx, _dy = _dir_delta[_direction]
+                _som_swipe_params = {
+                    "start_x": cx,        "start_y": cy,
+                    "end_x":   cx + _dx,  "end_y":   cy + _dy,
+                }
+                if _duration_ms:
+                    _som_swipe_params["duration"] = int(_duration_ms)
+                logger.debug(
+                    f"SoM: bare-direction swipe {_direction!r} frac={_frac} → "
+                    f"({cx},{cy})→({cx+_dx},{cy+_dy})"
+                )
+            # ──────────────────────────────────────────────────────────────────
+
             action_type = parsed.get("action_type", "tap")
             target = parsed.get("target")
             field_hint = (parsed.get("field_hint") or "").strip()
             description = parsed.get("description") or f"[{action_type}] {target or ''}"
             phase_complete = bool(parsed.get("phase_complete", False))
             goal_complete = bool(parsed.get("goal_complete", False))
+            # Options for ask_user: list of visible on-screen choices the LLM extracted
+            ask_user_options: list[str] = [
+                str(o).strip() for o in (parsed.get("options") or [])
+                if str(o).strip()
+            ]
 
             # Deterministic post-parse override: if the LLM misses an obvious
             # completion signal in the screen (e.g. navigation already active),
@@ -283,6 +393,8 @@ class ReactiveStepGenerator:
                 subgoal.parameters["__screen_context__"] = returned_screen_context
             if field_hint:
                 subgoal.parameters["__field_hint__"] = field_hint
+            if ask_user_options:
+                subgoal.parameters["options"] = ask_user_options
             if not prev_step_ok and prev_step_issue:
                 subgoal.parameters["__prev_step_ok__"] = False
                 subgoal.parameters["__prev_step_issue__"] = prev_step_issue
@@ -293,6 +405,16 @@ class ReactiveStepGenerator:
             subgoal.parameters["__verification_passed__"] = verification_passed
             if verification_reason:
                 subgoal.parameters["__verification_reason__"] = verification_reason
+            # Forward VLM's accumulated memory to the next call via coordinator
+            if memory:
+                subgoal.parameters["__agent_memory__"] = memory
+
+            # Persist SoM pre-resolved coordinates so the coordinator can skip
+            # the perception step and use the exact pixel targets directly.
+            if _som_tap_coords:
+                subgoal.parameters["__resolved_coords__"] = _som_tap_coords
+            if _som_swipe_params:
+                subgoal.parameters.update(_som_swipe_params)
 
             logger.info(
                 f"🦭 Reactive step [{action_type}] {target!r} "
@@ -322,7 +444,13 @@ class ReactiveStepGenerator:
                 entry = f"{icon} {label}"
             else:
                 entry = f"{icon} {m.action_type}({m.target or ''}) → {m.screen_type}"
-            if m.result != "success" and m.screen_description:
+            # Show screen context for failures AND navigation-class successes so
+            # the VLM knows what screen was reached after each transition.
+            _show_screen = (m.result != "success") or (
+                m.action_type in ("open_app", "navigate", "scroll_down", "scroll_up",
+                                   "swipe", "back", "tap") and m.screen_description
+            )
+            if _show_screen and m.screen_description:
                 screen_note = m.screen_description[:80].replace("\n", " ")
                 entry += f" [screen: {screen_note}]"
             # Append post-action state delta for the next turn's ① VERIFY PREV check

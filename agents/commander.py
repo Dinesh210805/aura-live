@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from prompts import INTENT_PARSING_PROMPT, INTENT_PARSING_PROMPT_WITH_CONTEXT, VISUAL_PATTERNS
 from services.llm import LLMService
+from services.task_progress import get_task_progress_service
 from utils.logger import get_logger
 from utils.types import IntentObject
 
@@ -52,6 +53,7 @@ class CommanderAgent:
 
     def _parse_direct(self, transcript: str, context: Optional[Dict[str, Any]] = None) -> IntentObject:
         """Parse intent using LLM, with optional conversation context."""
+        result = None
         try:
             context_block = self._build_context_block(context) if context else ""
             if context_block:
@@ -60,53 +62,46 @@ class CommanderAgent:
                 )
             else:
                 prompt = INTENT_PARSING_PROMPT.format(transcript=transcript)
+
             result = self.llm_service.run(
                 prompt,
                 max_tokens=400,
                 response_format={"type": "json_object"},
+                caller_agent="commander",  # G11: attribute tokens to commander
             )
-            
-            # Extract JSON from response
-            result = result.strip()
-            if result.startswith("```json"):
-                result = result[7:]
-            if result.endswith("```"):
-                result = result[:-3]
-            
-            # Handle both single-object and array responses
-            stripped = result.strip()
-            if stripped.startswith("["):
-                arr_start = stripped.find("[")
-                arr_end = stripped.rfind("]") + 1
-                if arr_start != -1 and arr_end > arr_start:
-                    parsed_arr = json.loads(stripped[arr_start:arr_end])
-                    if isinstance(parsed_arr, list) and parsed_arr:
-                        result = json.dumps(max(parsed_arr, key=lambda x: x.get("confidence", 0)))
-            else:
-                start = result.find("{")
-                end = result.rfind("}") + 1
-                if start != -1 and end > start:
-                    result = result[start:end]
 
-            intent_data = json.loads(result.strip())
-            # Strip scratchpad fields not part of IntentObject
-            thinking = intent_data.pop("thinking", None)
-            ambiguities = intent_data.pop("ambiguities", None)
+            # Strip markdown fences that some models add despite json_object mode
+            result = result.strip()
+            if result.startswith("```"):
+                result = result.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+
+            # Parse — handle array response (model returned multiple candidates)
+            raw = json.loads(result)
+            if isinstance(raw, list):
+                raw = max(raw, key=lambda x: x.get("confidence", 0))
+
+            # Strip scratchpad fields not part of IntentObject schema
+            thinking = raw.pop("thinking", None)
+            raw.pop("ambiguities", None)
             if thinking:
                 logger.debug(f"Commander thinking: {thinking[:80]}")
-            intent_data["action"] = self._normalize_action(intent_data.get("action", "general_interaction"))
-            intent_data = self._normalize_intent_fields(intent_data)
-            
+
+            raw["action"] = self._normalize_action(raw.get("action", "general_interaction"))
+            raw = self._normalize_intent_fields(raw)
+
             # Add visual reference flag if detected
             if VISUAL_PATTERNS.search(transcript):
-                intent_data.setdefault("parameters", {})["visual_reference"] = True
-            
-            logger.debug(f"Parsed intent: action={intent_data.get('action')}, recipient={intent_data.get('recipient')}, content={intent_data.get('content')}, parameters={intent_data.get('parameters')}")
-            
-            return IntentObject(**intent_data)
-            
-        except json.JSONDecodeError:
-            logger.error(f"JSON parse error: {result[:200] if 'result' in locals() else 'N/A'}")
+                raw.setdefault("parameters", {})["visual_reference"] = True
+
+            intent = IntentObject.model_validate(raw)
+            logger.debug(
+                f"Parsed intent: action={intent.action}, recipient={intent.recipient}, "
+                f"content={intent.content}, parameters={intent.parameters}"
+            )
+            return intent
+
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Parse failed: {e} | raw={result[:200] if result else 'N/A'}")
             return self._fallback_intent(transcript, "parse_error")
         except Exception as e:
             logger.error(f"Parse failed: {e}")
@@ -124,8 +119,6 @@ class CommanderAgent:
 
     def parse_intent(self, transcript: str, context: Optional[Dict[str, Any]] = None) -> IntentObject:
         """Parse transcript using rules first, then LLM with conversation context."""
-        # Emit agent status for UI
-        from services.task_progress import get_task_progress_service
         get_task_progress_service().emit_agent_status("Commander", f"Parsing: '{transcript[:40]}...'")
         
         if self.rule_classifier:

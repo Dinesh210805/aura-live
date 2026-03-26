@@ -23,6 +23,7 @@ The key insight: Coordinates always come from deterministic sources
 (UI tree or CV). VLM only performs classification among valid options.
 """
 
+import concurrent.futures
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -489,13 +490,31 @@ class PerceptionPipeline:
             except Exception:
                 pass
 
-            # Step 3: VLM Selection
-            selection = self.vlm_selector.select_with_fallback(
-                annotated_image=annotated_b64,
-                detections=detections,
-                intent=intent,
-            )
-            
+            # Step 3: VLM Selection (with configurable wall-clock timeout — G6)
+            try:
+                from config.settings import settings as _settings
+                _vlm_timeout = _settings.vlm_timeout_seconds
+            except Exception:
+                _vlm_timeout = 30
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _vlm_pool:
+                    _vlm_future = _vlm_pool.submit(
+                        self.vlm_selector.select_with_fallback,
+                        annotated_image=annotated_b64,
+                        detections=detections,
+                        intent=intent,
+                    )
+                    selection = _vlm_future.result(timeout=_vlm_timeout)
+            except concurrent.futures.TimeoutError:
+                logger.error(
+                    f"VLM selection timed out after {_vlm_timeout}s for intent '{intent[:50]}'"
+                )
+                return LocateResult(
+                    success=False,
+                    reason=f"VLM selection timed out after {_vlm_timeout}s",
+                    source="cv_vlm",
+                )
+
             if not selection.success:
                 return LocateResult(
                     success=False,

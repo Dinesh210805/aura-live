@@ -12,6 +12,7 @@ Runs the perceive → decide → act → verify loop with:
 
 import asyncio
 import re
+import time
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
@@ -36,6 +37,11 @@ logger = get_logger(__name__)
 
 MAX_TOTAL_ACTIONS = 30
 MAX_REPLAN_ATTEMPTS = 3
+# Cap step_memory to the most recent N entries to prevent LLM context overflow.
+# At ~200 tokens/entry, 20 entries ≈ 4 000 tokens — well within context windows.
+MAX_STEP_MEMORY = 20
+# Maximum number of VLM-guided scroll attempts before giving up and replanning.
+MAX_SCROLL_SEARCH = 2
 
 # Commit actions that produce side-effects and need VLM verification
 COMMIT_ACTIONS = {
@@ -43,15 +49,10 @@ COMMIT_ACTIONS = {
     "place order", "checkout", "pay", "confirm", "delete", "remove",
 }
 
-# Actions that don't require a target element on screen
-NO_TARGET_ACTIONS = {
-    "open_app", "go_back", "go_home", "back", "home",
-    "scroll", "scroll_up", "scroll_down", "scroll_left", "scroll_right",
-    "swipe", "volume_up", "volume_down", "type",
-    "type_text", "enter_text", "set_text", "input_text",
-    "press_enter", "press_search", "dismiss_keyboard",
-    "wait", "none",
-}
+# Actions that don't require a target element on screen.
+# Derived from GESTURE_REGISTRY — stays in sync with config/gesture_tools.py automatically.
+from config.gesture_tools import get_no_target_actions as _get_no_target_actions
+NO_TARGET_ACTIONS = _get_no_target_actions()
 
 _MEDIA_STATE_KW = ("playing", "pause", "paused", "now playing")
 
@@ -246,6 +247,10 @@ class Coordinator:
         consecutive_gesture_failures = 0
         consecutive_verification_failures = 0
         running_screen_context = ""
+        _last_rsg_memory: str = ""                 # VLM's accumulated cross-turn memory, fed forward each call
+        _last_reactive_key: Optional[str] = None   # "action_type:target" of last reactive step
+        _same_reactive_count: int = 0              # consecutive repetitions of that key
+        _phase_start: float = time.time()          # G10: start time of the current phase
         _cmd_logger = get_command_logger()
 
         # --- Plan ---
@@ -305,6 +310,13 @@ class Coordinator:
                 goal.abort_reason = "Cancelled by user"
                 logger.warning("Coordinator: task cancelled by user")
                 break
+
+            # Context window guard: trim step_memory to the most recent entries
+            # so we never overflow the LLM's context window on long tasks.
+            if len(step_memory) > MAX_STEP_MEMORY:
+                dropped = len(step_memory) - MAX_STEP_MEMORY
+                step_memory = step_memory[-MAX_STEP_MEMORY:]
+                logger.debug(f"Coordinator: trimmed step_memory by {dropped} entries (cap={MAX_STEP_MEMORY})")
 
             subgoal = goal.current_subgoal
 
@@ -370,7 +382,9 @@ class Coordinator:
                             "phase": _phase_desc,
                             "reason": "already_in_app",
                             "foreground_package": _fg_pkg,
+                            "elapsed_ms": round((time.time() - _phase_start) * 1000),  # G10
                         }, agent_name="Coordinator")
+                        _phase_start = time.time()  # G10: reset for next phase
                         continue
 
                     logger.info(f"Coordinator: short-circuit open_app for '{_open_app_name}' (no VLM needed)")
@@ -401,6 +415,8 @@ class Coordinator:
                 # that receives screenshot + goal context + UI hints.
                 _latest_b64 = ""
                 _elements = []
+                _sw = 1080
+                _sh = 1920
                 try:
                     _latest_bundle = await self.perceiver.perception_controller.request_perception(
                         intent=intent, action_type="verify", force_screenshot=True,
@@ -439,7 +455,11 @@ class Coordinator:
                     goal, running_screen_context, step_memory,
                     screenshot_b64=_latest_b64, ui_hints="",
                     ui_elements=_elements,
+                    screen_width=_sw, screen_height=_sh,
+                    agent_memory=_last_rsg_memory,
                 )
+                if next_step is not None:
+                    _last_rsg_memory = next_step.parameters.pop("__agent_memory__", _last_rsg_memory)
                 if next_step is None:
                     # Likely a parse failure — retry once before giving up on this phase.
                     _reactive_retries = getattr(goal, "_reactive_retries", 0)
@@ -461,7 +481,9 @@ class Coordinator:
                     _cmd_logger.log_agent_decision("PHASE_COMPLETE", {
                         "completed_phase": prev_phase_desc,
                         "next_phase": goal.current_phase.description if goal.current_phase else None,
+                        "elapsed_ms": round((time.time() - _phase_start) * 1000),  # G10
                     }, agent_name="Coordinator")
+                    _phase_start = time.time()  # G10: reset for next phase
                     continue
                 # Inject the generated step into the subgoal list.
                 goal._reactive_retries = 0
@@ -491,13 +513,6 @@ class Coordinator:
                         "corrective_action": f"[{next_step.action_type}] {next_step.target or ''}",
                     }, agent_name="Reactive")
 
-                # No tap injection needed — the type gesture now carries focus_x/focus_y
-                # so Android uses ACTION_ACCESSIBILITY_FOCUS instead of a click.
-                # (tap-to-focus was the sole source of keyboard pop-ups during automation)
-                _is_type_action = next_step.action_type in (
-                    "type", "type_text", "enter_text", "set_text", "input_text"
-                )
-
                 goal.subgoals.append(next_step)
                 _cmd_logger.log_agent_decision("REACTIVE_STEP_GENERATED", {
                     "phase": goal.current_phase.description if goal.current_phase else "?",
@@ -518,6 +533,23 @@ class Coordinator:
                     "last_subgoal": subgoal.description,
                 }, agent_name="Coordinator")
                 break
+
+            # Token budget check — abort if the task has exceeded its API quota
+            try:
+                from utils.token_tracker import token_tracker
+                _within, _used, _limit = token_tracker.check_task_budget(session_id)
+                if not _within:
+                    goal.aborted = True
+                    goal.abort_reason = f"Token budget exceeded ({_used:,} / {_limit:,} tokens)"
+                    logger.warning(f"Coordinator: {goal.abort_reason}")
+                    _cmd_logger.log_agent_decision("TOKEN_BUDGET_EXCEEDED", {
+                        "used": _used,
+                        "limit": _limit,
+                        "session_id": session_id,
+                    }, agent_name="Coordinator")
+                    break
+            except Exception:
+                pass  # Non-fatal — don't block execution on tracker errors
 
             logger.info(f"Coordinator: subgoal {goal.current_subgoal_index + 1}/{len(goal.subgoals)} — {subgoal.description}")
             _cmd_logger.log_agent_decision("SUBGOAL_START", {
@@ -554,11 +586,95 @@ class Coordinator:
                     for i, sg in enumerate(goal.subgoals)
                 )
 
-            if action_type in NO_TARGET_ACTIONS:
+            # --- HITL interception: ask_user / stuck must NEVER reach the actor ---
+            if action_type in ("ask_user", "stuck"):
+                _question = subgoal.target or subgoal.description or "How should I proceed?"
+                _is_stuck = action_type == "stuck"
+                # Options extracted by RSG from visible screen elements (e.g. SIM card names)
+                _options: list[str] = subgoal.parameters.get("options", [])
+
+                # Build a natural-sounding TTS announcement before the dialog pops
+                if _is_stuck:
+                    _tts_text = f"I'm not sure how to continue. {_question}"
+                    _title = "AURA is stuck"
+                    _context = f"AURA got stuck while trying: {goal.description}"
+                elif _options:
+                    _tts_text = f"I have a question — {_question}"
+                    _title = "Please choose"
+                    _context = goal.description
+                else:
+                    _tts_text = f"I need more information. {_question}"
+                    _title = "Input needed"
+                    _context = goal.description
+
+                logger.info(
+                    f"Coordinator: {'stuck' if _is_stuck else 'ask_user'} — "
+                    f"HITL with {len(_options)} options: {_question[:80]}"
+                )
+                _cmd_logger.log_agent_decision(
+                    "STUCK" if _is_stuck else "ASK_USER",
+                    {"question": _question, "options": _options, "subgoal": subgoal.description},
+                    agent_name="Coordinator",
+                )
+                self.task_progress.emit_agent_status("AURA", f"Asking: {_question[:50]}")
+
+                try:
+                    from services.hitl_service import get_hitl_service
+                    hitl = get_hitl_service()
+                    # ask_contextual: shows option buttons + free-text field when options exist,
+                    # falls back to plain text input otherwise. Sends tts_text so Android speaks it.
+                    _answer = await hitl.ask_contextual(
+                        question=_question,
+                        options=_options,
+                        context=_context,
+                        tts_text=_tts_text,
+                        title=_title,
+                        timeout=60.0,
+                    )
+                    if _answer:
+                        # Inject the user's answer into step memory so the next
+                        # reactive step sees it as context.
+                        step_memory.append(StepMemory(
+                            subgoal_description=f"[human_input] {_question}",
+                            action_type="ask_user",
+                            target=_question,
+                            result=f"user_answered: {_answer}",
+                            screen_type="unknown",
+                            screen_before="",
+                            screen_after="",
+                        ))
+                        # Update running context so RSG picks up the answer.
+                        running_screen_context = (
+                            f"{running_screen_context}\n"
+                            f"[User answered '{_question}': {_answer}]"
+                        )[-800:]
+                        logger.info(f"Coordinator: HITL answer received — '{_answer[:60]}'")
+                    else:
+                        logger.warning("Coordinator: HITL timed out or cancelled — no answer")
+                        if _is_stuck:
+                            goal.aborted = True
+                            goal.abort_reason = "Stuck with no human resolution within timeout"
+                            break
+                except Exception as _hitl_exc:
+                    logger.error(f"Coordinator: HITL call failed — {_hitl_exc}")
+                subgoal.completed = True
+                goal.advance_subgoal()
+                replan_count = 0  # G5: fresh replan budget for each new subgoal
+                continue
+
+            _has_preresolved = (
+                subgoal.parameters.get("__resolved_coords__") is not None
+                or "start_x" in subgoal.parameters
+            )
+            if action_type in NO_TARGET_ACTIONS or _has_preresolved:
                 # No UI element to locate — skip perception entirely.
-                # This prevents unnecessary UI-tree fetches and OmniParser calls
-                # for open_app, type, press_enter, scroll, etc.
-                logger.debug(f"Coordinator: skipping perception for no-target action '{action_type}'")
+                # This covers: fixed-target actions (open_app, type, scroll…)
+                # AND SoM-preresolved gestures where the VLM already supplied
+                # pixel coordinates via element_id / from_element references.
+                logger.debug(
+                    f"Coordinator: skipping perception for '{action_type}' "
+                    f"(pre-resolved={_has_preresolved})"
+                )
             else:
                 # --- Perceive ---
                 self.task_progress.emit_agent_status("Perceiver", f"Scanning screen for '{subgoal.target or subgoal.description[:30]}'")
@@ -695,6 +811,13 @@ class Coordinator:
             if action_type in NO_TARGET_ACTIONS:
                 # Already decided above — no coordinates needed
                 pass
+            elif subgoal.parameters.get("__resolved_coords__"):
+                # SoM pre-resolved: VLM already identified the exact pixel center
+                coordinates = subgoal.parameters["__resolved_coords__"]
+                logger.debug(
+                    f"Coordinator: SoM pre-resolved coords {coordinates} "
+                    f"for '{action_type}'"
+                )
             elif screen_state and screen_state.target_match:
                 coordinates = (screen_state.target_match["x"], screen_state.target_match["y"])
             else:
@@ -860,6 +983,7 @@ class Coordinator:
                         subgoal.attempts += 1
                         if subgoal.attempts >= 3:
                             goal.advance_subgoal()
+                            replan_count = 0  # G5: fresh replan budget for each new subgoal
                             self._broadcast_step(session_id, success=False)
                         consecutive_gesture_failures += 1
                         if consecutive_gesture_failures >= 6:
@@ -1000,6 +1124,7 @@ class Coordinator:
                             subgoal.attempts += 1
                             if subgoal.attempts >= 3:
                                 goal.advance_subgoal()
+                                replan_count = 0  # G5: fresh replan budget for each new subgoal
                                 self._broadcast_step(session_id, success=False)
                             consecutive_gesture_failures += 1
                             if consecutive_gesture_failures >= 6:
@@ -1035,6 +1160,7 @@ class Coordinator:
                                     coordinates=None,
                                 ))
                                 goal.advance_subgoal()
+                                replan_count = 0  # G5: fresh replan budget for each new subgoal
                                 self._broadcast_step(session_id, success=True)
                                 _skip_type_dup = True
                                 break
@@ -1137,6 +1263,7 @@ class Coordinator:
                         goal.advance_phase()
                     # Skip to next subgoal on persistent failure
                     goal.advance_subgoal()
+                    replan_count = 0  # G5: fresh replan budget for each new subgoal
                     self._broadcast_step(session_id, success=False)
                 continue
 
@@ -1261,8 +1388,10 @@ class Coordinator:
                     screen_before=pre_signature,
                     screen_after="",
                     coordinates=None,
+                    screen_description=running_screen_context[:200] if running_screen_context else None,
                 ))
                 goal.advance_subgoal()
+                replan_count = 0  # G5: fresh replan budget for each new subgoal
                 if subgoal.parameters.get("__phase_complete__") and goal.phases:
                     _prev = goal.current_phase.description if goal.current_phase else "?"
                     goal.advance_phase()
@@ -1306,6 +1435,7 @@ class Coordinator:
                         )
                         screen_hash_history.clear()
                         goal.advance_subgoal()
+                        replan_count = 0  # G5: fresh replan budget for each new subgoal
                         self._broadcast_step(session_id, success=True)
                         continue
 
@@ -1318,6 +1448,7 @@ class Coordinator:
                         )
                         screen_hash_history.clear()
                         goal.advance_subgoal()
+                        replan_count = 0  # G5: fresh replan budget for each new subgoal
                         self._broadcast_step(session_id, success=True)
                         continue
 
@@ -1431,8 +1562,10 @@ class Coordinator:
                     ui_elements=post_elements,
                     prev_subgoal=subgoal,
                     prev_action_succeeded=action_result.success,
+                    agent_memory=_last_rsg_memory,
                 )
             if next_step:
+                _last_rsg_memory = next_step.parameters.pop("__agent_memory__", _last_rsg_memory)
                 verification_passed = next_step.parameters.pop("__verification_passed__", True)
                 verification_reason = next_step.parameters.pop("__verification_reason__", "VLM confirmed")
                 _reactive_ctx = next_step.parameters.get("__screen_context__", "")
@@ -1596,7 +1729,55 @@ class Coordinator:
                 ))
                 if next_step:
                     goal.subgoals.append(next_step)
+
+                    # --- Same-target reactive loop guard ---
+                    # If the ReactiveStepGenerator keeps recommending the exact same
+                    # action+target (e.g. tap 'rasputin' autocomplete) without the
+                    # phase ever completing, we are stuck. Force a replan after 4
+                    # consecutive repeats so the planner can try a different approach.
+                    _rkey = f"{next_step.action_type}:{(next_step.target or '').strip().lower()}"
+                    if _rkey == _last_reactive_key:
+                        _same_reactive_count += 1
+                    else:
+                        _same_reactive_count = 0
+                        _last_reactive_key = _rkey
+
+                    if _same_reactive_count >= 4:
+                        logger.warning(
+                            f"Coordinator: reactive loop — '{_last_reactive_key}' repeated "
+                            f"{_same_reactive_count + 1}x without phase completion — forcing replan"
+                        )
+                        _same_reactive_count = 0
+                        _last_reactive_key = None
+                        replan_count += 1
+                        if replan_count > MAX_REPLAN_ATTEMPTS:
+                            goal.aborted = True
+                            goal.abort_reason = (
+                                f"Stuck: reactive step '{next_step.target}' repeated "
+                                f"without progress after {MAX_REPLAN_ATTEMPTS} replan attempts"
+                            )
+                        else:
+                            obstacle = (
+                                f"Tapping '{next_step.target}' was attempted 5+ times in a row "
+                                f"without completing the phase. The screen appears stuck (keyboard "
+                                f"may still be visible or autocomplete is intercepting taps). "
+                                f"Try a different approach: dismiss the keyboard, press a search/enter "
+                                f"button, or look for the target in the visible results list."
+                            )
+                            new_subgoals = self.planner.replan(
+                                goal, obstacle,
+                                perception=post_bundle,
+                                step_history=step_memory,
+                            )
+                            self._apply_replan(goal, new_subgoals)
+                            self._broadcast_start(session_id, goal)
+                        self._broadcast_step(session_id, success=True)
+                        if goal.aborted:
+                            break
+                        continue
+
                 goal.advance_subgoal()
+                replan_count = 0  # G5: fresh replan budget for each new subgoal
                 if subgoal.parameters.get("__phase_complete__") and goal.phases:
                     _prev = goal.current_phase.description if goal.current_phase else "?"
                     goal.advance_phase()
@@ -1605,7 +1786,9 @@ class Coordinator:
                         "signal": "step_flag",
                         "completed_phase": _prev,
                         "next_phase": goal.current_phase.description if goal.current_phase else None,
+                        "elapsed_ms": round((time.time() - _phase_start) * 1000),  # G10
                     }, agent_name="Coordinator")
+                    _phase_start = time.time()  # G10: reset for next phase
                 self._broadcast_step(session_id, success=True)
             else:
                 # W10 fix: use retry ladder before replan
@@ -1658,6 +1841,29 @@ class Coordinator:
         except Exception:
             pass  # best-effort; don't fail the task over this
 
+        # Write a Reflexion lesson after task abort so future attempts improve.
+        if goal.aborted and step_memory:
+            try:
+                from services.reflexion_service import get_reflexion_service
+                reflexion = get_reflexion_service()
+                if reflexion:
+                    await reflexion.generate_lesson(
+                        goal.original_utterance,
+                        step_memory,
+                        goal.abort_reason or "task aborted",
+                    )
+            except Exception as _refl_err:
+                logger.debug(f"Reflexion lesson write skipped: {_refl_err}")
+
+        # Signal true task completion to the UI (expands the overlay bubble).
+        # Only fires here — after ALL reactive sub-steps are done — never inside
+        # complete_current_step which fires per skeleton-phase tick.
+        if goal.completed and not goal.aborted:
+            try:
+                self.task_progress.finish_task(session_id)
+            except Exception:
+                pass
+
         return {
             "status": status,
             "goal": goal,
@@ -1708,7 +1914,6 @@ class Coordinator:
     @staticmethod
     def _extract_open_app_phase(phase_desc: str) -> Optional[str]:
         """Return the app name if the phase is just 'Open <App>', else None."""
-        import re
         m = re.match(r"^(?:Open|Launch|Start)\s+(.+)$", phase_desc, re.IGNORECASE)
         if not m:
             return None
@@ -1721,7 +1926,6 @@ class Coordinator:
     @staticmethod
     def _find_input_field_name(screen_context: str) -> Optional[str]:
         """Extract the first input field name from screen context (e.g. 'Search bar')."""
-        import re
         # Match "INPUT FIELDS:" section entries like "- Search bar: empty"
         match = re.search(
             r"INPUT FIELDS:\s*\n?\s*-\s*(.+?)(?::\s|\n|$)",
@@ -1802,8 +2006,6 @@ class Coordinator:
         if not edit_elements:
             return None
 
-        import re as _re
-
         hint_norm = field_hint.strip().lower()
 
         def _signals(el: Dict) -> str:
@@ -1824,7 +2026,7 @@ class Coordinator:
 
         # Layer 2: whole-word boundary match in combined signals
         if hint_norm:
-            pattern = _re.compile(r"\b" + _re.escape(hint_norm) + r"\b")
+            pattern = re.compile(r"\b" + re.escape(hint_norm) + r"\b")
             candidates = [el for el in edit_elements if pattern.search(_signals(el))]
             if len(candidates) == 1:
                 return candidates[0]
@@ -1865,7 +2067,7 @@ class Coordinator:
 
         # Layer 4: token scoring — every word ≥ 2 chars from hint + description
         combined = (field_hint + " " + description).lower()
-        tokens = [t for t in _re.findall(r"\b\w{2,}\b", combined) if t not in ("to", "in", "an", "of", "the", "and", "for")]
+        tokens = [t for t in re.findall(r"\b\w{2,}\b", combined) if t not in ("to", "in", "an", "of", "the", "and", "for")]
         # also always include the raw hint_norm tokens even if short
         if hint_norm:
             tokens.extend(hint_norm.split())
@@ -1890,6 +2092,82 @@ class Coordinator:
 
         return None
 
+    async def _ask_rsg_scroll_direction(
+        self,
+        target: str,
+        screenshot_b64: Optional[str],
+        screen_context: str,
+    ) -> Optional[str]:
+        """
+        Ask the RSG/VLM which direction to scroll to find a missing target element.
+
+        Sends the current screenshot (when available) along with the target name to
+        the VLM so it can reason about screen layout — e.g. on an Amazon product page
+        it knows "Add to Cart" lives below the fold and will answer SCROLL_DOWN.
+
+        Returns:
+            "down"  — target is likely below the visible area
+            "up"    — target is likely above the visible area
+            None    — VLM unavailable, or element is not on this screen at all
+        """
+        if not self.reactive_gen:
+            return None
+
+        question = (
+            f'The element "{target}" is NOT visible on the current screen.\n'
+            f"Current screen: {screen_context or 'unknown'}\n\n"
+            f"Where would '{target}' most likely be on this type of screen?\n"
+            f"Reply with EXACTLY one of:\n"
+            f"  SCROLL_DOWN - the target is likely below the current view\n"
+            f"  SCROLL_UP   - the target is likely above the current view\n"
+            f"  NOT_HERE    - this is the wrong screen, scrolling won't help"
+        )
+
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            from functools import partial
+
+            loop = asyncio.get_event_loop()
+            if screenshot_b64 and getattr(self.reactive_gen, "vlm_service", None):
+                with ThreadPoolExecutor(max_workers=1) as ex:
+                    raw = await loop.run_in_executor(
+                        ex,
+                        partial(
+                            self.reactive_gen.vlm_service.analyze_image,
+                            screenshot_b64,
+                            question,
+                            agent="CoordinatorScrollQuery",
+                            temperature=0.1,
+                        )
+                    )
+            elif getattr(self.reactive_gen, "llm_service", None):
+                with ThreadPoolExecutor(max_workers=1) as ex:
+                    raw = await loop.run_in_executor(
+                        ex,
+                        partial(
+                            self.reactive_gen.llm_service.run,
+                            question,
+                            max_tokens=20,
+                            temperature=0.1,
+                        )
+                    )
+            else:
+                return None
+
+            raw = (raw or "").strip().upper()
+            if "SCROLL_DOWN" in raw:
+                logger.info(f"RSG scroll query: target '{target}' → SCROLL_DOWN")
+                return "down"
+            if "SCROLL_UP" in raw:
+                logger.info(f"RSG scroll query: target '{target}' → SCROLL_UP")
+                return "up"
+            logger.info(f"RSG scroll query: target '{target}' → NOT_HERE (raw: {raw[:60]})")
+            return None
+
+        except Exception as e:
+            logger.debug(f"_ask_rsg_scroll_direction failed (non-fatal): {e}")
+            return None
+
     async def _handle_target_not_found(
         self,
         subgoal: "Subgoal",
@@ -1904,33 +2182,53 @@ class Coordinator:
         """
         Handle case where target element is not found on screen.
 
-        Uses retry ladder: scroll → force VLM → replan.
+        Uses retry ladder: RSG-guided scroll (up to MAX_SCROLL_SEARCH times) →
+        force VLM → replan.
 
         Returns:
             "found" if target located after retry,
             "replan" if should replan,
             "abort" if should abort.
-
-        # RETRY SYSTEM: This is coordinator's internal retry system (system 1 of 3).
-        # FIXED: FIX-007 — internal scroll/replan retry loop kept for backward compat
-        # with non-reactive (static subgoal) execution path. In reactive mode this
-        # method is not called. All retries in reactive mode flow through
-        # LangGraph validate_outcome→retry_router pipeline (system 2 of 3).
-        # TODO: When static subgoal path is removed, remove this method too.
         """
-        strategy = subgoal.current_strategy
         _utterance = goal.original_utterance
         _plan_context = "\n".join(
             f"{i+1}. [{sg.action_type}] {sg.description} → {sg.target or '-'}"
             for i, sg in enumerate(goal.subgoals)
         )
 
-        # Try scrolling to find it
-        if subgoal.attempts == 0:
+        # ── Step 1: RSG-guided scroll search (up to MAX_SCROLL_SEARCH scrolls) ──
+        # On the first miss, ask the VLM which direction to scroll before acting.
+        # Subsequent misses continue in the same direction.
+        if subgoal.attempts < MAX_SCROLL_SEARCH:
+            if subgoal.attempts == 0:
+                # Extract screenshot for VLM consultation
+                _screenshot_b64: Optional[str] = None
+                try:
+                    if screen_state and screen_state.perception_bundle:
+                        _ss = getattr(screen_state.perception_bundle, "screenshot", None)
+                        if _ss:
+                            _screenshot_b64 = getattr(_ss, "screenshot_base64", None)
+                except Exception:
+                    pass
+                _screen_ctx = (screen_state.screen_description or "") if screen_state else ""
+                scroll_dir = await self._ask_rsg_scroll_direction(
+                    target=subgoal.target or subgoal.description,
+                    screenshot_b64=_screenshot_b64,
+                    screen_context=_screen_ctx,
+                )
+                if scroll_dir is None:
+                    scroll_dir = "down"  # safe default
+                subgoal.parameters["__scroll_dir__"] = scroll_dir
+            else:
+                scroll_dir = subgoal.parameters.get("__scroll_dir__", "down")
+
             subgoal.attempts += 1
             subgoal.escalate_strategy()
-            logger.info("Coordinator: target not found — scrolling down to search")
-            await self.actor.execute("scroll", parameters={"direction": "down"})
+            logger.info(
+                f"Coordinator: target '{subgoal.target}' not found — "
+                f"scrolling {scroll_dir} (attempt {subgoal.attempts}/{MAX_SCROLL_SEARCH})"
+            )
+            await self.actor.execute("scroll", parameters={"direction": scroll_dir})
             new_screen = await self.perceiver.perceive(
                 subgoal, intent, step_history=step_memory,
                 user_command=_utterance, plan_context=_plan_context,
@@ -1938,11 +2236,11 @@ class Coordinator:
             if new_screen.target_match:
                 return "found"
 
-        # Try force VLM perception
-        if subgoal.attempts <= 2:
+        # ── Step 2: Force VLM perception after scroll exhaustion ───────────────
+        if subgoal.attempts <= MAX_SCROLL_SEARCH + 1:
             subgoal.attempts += 1
             subgoal.escalate_strategy()
-            logger.info("Coordinator: target not found — forcing VLM perception")
+            logger.info("Coordinator: target not found — forcing VLM perception after scroll exhaustion")
             new_screen = await self.perceiver.perceive(
                 subgoal, intent, force_screenshot=True, step_history=step_memory,
                 user_command=_utterance, plan_context=_plan_context,

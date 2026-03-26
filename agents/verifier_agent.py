@@ -131,28 +131,47 @@ class VerifierAgent:
                 lines.append(label)
 
         el_summary = "\n".join(f"- {l}" for l in lines) if lines else "(no text elements)"
-        hint_line = f"\nExpected outcome: {success_hint}" if success_hint else ""
+        hint_line = f"\nExpected outcome hint: {success_hint}" if success_hint else ""
 
         prompt = (
-            f"Action just executed: {action_desc}{hint_line}\n\n"
-            f"Current screen elements:\n{el_summary}\n\n"
-            f"Did this action succeed based on the screen state? "
-            f"Answer YES or NO followed by one sentence reason."
+            f"You are verifying whether a mobile UI action produced the expected result.\n\n"
+            f"ACTION EXECUTED: {action_desc}{hint_line}\n\n"
+            f"CURRENT SCREEN ELEMENTS (top 15):\n{el_summary}\n\n"
+            f"━━━ VERIFICATION CHECKLIST ━━━\n"
+            f"① Does the screen show evidence the action completed? "
+            f"(e.g. sent indicator, new page loaded, item added, setting changed)\n"
+            f"② Are there error indicators? "
+            f"(e.g. 'try again', 'failed', 'no internet', 'something went wrong')\n"
+            f"③ Is the screen state consistent with success or failure?\n\n"
+            f"Respond with exactly: YES <one sentence reason>  OR  NO <one sentence reason>\n"
+            f"Examples:\n"
+            f"  YES Message 'Sent' indicator visible in chat.\n"
+            f"  NO Error dialog 'Couldn't send' is showing on screen."
         )
 
         try:
             from concurrent.futures import ThreadPoolExecutor
             from functools import partial
+            from prompts import PromptMode, build_aura_agent_prompt
+            _sys = build_aura_agent_prompt(
+                agent_name="Verifier", mode=PromptMode.MINIMAL
+            )  # G15: MINIMAL boilerplate for sub-agent call
             loop = asyncio.get_event_loop()
             with ThreadPoolExecutor(max_workers=1) as ex:
                 result = await loop.run_in_executor(
                     ex,
-                    partial(self.llm_service.run, prompt, max_tokens=60)
+                    partial(
+                        self.llm_service.run,
+                        prompt,
+                        max_tokens=80,
+                        caller_agent="verifier",
+                        system_prompt=_sys,
+                    )
                 )
-            result = (result or "").strip().upper()
-            passed = result.startswith("YES")
-            reason = result[:120]
-            logger.debug(f"Verifier semantic_verify: {passed} — {reason[:60]}")
+            result = (result or "").strip()
+            passed = result.upper().startswith("YES")
+            reason = result[:150]
+            logger.debug(f"Verifier semantic_verify: {passed} — {reason[:80]}")
             return passed, reason
         except Exception as e:
             logger.warning(f"Verifier semantic_verify failed (non-fatal): {e}")

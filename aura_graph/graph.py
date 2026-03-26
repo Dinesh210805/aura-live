@@ -249,6 +249,30 @@ def create_aura_graph() -> StateGraph:
         raise
 
 
+async def _finalize_and_upload(cmd_logger: Any, status: str, task_id: str, result: dict) -> None:
+    """Finalize the execution log, upload to GCS, and clear the logger.
+
+    Shared by all execute_aura_task_* entry points to avoid copy-paste.
+    All errors are non-fatal — failures here must never mask the real result.
+    """
+    try:
+        cmd_logger.finalize(status=status)
+    except Exception as finalize_err:
+        logger.error(f"Failed to finalize command log: {finalize_err}")
+
+    try:
+        from gcs_log_uploader import upload_log_to_gcs_async
+        log_path = cmd_logger.get_log_file_path()
+        log_url = await upload_log_to_gcs_async(log_path, task_id)
+        if log_url:
+            result["log_url"] = log_url
+            logger.info(f"Execution log available at: {log_url}")
+    except Exception as gcs_err:
+        logger.warning(f"GCS log upload skipped: {gcs_err}")
+    finally:
+        clear_execution_logger()
+
+
 def compile_aura_graph(checkpointer: Any = None) -> Any:
     """
     Compile the AURA graph into a runnable application.
@@ -406,12 +430,18 @@ def compile_aura_graph(checkpointer: Any = None) -> Any:
         # Create and compile graph
         graph = create_aura_graph()
 
+        # Cross-task memory store: shared across all sessions within this process.
+        # Nodes can read/write user facts (e.g. preferred apps, last target) via
+        # config["store"] using store.put() / store.search().
+        from langgraph.store.memory import InMemoryStore
+        store = InMemoryStore()
+
         # FIXED: FIX-001 — add recursion_limit to prevent GraphRecursionError on retried tasks
         # Formula: 4 nodes/step × 10 steps × 2.5x retry buffer = 100
         if checkpointer:
-            app = graph.compile(checkpointer=checkpointer)
+            app = graph.compile(checkpointer=checkpointer, store=store)
         else:
-            app = graph.compile()
+            app = graph.compile(store=store)
 
         logger.info("Graph compiled successfully (parallel architecture enabled)")
         return app
@@ -508,14 +538,14 @@ async def execute_aura_task_from_streaming(
         # Execute the graph
         start_time = time.time()
 
-        # Configure execution
+        # Configure execution — thread_id must be inside configurable for the
+        # checkpointer to scope state by conversation thread.
         from config.settings import get_settings as _get_settings
         _settings = _get_settings()
         exec_config = {
-            "thread_id": thread_id,
-            "checkpoint_id": None,
             "recursion_limit": _settings.graph_recursion_limit,
             "configurable": {
+                "thread_id": thread_id or effective_session_id,
                 "user_id": initial_state.get("user_id"),
                 "task_id": initial_state.get("task_id"),
             },
@@ -560,37 +590,13 @@ async def execute_aura_task_from_streaming(
             metadata={"error": result.get("error_message")} if result.get("error_message") else None
         )
         
-        # Finalize log with summary before clearing
-        try:
-            cmd_logger.finalize(status=final_status)
-        except Exception as finalize_err:
-            logger.error(f"Failed to finalize command log: {finalize_err}")
-
-        # Upload execution log to GCS (non-blocking, non-fatal)
-        try:
-            from gcs_log_uploader import upload_log_to_gcs_async
-            log_path = cmd_logger.get_log_file_path()
-            log_url = await upload_log_to_gcs_async(log_path, task_id)
-            if log_url:
-                result["log_url"] = log_url
-                logger.info(f"Execution log available at: {log_url}")
-        except Exception as gcs_err:
-            logger.warning(f"GCS log upload skipped: {gcs_err}")
-        finally:
-            clear_execution_logger()
-
+        await _finalize_and_upload(cmd_logger, final_status, task_id, result)
         return result
 
     except Exception as e:
         logger.error(f"Failed to execute AURA streaming task: {e}")
-        # Finalize and clear logger on error too
-        try:
-            if cmd_logger:
-                cmd_logger.finalize(status="error")
-        except Exception as finalize_err:
-            logger.error(f"Failed to finalize command log on error: {finalize_err}")
-        finally:
-            clear_execution_logger()
+        if cmd_logger:
+            await _finalize_and_upload(cmd_logger, "error", task_id if 'task_id' in locals() else "unknown", {})
         return {
             "status": "failed",
             "error_message": f"Task execution failed: {str(e)}",
@@ -735,37 +741,13 @@ async def execute_aura_task_from_text(
             metadata={"error": final_state.get("error_message")} if final_state.get("error_message") else None
         )
         
-        # Finalize log with summary before clearing
-        try:
-            cmd_logger.finalize(status=status)
-        except Exception as finalize_err:
-            logger.error(f"Failed to finalize command log: {finalize_err}")
-
-        # Upload execution log to GCS (non-blocking, non-fatal)
-        try:
-            from gcs_log_uploader import upload_log_to_gcs_async
-            log_path = cmd_logger.get_log_file_path()
-            log_url = await upload_log_to_gcs_async(log_path, task_id)
-            if log_url:
-                final_state["log_url"] = log_url
-                logger.info(f"Execution log available at: {log_url}")
-        except Exception as gcs_err:
-            logger.warning(f"GCS log upload skipped: {gcs_err}")
-        finally:
-            clear_execution_logger()
-
+        await _finalize_and_upload(cmd_logger, status, task_id, final_state)
         return final_state
 
     except Exception as e:
         logger.error(f"Graph execution failed: {e}")
-        # Finalize and clear logger on error too
-        try:
-            if cmd_logger:
-                cmd_logger.finalize(status="error")
-        except Exception as finalize_err:
-            logger.error(f"Failed to finalize command log on error: {finalize_err}")
-        finally:
-            clear_execution_logger()
+        if cmd_logger:
+            await _finalize_and_upload(cmd_logger, "error", task_id if 'task_id' in locals() else "unknown", {})
         return {
             "transcript": text_input,
             "status": "failed",
@@ -855,28 +837,13 @@ async def execute_aura_task(
             metadata={"error": error_message} if error_message else None
         )
         
-        # Finalize log with summary before clearing
-        try:
-            cmd_logger.finalize(status=status)
-        except Exception as finalize_err:
-            logger.error(f"Failed to finalize command log: {finalize_err}")
-        finally:
-            clear_execution_logger()
-
+        await _finalize_and_upload(cmd_logger, status, task_id, final_state)
         return final_state
 
     except Exception as e:
         logger.error(f"Task execution failed: {e}")
-        # Finalize and clear logger on error too
-        try:
-            if cmd_logger:
-                cmd_logger.finalize(status="error")
-        except Exception as finalize_err:
-            logger.error(f"Failed to finalize command log on error: {finalize_err}")
-        finally:
-            clear_execution_logger()
-
-        # Return error state
+        if cmd_logger:
+            await _finalize_and_upload(cmd_logger, "error", task_id if 'task_id' in locals() else "unknown", {})
         return {
             "status": "failed",
             "error_message": str(e),
@@ -966,6 +933,19 @@ async def run_aura_task(app: Any, initial_state: dict, config: dict = None) -> d
 
     settings = get_settings()
     timeout = settings.graph_timeout_seconds
+
+    # G13: log which prompt versions are active for this task — aids A/B analysis
+    try:
+        from prompts import PROMPT_VERSIONS
+        from services.command_logger import get_command_logger as _get_cmd_log
+        _get_cmd_log().log_agent_decision(
+            "PROMPT_VERSIONS",
+            {"versions": PROMPT_VERSIONS, "task_id": initial_state.get("task_id", "?")},
+            agent_name="Graph",
+        )
+    except Exception:
+        pass
+
     try:
         result = await asyncio.wait_for(
             app.ainvoke(initial_state, config=config or {}),

@@ -126,11 +126,23 @@ def should_continue_after_intent_parsing(
         logger.info(f"Low confidence ({confidence}), routing to error handler")
         return "error_handler"
 
-    # Gate: low-confidence or general_interaction → always use full planner via coordinator
-    # This prevents the single-subgoal shortcut from mishandling ambiguous/multi-step commands
-    if confidence < 0.6 or action == "general_interaction":
+    # Conversational check FIRST — before any device routing.
+    # Catches all aliases the Commander LLM may return (greet, hello, general_query, etc.)
+    _conversational_transcript_words = [
+        "hello", "hi", "hey", "help", "what can you do", "who are you",
+        "good morning", "good evening", "good night", "thanks", "thank you", "bye",
+    ]
+    if action in CONVERSATIONAL_ACTIONS or any(
+        word in transcript for word in _conversational_transcript_words
+    ):
+        logger.info(f"Conversational action '{action}' — routing to speak")
+        return "speak"
+
+    # Gate: low-confidence → full planner via coordinator
+    # (general_interaction already caught above as conversational)
+    if confidence < 0.6:
         if _SETTINGS.use_universal_agent:
-            logger.info(f"Low confidence ({confidence}) or general_interaction — routing to coordinator for full planning")
+            logger.info(f"Low confidence ({confidence}) — routing to coordinator for full planning")
             return "coordinator"
 
     # INTELLIGENT ROUTING: Check for complex parameters first
@@ -178,13 +190,6 @@ def should_continue_after_intent_parsing(
     if has_complex_params:
         logger.info(f"Complex goal detected: '{action}' with params {list(intent_params.keys())} - routing to perception for Coordinator")
         return "perception"
-
-    # Check for conversational actions (greetings, help, etc.)
-    if action in CONVERSATIONAL_ACTIONS or any(
-        word in transcript for word in ["hello", "hi", "help", "what can you do"]
-    ):
-        logger.info("Conversational action detected, routing to speak")
-        return "speak"
 
     # Screen reading requests (what's on screen, describe screen, etc.)
     screen_reading_keywords = [

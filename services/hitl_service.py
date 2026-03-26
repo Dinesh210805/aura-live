@@ -54,6 +54,7 @@ class HITLQuestionType(Enum):
     TEXT_INPUT = "text_input"          # Free-form text
     NOTIFICATION = "notification"      # Info message, wait for OK
     ACTION_REQUIRED = "action_required"  # User must do something on device
+    CHOICE_WITH_TEXT = "choice_with_text"  # Tap an option OR type a custom answer
 
 
 @dataclass
@@ -70,6 +71,9 @@ class HITLQuestion:
     action_type: Optional[str] = None  # For ACTION_REQUIRED: "biometric", "permission", etc.
     metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: float = field(default_factory=time.time)
+    # Text for the Android app to speak aloud (via on-device TTS) before showing the dialog.
+    # Phrased naturally, e.g. "I have a question — which SIM card should I use?"
+    tts_text: Optional[str] = None
 
 
 @dataclass
@@ -276,6 +280,88 @@ class HITLService:
             return default
         return response.text_input or default
     
+    async def ask_contextual(
+        self,
+        question: str,
+        options: List[str] = None,
+        context: str = "",
+        tts_text: Optional[str] = None,
+        title: str = "AURA needs your input",
+        timeout: float = DEFAULT_TIMEOUT,
+    ) -> str:
+        """
+        Smart HITL method that adapts to screen context.
+
+        When on-screen options are provided (e.g. ["SIM 1 - Airtel", "SIM 2 - Jio"]),
+        shows a CHOICE_WITH_TEXT dialog: tap an option button OR type a custom answer.
+        When no options are available, falls back to plain TEXT_INPUT.
+
+        The `tts_text` string (if provided) is forwarded to the Android app which
+        speaks it via on-device TTS before displaying the dialog — giving AURA an
+        audible "I have a question" moment.
+
+        Args:
+            question:  The exact question to display in the dialog.
+            options:   List of on-screen choices (empty = free-text only).
+            context:   Additional context shown as subtitle (e.g. current goal description).
+            tts_text:  Natural-language phrasing for the TTS announcement, e.g.
+                       "I have a question — which SIM card should I use?"
+            title:     Dialog title shown in the overlay card.
+            timeout:   Seconds to wait for response.
+
+        Returns:
+            The user's answer as a string (selected option or typed text).
+            Empty string if timed out or cancelled.
+        """
+        if not self._enabled:
+            return options[0] if options else ""
+
+        options = [o for o in (options or []) if o.strip()]
+
+        if not tts_text:
+            # Auto-generate a natural-sounding TTS phrasing
+            if options:
+                tts_text = f"I have a question — {question}"
+            else:
+                tts_text = f"I need more information. {question}"
+
+        metadata: Dict[str, Any] = {}
+        if context:
+            metadata["context"] = context[:200]
+
+        if options:
+            question_type = HITLQuestionType.CHOICE_WITH_TEXT
+            metadata["placeholder"] = "Or type your own answer…"
+        else:
+            question_type = HITLQuestionType.TEXT_INPUT
+            metadata["placeholder"] = "Type your answer…"
+
+        hitl_question = HITLQuestion(
+            id=self._generate_id(),
+            question_type=question_type,
+            title=title,
+            message=question,
+            options=options,
+            timeout_seconds=timeout,
+            metadata=metadata,
+            tts_text=tts_text,
+        )
+
+        response = await self._ask_and_wait(hitl_question)
+
+        if response.timed_out or response.cancelled:
+            return ""
+
+        # For CHOICE_WITH_TEXT: prefer typed text if the user wrote something,
+        # otherwise return the selected option button.
+        if question_type == HITLQuestionType.CHOICE_WITH_TEXT:
+            typed = (response.text_input or "").strip()
+            chosen = (response.selected_option or "").strip()
+            return typed if typed else chosen
+
+        # TEXT_INPUT fallback
+        return (response.text_input or "").strip()
+
     async def notify(
         self,
         message: str,
@@ -411,6 +497,7 @@ class HITLService:
             "allow_cancel": question.allow_cancel,
             "action_type": question.action_type,
             "metadata": question.metadata,
+            "tts_text": question.tts_text or "",
             "timestamp": int(time.time() * 1000)
         }
         
@@ -501,6 +588,43 @@ class HITLService:
         """Cancel all pending questions."""
         for question_id in list(self._pending_questions.keys()):
             self.cancel_question(question_id)
+
+    def register_voice_answer(self, text: str) -> bool:
+        """
+        Route a voice transcript as the answer to the oldest pending HITL question.
+
+        Called by the WebSocket router immediately after STT produces a transcript.
+        If any HITL question is currently awaiting a response, the transcript is
+        injected as a text_input answer and the future is resolved — the caller
+        should then *skip* dispatching the transcript to task execution.
+
+        Args:
+            text: The STT transcript from the user.
+
+        Returns:
+            True if the transcript was consumed as a HITL answer (caller must skip
+            normal task execution), False if no HITL question was pending.
+        """
+        if not self._pending_questions:
+            return False
+
+        # Pick the oldest pending question (first inserted — dict preserves order in Py 3.7+)
+        oldest_id = next(iter(self._pending_questions))
+        future = self._pending_questions.get(oldest_id)
+        if not future or future.done():
+            return False
+
+        response = HITLResponse(
+            question_id=oldest_id,
+            success=True,
+            text_input=text.strip(),
+        )
+        future.set_result(response)
+        logger.info(
+            f"🎙️ HITL voice barge-in: resolved question {oldest_id!r} "
+            f"with transcript '{text[:60]}'"
+        )
+        return True
 
 
 # Singleton instance

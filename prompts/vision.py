@@ -1,7 +1,12 @@
 """
-Vision & Element Location Prompts - v3.0.0
+Vision & Element Location Prompts - v3.1.0
 
 Prompts for VLM-based UI understanding and element location.
+
+Changes from v3.0:
+- Fixed duplicate COMMON ICONS block in ELEMENT_LOCATION_PROMPT (bug)
+- Added CoT preamble to ELEMENT_SELECTION_PROMPT (OpenClaw-style <think> scratchpad)
+- Updated ELEMENT_SELECTION_PROMPT: letter → number badges to match annotated screenshots
 
 Changes from v2:
 - Extracted shared VISUAL_TRUST_RULES constant (was duplicated 5x)
@@ -44,17 +49,6 @@ SCREEN: {width}x{height}px
 Step 1 — Describe what you see on screen in 1-2 sentences (app name, screen type, key visible elements).
 Step 2 — Identify which visible element best matches the TARGET description. Consider text labels, icons, and common positions.
 Step 3 — Output the result JSON below.
-
-━━━ COMMON ICONS ━━━
-- Skip/Forward: >>, >, right arrow, "Skip"
-- Back: <, ←, left arrow
-- Menu: ☰ hamburger, ⋮ three dots
-- Profile: 👤 person silhouette
-- Search: 🔍 magnifying glass
-- Settings: ⚙️ gear/cog
-- Send: Paper plane, right arrow (blue/green)
-- Like: ❤️ heart, 👍 thumbs up
-- Share: ↗️ up-right arrow
 
 ━━━ COMMON ICONS ━━━
 - Skip/Forward: >>, >, right arrow, "Skip"
@@ -125,17 +119,28 @@ SCREEN: {width}x{height}px
 # =============================================================================
 # ELEMENT SELECTION PROMPT (Set-of-Marks)
 # =============================================================================
-ELEMENT_SELECTION_PROMPT = """Analyzing mobile screenshot with labeled UI regions.
-Each region marked with a letter (A, B, C...) in red box.
+ELEMENT_SELECTION_PROMPT = """Analyzing mobile screenshot with numbered UI regions (Set-of-Marks).
+Each region is outlined with a colored border and labeled with a number badge in the screenshot.
 
-Available regions: {available_ids}
+Available region numbers: {available_ids}
 
 User wants: "{intent}"
 
 {visual_trust_rules}
 
-Which region matches? Respond with ONLY a single letter (A, B, C...) or NONE.
-No explanation."""
+━━━ REASONING (required before output) ━━━
+Think through these steps silently before writing your answer:
+① For each visible numbered region, note what it shows (text, icon, type, position).
+② Match each region to what the user wants: "{intent}".
+③ Pick the SINGLE best match. Prefer interactive elements (buttons, fields) over static labels.
+   If the target is clearly not present in any numbered region → output NONE.
+
+━━━ OUTPUT ━━━
+Respond with ONLY:
+- A single number from the available list above (e.g. "3"), OR
+- The word NONE if no region matches.
+
+No other text. The number must match a badge visible in the screenshot."""
 
 
 # =============================================================================

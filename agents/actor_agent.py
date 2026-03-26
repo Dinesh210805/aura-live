@@ -47,17 +47,57 @@ class ActorAgent:
         Execute a single action on the device.
 
         Args:
-            action_type: "tap", "long_press", "type", "scroll", "swipe",
-                         "back", "home", "open_app"
+            action_type: Any name registered in GESTURE_REGISTRY, or a legacy
+                         action name ("tap", "long_press", "type", "scroll",
+                         "swipe", "back", "home", "open_app", etc.).
             target: Text to type, app name to open, or element description.
             coordinates: (x, y) tap/press coordinates.
             parameters: Extra params (direction for scroll/swipe, etc.).
 
         Returns:
             ActionResult with success status and timing.
+
+        Fixed-gesture tools (e.g. open_notification_shade, open_app_drawer):
+            The actor resolves their screen-relative coordinates here so the
+            GestureExecutor always receives primitive action dicts and does not
+            need to know about the registry.
         """
         start = time.time()
         params = parameters or {}
+
+        # ── Fixed-gesture resolution ───────────────────────────────────────────
+        # For tools with a FixedGesture that emits a swipe (i.e. one with
+        # screen-relative coordinates), resolve to a concrete action dict NOW
+        # so the executor sees only primitive types (tap/swipe/back/etc).
+        from config.gesture_tools import resolve_gesture as _resolve_gesture
+        _fixed = _resolve_gesture(action_type, *self.executor._screen_size)
+        if _fixed and _fixed.get("action") == "swipe":
+            logger.info(
+                f"Actor: fixed-gesture '{action_type}' → swipe "
+                f"({_fixed['start_x']},{_fixed['start_y']}) → "
+                f"({_fixed['end_x']},{_fixed['end_y']})"
+            )
+            try:
+                result: GestureResult = await self.executor._execute_single_action(_fixed)
+                duration = (time.time() - start) * 1000
+                return ActionResult(
+                    success=result.success,
+                    action_type=action_type,
+                    coordinates=None,
+                    duration_ms=duration,
+                    error=result.error,
+                    details=result.details,
+                )
+            except Exception as e:
+                duration = (time.time() - start) * 1000
+                logger.error(f"Actor: fixed-gesture '{action_type}' failed — {e}")
+                return ActionResult(
+                    success=False,
+                    action_type=action_type,
+                    coordinates=None,
+                    duration_ms=duration,
+                    error=str(e),
+                )
 
         # Build action dict expected by GestureExecutor
         action = {"action": action_type}

@@ -532,18 +532,33 @@ class PerceiverAgent:
             import numpy as np
 
             screen_area = screen_width * screen_height
-            meaningful = []
+
+            # Step 1: collect valid-bounds interactive elements only
+            candidates = []
             for el in elements:
                 b = el.get("bounds") or el.get("visibleBounds") or el.get("boundsInScreen") or {}
                 left, top, right, bottom = (
                     b.get("left", 0), b.get("top", 0),
                     b.get("right", 0), b.get("bottom", 0),
                 )
+                # OmniParser elements use box:[x1,y1,x2,y2] instead of bounds dict
+                if right <= left or bottom <= top:
+                    raw_box = el.get("box")
+                    if raw_box and len(raw_box) == 4:
+                        left, top, right, bottom = (int(raw_box[0]), int(raw_box[1]),
+                                                    int(raw_box[2]), int(raw_box[3]))
                 if right <= left or bottom <= top:
                     continue
                 if (right - left) * (bottom - top) > screen_area * 0.6:
                     continue
-                meaningful.append((el, left, top, right, bottom))
+
+            meaningful = [
+                (el, l, t, r, b) for i, (el, l, t, r, b) in enumerate(candidates)
+                if not any(
+                    i != j and (ol <= l and ot <= t and or_ >= r and ob >= b)
+                    for j, (_, ol, ot, or_, ob) in enumerate(candidates)
+                )
+            ]
 
             if not meaningful:
                 return screenshot_b64, []
@@ -739,6 +754,7 @@ RULES:
                 screen_height = getattr(getattr(bundle, "screen_meta", None), "height", 0) or 1920
                 screen_area = screen_width * screen_height
 
+                candidates: list = []
                 for el in elements:
                     b = el.get("bounds") or el.get("visibleBounds") or el.get("boundsInScreen") or {}
                     left, top, right, bottom = (
@@ -746,10 +762,22 @@ RULES:
                         b.get("right", 0), b.get("bottom", 0),
                     )
                     if right <= left or bottom <= top:
+                        raw_box = el.get("box")
+                        if raw_box and len(raw_box) == 4:
+                            left, top, right, bottom = (int(raw_box[0]), int(raw_box[1]),
+                                                        int(raw_box[2]), int(raw_box[3]))
+                    if right <= left or bottom <= top:
                         continue
                     if (right - left) * (bottom - top) > screen_area * 0.6:
                         continue
-                    meaningful.append((el, left, top, right, bottom))
+                    candidates.append((el, left, top, right, bottom))
+                meaningful = [
+                    (el, l, t, r, b) for i, (el, l, t, r, b) in enumerate(candidates)
+                    if not any(
+                        i != j and (ol <= l and ot <= t and or_ >= r and ob >= b)
+                        for j, (_, ol, ot, or_, ob) in enumerate(candidates)
+                    )
+                ]
 
                 if meaningful:
                     arr = np.frombuffer(_b64.b64decode(screenshot_b64), dtype=np.uint8)
@@ -906,32 +934,68 @@ SEARCH SUGGESTION RULE — when autocomplete suggestions appear under a search b
                         el, left, top, right, bottom = meaningful[idx]
                         cx, cy = (left + right) // 2, (top + bottom) // 2
                         if cx > 0 and cy > 0:
-                            x, y = cx, cy
-                            if not elem_desc:
-                                elem_desc = (el.get("text") or el.get("contentDescription") or "").strip()
-                            logger.info(
-                                f"✅ describe_and_locate: '{target}' at ({x}, {y}) "
-                                f"via element {idx + 1} (annotated={using_annotated})"
+                            # Semantic cross-check: verify the selected element's label
+                            # has at least one word in common with the target string.
+                            # This catches VLM hallucinations where the wrong element ID
+                            # is returned (e.g. carousel arrow [34] labelled "Add to Cart").
+                            _el_label = (
+                                (el.get("text") or el.get("contentDescription") or "")
+                                .strip().lower()
                             )
-                            try:
-                                import base64 as _b64_h
-                                import cv2 as _cv2h
-                                import numpy as _nph
-                                arr2 = _nph.frombuffer(_b64_h.b64decode(screenshot_b64), dtype=_nph.uint8)
-                                h_img2 = _cv2h.imdecode(arr2, _cv2h.IMREAD_COLOR)
-                                if h_img2 is not None:
-                                    _cv2h.rectangle(h_img2, (left - 3, top - 3), (right + 3, bottom + 3), (0, 255, 255), 4)
-                                    _cv2h.rectangle(h_img2, (left - 1, top - 1), (right + 1, bottom + 1), (0, 0, 0), 2)
-                                    _font2 = _cv2h.FONT_HERSHEY_SIMPLEX
-                                    badge = f"#{idx + 1}: {elem_desc[:30]}"
-                                    (tw2, th2), _ = _cv2h.getTextSize(badge, _font2, 0.65, 2)
-                                    bx2 = min(left + tw2 + 8, h_img2.shape[1] - 1)
-                                    _cv2h.rectangle(h_img2, (left, top - th2 - 8), (bx2, top), (0, 255, 255), -1)
-                                    _cv2h.putText(h_img2, badge, (left + 4, top - 4), _font2, 0.65, (0, 0, 0), 2, _cv2h.LINE_AA)
-                                    _, buf2 = _cv2h.imencode(".png", h_img2)
-                                    highlighted_b64 = _b64_h.b64encode(buf2).decode("utf-8")
-                            except Exception:
-                                pass
+                            _target_words = set(target.lower().split())
+                            _label_words = set(_el_label.split())
+                            _has_overlap = bool(_target_words & _label_words)
+                            _el_is_unlabelled = not _el_label
+
+                            # For commit-action targets (add to cart, buy, pay, delete,
+                            # send, remove, purchase) an unlabelled element is also
+                            # suspicious — real buttons always carry accessibility labels.
+                            # Force OmniParser to find the visually-rendered button instead.
+                            _commit_kws = {"add", "cart", "buy", "pay", "delete", "remove", "purchase", "send", "order"}
+                            _is_commit_target = bool(_target_words & _commit_kws)
+
+                            _should_reject = (not _has_overlap and not _el_is_unlabelled) or \
+                                             (not _has_overlap and _el_is_unlabelled and _is_commit_target)
+
+                            if _should_reject:
+                                # Either: element has a label that doesn't match (hallucination),
+                                # or: element is unlabelled but this is a commit-action target
+                                # (empty View picked instead of the real button).
+                                logger.warning(
+                                    f"⚠️ describe_and_locate: VLM picked element {idx + 1} "
+                                    f"(label='{_el_label[:50] if _el_label else '<empty>'}') for target='{target}' — "
+                                    f"{'no label' if _el_is_unlabelled else 'label mismatch'}, "
+                                    f"rejecting and falling through to OmniParser"
+                                )
+                                x, y = None, None
+                            else:
+                                x, y = cx, cy
+                                if not elem_desc:
+                                    elem_desc = (el.get("text") or el.get("contentDescription") or "").strip()
+                                logger.info(
+                                    f"✅ describe_and_locate: '{target}' at ({x}, {y}) "
+                                    f"via element {idx + 1} label='{_el_label[:40]}' "
+                                    f"(annotated={using_annotated})"
+                                )
+                                try:
+                                    import base64 as _b64_h
+                                    import cv2 as _cv2h
+                                    import numpy as _nph
+                                    arr2 = _nph.frombuffer(_b64_h.b64decode(screenshot_b64), dtype=_nph.uint8)
+                                    h_img2 = _cv2h.imdecode(arr2, _cv2h.IMREAD_COLOR)
+                                    if h_img2 is not None:
+                                        _cv2h.rectangle(h_img2, (left - 3, top - 3), (right + 3, bottom + 3), (0, 255, 255), 4)
+                                        _cv2h.rectangle(h_img2, (left - 1, top - 1), (right + 1, bottom + 1), (0, 0, 0), 2)
+                                        _font2 = _cv2h.FONT_HERSHEY_SIMPLEX
+                                        badge = f"#{idx + 1}: {elem_desc[:30]}"
+                                        (tw2, th2), _ = _cv2h.getTextSize(badge, _font2, 0.65, 2)
+                                        bx2 = min(left + tw2 + 8, h_img2.shape[1] - 1)
+                                        _cv2h.rectangle(h_img2, (left, top - th2 - 8), (bx2, top), (0, 255, 255), -1)
+                                        _cv2h.putText(h_img2, badge, (left + 4, top - 4), _font2, 0.65, (0, 0, 0), 2, _cv2h.LINE_AA)
+                                        _, buf2 = _cv2h.imencode(".png", h_img2)
+                                        highlighted_b64 = _b64_h.b64encode(buf2).decode("utf-8")
+                                except Exception:
+                                    pass
 
             return {
                 "description": description,
@@ -1162,7 +1226,7 @@ RESPOND ONLY WITH JSON."""
 
         screen_area = screen_width * screen_height
 
-        meaningful: List[tuple] = []
+        candidates: List[tuple] = []
         for el in elements:
             b = el.get("bounds") or el.get("visibleBounds") or el.get("boundsInScreen") or {}
             left, top, right, bottom = (
@@ -1170,10 +1234,22 @@ RESPOND ONLY WITH JSON."""
                 b.get("right", 0), b.get("bottom", 0),
             )
             if right <= left or bottom <= top:
+                raw_box = el.get("box")
+                if raw_box and len(raw_box) == 4:
+                    left, top, right, bottom = (int(raw_box[0]), int(raw_box[1]),
+                                                int(raw_box[2]), int(raw_box[3]))
+            if right <= left or bottom <= top:
                 continue
             if (right - left) * (bottom - top) > screen_area * 0.6:
                 continue
-            meaningful.append((el, left, top, right, bottom))
+            candidates.append((el, left, top, right, bottom))
+        meaningful: List[tuple] = [
+            (el, l, t, r, b) for i, (el, l, t, r, b) in enumerate(candidates)
+            if not any(
+                i != j and (ol <= l and ot <= t and or_ >= r and ob >= b)
+                for j, (_, ol, ot, or_, ob) in enumerate(candidates)
+            )
+        ]
 
         if not meaningful:
             return None
@@ -1337,6 +1413,30 @@ Rules:
                 return {"annotated_b64": annotated_b64, "replan_suggested": replan_suggested, "replan_reason": replan_reason}
 
             el, left, top, right, bottom = meaningful[idx]
+            _el_label2 = (el.get("text") or el.get("contentDescription") or "").strip().lower()
+            _target_words2 = set(target.lower().split())
+            _label_words2 = set(_el_label2.split())
+            _has_overlap2 = bool(_target_words2 & _label_words2)
+            _el_is_unlabelled2 = not _el_label2
+
+            _commit_kws2 = {"add", "cart", "buy", "pay", "delete", "remove", "purchase", "send", "order"}
+            _is_commit_target2 = bool(_target_words2 & _commit_kws2)
+
+            _should_reject2 = (not _has_overlap2 and not _el_is_unlabelled2) or \
+                              (not _has_overlap2 and _el_is_unlabelled2 and _is_commit_target2)
+
+            if _should_reject2:
+                # Element has a label that shares no words with target, OR element is
+                # unlabelled but this is a commit-action target — VLM hallucinated.
+                # Fall through so OmniParser can locate the real element.
+                logger.warning(
+                    f"⚠️ locate_with_annotated_ui_tree: VLM picked element {idx + 1} "
+                    f"(label='{_el_label2[:50] if _el_label2 else '<empty>'}') for target='{target}' — "
+                    f"{'no label' if _el_is_unlabelled2 else 'label mismatch'}, "
+                    f"rejecting and falling through to OmniParser"
+                )
+                return {"annotated_b64": annotated_b64, "replan_suggested": replan_suggested, "replan_reason": replan_reason}
+
             elem_desc = (
                 parsed.get("element_description")
                 or (el.get("text") or el.get("contentDescription") or "").strip()

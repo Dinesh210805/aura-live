@@ -32,7 +32,7 @@ from .state import TaskState
 if TYPE_CHECKING:
     from agents.commander import CommanderAgent
     from agents.responder import ResponderAgent
-    from agents.visual_locator import ScreenVLM
+    from agents.perceiver_agent import PerceiverAgent
     from agents.validator import ValidatorAgent
 
 INTENT_OBJECT_MODEL = IntentObject
@@ -1035,11 +1035,17 @@ def speak_node(state: TaskState) -> Dict[str, Any]:
         
         # Extract transcript and goal for context-aware responses
         transcript = state.get("transcript") or state.get("command") or state.get("text_input")
-        goal_summary = state.get("goal_summary")
-        
+
+        # Only use goal_summary / executed_steps if the coordinator actually ran
+        # in THIS task. agent_state is None for pure conversational routes, and
+        # is explicitly reset to None in _create_initial_state so stale values
+        # from prior tasks (same LangGraph thread) don't bleed through.
+        _coordinator_ran = state.get("agent_state") is not None
+        goal_summary = state.get("goal_summary") if _coordinator_ran else None
+
         # Build completed steps summary for multi-step feedback
         completed_steps = []
-        if executed_steps_data:
+        if _coordinator_ran and executed_steps_data:
             for step in executed_steps_data:
                 if isinstance(step, dict):
                     desc = step.get("description") or step.get("action", "action")
@@ -1462,18 +1468,11 @@ def initialize_nodes(
     app_device_executor_service: RealDeviceExecutorService,
     app_commander_agent: "CommanderAgent",
     app_responder_agent: "ResponderAgent",
-    app_screen_vlm_agent: "ScreenVLM" = None,
+    app_screen_vlm_agent: "PerceiverAgent" = None,
     app_validator_agent: "ValidatorAgent" = None,
 ) -> None:
     """
     Initialize global service and agent instances for nodes.
-
-    HYBRID ARCHITECTURE:
-    - Commander: Groq (fast intent parsing)
-    - UniversalAgent: Handles all UI actions
-    - Responder: Groq (fast feedback)
-    - ScreenVLM: VLM (visual understanding + location)
-    - Validator: Groq (fast validation)
 
     Args:
         app_settings: Application settings.
@@ -1485,7 +1484,7 @@ def initialize_nodes(
         app_device_executor_service: Real device executor service.
         app_commander_agent: Commander agent.
         app_responder_agent: Responder agent.
-        app_screen_vlm_agent: ScreenVLM agent (optional).
+        app_screen_vlm_agent: PerceiverAgent (used for screen reading in speak node).
         app_validator_agent: Validator agent (optional).
     """
     global settings, stt_service, llm_service, vlm_service, tts_service

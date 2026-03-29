@@ -190,3 +190,63 @@ Identified 2026-03-25. Priority tiers: **P0** = critical correctness, **P1** = r
 | G13 | **No A/B prompt version tracking** — `PROMPT_VERSIONS` dict logged via `PROMPT_VERSIONS` command-logger event in `run_aura_task()` | `aura_graph/graph.py` | ✅ Fixed |
 | G14 | **VLM CoT preamble not in VISION_REASONING_PROMPT** — added ①②③④ think-before-output block matching `ELEMENT_SELECTION_PROMPT` style | `prompts/reasoning.py` | ✅ Fixed |
 | G15 | **`PromptMode.MINIMAL` unused** — verifier's `semantic_verify` now uses `build_aura_agent_prompt(mode=PromptMode.MINIMAL)` as system prompt; `LLMService.run()` now accepts `system_prompt` param | `agents/verifier_agent.py`, `services/llm.py` | ✅ Fixed |
+
+---
+
+## Self-Reflection Improvement Backlog
+
+Identified 2026-03-29. P0 items already fixed. P1–P3 pending.
+
+### P0 — Done (2026-03-29)
+
+| # | Fix | Location |
+|---|-----|----------|
+| R0a | **Lesson bucketing too coarse** — `_goal_key()` now appends app name so "play_media__spotify" and "play_media__youtube" are separate lesson pools | `services/reflexion_service.py` |
+| R0b | **Lessons only written on full abort** — now also writes on task success when `replan_count > 0`, capturing recovery paths for future attempts | `agents/coordinator.py` |
+
+### P1 — Structured RSG diagnosis field
+
+**What:** Add a `__diagnosis__` JSON field to the RSG output schema alongside the existing `__prev_step_ok__` flag.
+
+**Why:** The model currently outputs a boolean (`__prev_step_ok__`) and a freeform string (`__prev_step_issue__`). A structured diagnosis is more reliably parsed and more useful as context for the next step.
+
+**Schema to add to `prompts/reactive_step.py`:**
+```json
+"__diagnosis__": {
+  "what_happened": "Tapped Search bar but target was not in search results",
+  "dead_end": "Search bar is not the right path for this target",
+  "try_instead": "Navigate to Library tab"
+}
+```
+
+**Wiring in `agents/coordinator.py`:** After reading `__prev_step_issue__`, also extract `__diagnosis__` from `next_step.parameters` and:
+1. Log it via `_cmd_logger.log_agent_decision("STEP_DIAGNOSIS", ...)`
+2. Pass it as a `prev_diagnosis` kwarg into the next RSG call so the model builds on its own reasoning
+
+### P2 — Persistent app knowledge store
+
+**What:** New `services/app_knowledge.py` — a `AppKnowledgeStore` class that stores *structural* facts about app layouts learned during successful task executions.
+
+**Why:** The reflexion service captures task-level failure lessons (ephemeral, task-specific). App layout facts are different — they're stable across sessions. "Spotify Liked Songs is under Library tab" is always true; discovering it once should benefit all future tasks, not just future failures.
+
+**Interface:**
+```python
+class AppKnowledgeStore:
+    async def record_successful_path(self, app: str, goal_type: str, path: list[str]) -> None:
+        """Called on task success. e.g. record("spotify", "liked_songs", ["Library tab", "Liked Songs"])"""
+
+    async def get_app_hints(self, app: str, goal_type: str) -> str:
+        """Returns formatted hint string for RSG prompt injection."""
+```
+
+**Storage:** JSON files at `data/app_knowledge/{app}.json`, keyed by goal_type. Written only on **successful** task completion (success reinforcement — never on failure, so only verified paths accumulate).
+
+**Wiring:** Inject `app_hints` into RSG prompt as the highest-priority context block, before reflexion lessons. Detect app from `goal.original_utterance` using the same `_APP_NAMES` list in `ReflexionService`.
+
+### P3 — Post-phase reflection summary
+
+**What:** After each skeleton phase completes in the coordinator, run a lightweight LLM call (~100 tokens) that summarizes what the agent just learned about the screen/app during that phase.
+
+**Why:** Cross-phase context is currently carried only by `__agent_memory__` (VLM-chosen freeform). The phase boundary is a natural checkpoint where the model can consolidate: "Phase 1 established that the Search bar leads to a dead end; Phase 2 should go via Library instead."
+
+**Where:** In `agents/coordinator.py`, at the `PHASE_COMPLETE` log event (around line 1530), add a non-blocking background call to generate and store a `phase_summary` string. Pass this forward as `agent_memory` seed for the next phase's RSG calls.

@@ -1,24 +1,20 @@
 """AURA Agent System — Multi-Agent Architecture
 
-Agents:
-- Commander: Intent parsing (Groq - llama-3.1-8b-instant, 560 tps)
-- Responder: Feedback generation (Groq - llama-3.3-70b-versatile)
-- PerceiverAgent: Screen understanding + visual perception (description, location, comparison)
-- Validator: Intent pre-validation (Groq - fast)
+Core agents:
+- CommanderAgent: Intent parsing (rule-based + LLM fallback)
+- ResponderAgent: Natural-language feedback generation + TTS
+- ValidatorAgent: Intent pre-validation (fast, minimal model use)
 
-Phase 3 Specialist Agents:
+Automation agents (Coordinator-managed):
 - PlannerAgent: Goal decomposition + replanning
-- PerceiverAgent: Screen understanding + OmniParser auto-escalation + VLM calls
-- ActorAgent: Single gesture execution
-- VerifierAgent: Post-action verification + loop detection
-- Coordinator: LangGraph subgraph orchestrating the 4 specialists
-
-Note: ScreenVLM is a backward-compat alias for PerceiverAgent (merged).
+- PerceiverAgent: Screen understanding — OmniParser 3-layer pipeline + VLM calls
+- ActorAgent: Single deterministic gesture execution (zero LLM calls)
+- VerifierAgent: Post-action state capture + error screen detection
+- Coordinator: Orchestrates the perceive→decide→act→verify loop
 """
 
 from agents.commander import CommanderAgent
 from agents.responder import ResponderAgent
-from agents.visual_locator import ScreenVLM
 from agents.validator import ValidationResult, ValidatorAgent
 from agents.planner_agent import PlannerAgent
 from agents.perceiver_agent import PerceiverAgent
@@ -29,7 +25,6 @@ from agents.coordinator import Coordinator
 __all__ = [
     "CommanderAgent",
     "ResponderAgent",
-    "ScreenVLM",
     "ValidatorAgent",
     "ValidationResult",
     "PlannerAgent",

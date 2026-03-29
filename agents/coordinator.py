@@ -135,6 +135,20 @@ def _detect_goal_completion(utterance: str, elements: list, pre_elements: list |
                 _pre_cd.add(cd)
 
     if goal_type == "media":
+        # Course/playlist overview guard: if the UI tree shows a course listing
+        # (Resume button + lesson rows like "#0 …"), we are on a course overview
+        # page — NOT playing a video.  Never fire completion here.
+        _has_resume = any("resume" in cd for cd in _all_cd) or any("resume" == t for t in _all_text)
+        _has_lesson_rows = any(
+            cd.startswith("#0 ") or cd.startswith("#1 ") or "lessons," in cd or "lessons complete" in cd
+            for cd in _all_cd
+        ) or any(
+            t.startswith("#0 ") or t.startswith("#1 ") or "lessons," in t
+            for t in _all_text
+        )
+        if _has_resume and _has_lesson_rows:
+            return False, ""
+
         # Pause button visible = playback is active = DONE
         # This is a strong signal — valid even if pause was already showing.
         pause_signals = ("pause", "\u23f8", "\u2016")
@@ -250,26 +264,43 @@ class Coordinator:
         _last_rsg_memory: str = ""                 # VLM's accumulated cross-turn memory, fed forward each call
         _last_reactive_key: Optional[str] = None   # "action_type:target" of last reactive step
         _same_reactive_count: int = 0              # consecutive repetitions of that key
+        _last_post_elements: list | None = None    # post-action elements from last verified subgoal (used as pre_elements fallback when perception is skipped)
         _phase_start: float = time.time()          # G10: start time of the current phase
         _cmd_logger = get_command_logger()
+
+        # --- Web hints: fetch official how-to guide before planning ---
+        _web_hints = ""
+        try:
+            from services.web_search import get_web_search_service
+            _ws = get_web_search_service()
+            if _ws.available:
+                self.task_progress.emit_agent_status("Planner", "Fetching how-to guide...")
+                _web_hints = await asyncio.wait_for(
+                    _ws.search_for_guide(utterance), timeout=5.0
+                )
+        except asyncio.TimeoutError:
+            logger.debug("Coordinator: web hints fetch timed out (non-fatal) — proceeding without guide")
+        except Exception as _we:
+            logger.debug(f"Coordinator: web hints fetch failed (non-fatal): {_we}")
 
         # --- Plan ---
         # W7 fix: pass current screen context to planner
         self.task_progress.emit_agent_status("Planner", f"Planning: {utterance[:50]}")
-        goal = self.planner.create_plan(utterance, intent, perception=perception_bundle, step_history=step_memory)
+        goal = self.planner.create_plan(utterance, intent, perception=perception_bundle, step_history=step_memory, web_hints=_web_hints)
 
         # Seed running_screen_context from the initial perception bundle so the
         # first reactive step generation has something grounding to work with.
         if perception_bundle:
             _vd = getattr(perception_bundle, "visual_description", None)
             if _vd:
-                running_screen_context = _vd[:800]
+                _part_b_idx = _vd.find("PART B")
+                running_screen_context = (_vd[:_part_b_idx].strip() if _part_b_idx > 0 else _vd)[:2000]
             elif getattr(perception_bundle, "ui_tree", None) and perception_bundle.ui_tree.elements:
                 _labels = [
                     (e.get("text") or e.get("contentDescription") or "").strip()
                     for e in perception_bundle.ui_tree.elements[:8]
                 ]
-                running_screen_context = "; ".join(l for l in _labels if l)[:800]
+                running_screen_context = "; ".join(l for l in _labels if l)[:2000]
 
         if goal.phases:
             logger.info(
@@ -378,6 +409,7 @@ class Coordinator:
                     if _already_in_app:
                         logger.info(f"Coordinator: already in '{_open_app_name}' — skipping open_app phase")
                         goal.advance_phase()
+                        running_screen_context = "[new phase — screen not yet observed]"
                         _cmd_logger.log_agent_decision("PHASE_COMPLETE", {
                             "phase": _phase_desc,
                             "reason": "already_in_app",
@@ -432,6 +464,32 @@ class Coordinator:
                                      if _latest_bundle.ui_tree else [])
                         _sw = getattr(_latest_bundle.screen_meta, "width", 1080) or 1080
                         _sh = getattr(_latest_bundle.screen_meta, "height", 1920) or 1920
+                        # When UI tree is empty (e.g. Google Maps uses a SurfaceView that
+                        # exposes no accessibility nodes), fall back to OmniParser CV
+                        # detections so RSG still gets numbered SoM badges.
+                        if not _elements and _latest_b64:
+                            try:
+                                import base64 as _b64dec
+                                _raw_bytes = _b64dec.b64decode(_latest_b64)
+                                loop = asyncio.get_event_loop()
+                                _detections = await loop.run_in_executor(
+                                    None,
+                                    lambda: self.perceiver.perception_pipeline.detect_only(
+                                        _raw_bytes, (_sw, _sh)
+                                    ),
+                                )
+                                if _detections:
+                                    _elements = [
+                                        {"box": list(d.box), "class_name": d.class_name,
+                                         "confidence": d.confidence}
+                                        for d in _detections
+                                    ]
+                                    logger.info(
+                                        f"Coordinator: UI tree empty — using "
+                                        f"{len(_elements)} OmniParser detections for SoM annotation"
+                                    )
+                            except Exception as _ode:
+                                logger.debug(f"Coordinator: OmniParser annotation fallback failed: {_ode}")
                         if _latest_b64 and _elements:
                             _latest_b64, _filtered = self.perceiver.build_annotated_screenshot(
                                 _latest_b64, _elements, _sw, _sh
@@ -450,13 +508,45 @@ class Coordinator:
                         "Check device connection and screenshot service."
                     )
 
+                # Build a fresh screen-context string from the UI elements we just
+                # fetched.  running_screen_context is the VLM's own report from the
+                # *previous* turn — by now the screen may have changed.  We derive a
+                # compact summary here so the RSG prompt's "SCREEN:" field reflects the
+                # live UI tree rather than the prior-turn description.
+                if _elements:
+                    _type_counts: dict[str, int] = {}
+                    _text_snippets: list[str] = []
+                    for _el in _elements:
+                        _etype = getattr(_el, "element_type", "unknown")
+                        _type_counts[_etype] = _type_counts.get(_etype, 0) + 1
+                        _etxt = (getattr(_el, "text", None) or "").strip()
+                        if _etxt and len(_etxt) < 60 and _etxt not in _text_snippets:
+                            _text_snippets.append(_etxt)
+                    _type_summary = ", ".join(
+                        f"{cnt}×{t}" for t, cnt in list(_type_counts.items())[:6]
+                    )
+                    _text_summary = "; ".join(_text_snippets[:5])
+                    _fresh_ctx_parts = [
+                        f"[FRESH — derived from live UI tree] {len(_elements)} elements: {_type_summary}"
+                    ]
+                    if _text_summary:
+                        _fresh_ctx_parts.append(f"Visible text: {_text_summary}")
+                    _rsg_screen_context = " | ".join(_fresh_ctx_parts)
+                else:
+                    # No elements yet — fall back to last known context with staleness marker
+                    _rsg_screen_context = (
+                        f"[POSSIBLY STALE — no live UI tree available] {running_screen_context}"
+                        if running_screen_context else "[screen not yet observed]"
+                    )
+
                 self.task_progress.emit_agent_status("Reactive", f"Generating next step for phase: {goal.current_phase.description[:35] if goal.current_phase else 'final'}")
                 next_step = await self.reactive_gen.generate_next_step(
-                    goal, running_screen_context, step_memory,
+                    goal, _rsg_screen_context, step_memory,
                     screenshot_b64=_latest_b64, ui_hints="",
                     ui_elements=_elements,
                     screen_width=_sw, screen_height=_sh,
                     agent_memory=_last_rsg_memory,
+                    web_hints=_web_hints,
                 )
                 if next_step is not None:
                     _last_rsg_memory = next_step.parameters.pop("__agent_memory__", _last_rsg_memory)
@@ -474,6 +564,7 @@ class Coordinator:
                     goal._reactive_retries = 0
                     prev_phase_desc = goal.current_phase.description
                     goal.advance_phase()
+                    running_screen_context = "[new phase — screen not yet observed]"
                     logger.info(
                         f"Coordinator: phase '{prev_phase_desc}' complete"
                         f" → {goal.current_phase.description if goal.current_phase else 'all phases done'}"
@@ -492,7 +583,7 @@ class Coordinator:
                 # output — this replaces the old separate describe_screen call.
                 _reactive_ctx = next_step.parameters.get("__screen_context__", "")
                 if _reactive_ctx:
-                    running_screen_context = str(_reactive_ctx)[:800]
+                    running_screen_context = str(_reactive_ctx)[:2000]
 
                 # If the model flagged the previous step as incorrect (prev_step_ok=false),
                 # retroactively patch the last step_memory entry so future reactive steps
@@ -569,6 +660,7 @@ class Coordinator:
             action_type = subgoal.action_type
             coordinates = None
             screen_state = None
+            _pre_gesture_b64: str = ""  # screenshot captured before this gesture fires
 
             # Build plan context: show current phase + executed history
             if goal.phases:
@@ -647,7 +739,7 @@ class Coordinator:
                         running_screen_context = (
                             f"{running_screen_context}\n"
                             f"[User answered '{_question}': {_answer}]"
-                        )[-800:]
+                        )[-2000:]
                         logger.info(f"Coordinator: HITL answer received — '{_answer[:60]}'")
                     else:
                         logger.warning("Coordinator: HITL timed out or cancelled — no answer")
@@ -677,6 +769,14 @@ class Coordinator:
                 )
             else:
                 # --- Perceive ---
+                # Log perceiver INPUTS so the HTML trace shows what the agent was given
+                _cmd_logger.log_agent_decision("PERCEIVER_INPUT", {
+                    "subgoal": subgoal.description,
+                    "action_type": subgoal.action_type,
+                    "target": subgoal.target or "",
+                    "user_command": utterance[:120],
+                    "step": goal.current_subgoal_index + 1,
+                }, agent_name="Perceiver")
                 self.task_progress.emit_agent_status("Perceiver", f"Scanning screen for '{subgoal.target or subgoal.description[:30]}'")
                 try:
                     screen_state = await self.perceiver.perceive(
@@ -704,6 +804,7 @@ class Coordinator:
                     ann_path = ""
                     highlighted_path = ""
                     if bundle and bundle.screenshot and bundle.screenshot.screenshot_base64:
+                        _pre_gesture_b64 = bundle.screenshot.screenshot_base64  # captured before actor fires
                         ss_path = _cmd_logger.log_screenshot(
                             label=f"screen_{subgoal.description[:30]}",
                             base64_data=bundle.screenshot.screenshot_base64,
@@ -726,7 +827,13 @@ class Coordinator:
                                 base64_data=screen_state.highlighted_b64,
                             )
                     if screen_state.screen_description:
-                        running_screen_context = screen_state.screen_description
+                        # Strip PART B (target location) from the Perceiver's combined
+                        # response — only PART A (screen report) is useful as context.
+                        _raw_desc = screen_state.screen_description
+                        _part_b_idx = _raw_desc.find("PART B")
+                        if _part_b_idx > 0:
+                            _raw_desc = _raw_desc[:_part_b_idx].strip()
+                        running_screen_context = _raw_desc[:2000]
                     elif screen_state.elements:
                         # Prefer last known VLM description over raw labels — the ReactiveStep LLM
                         # needs meaningful screen context even on fast-path iterations where
@@ -736,7 +843,7 @@ class Coordinator:
                             None,
                         )
                         if last_vlm:
-                            running_screen_context = f"[prev screen] {last_vlm[:700]}"
+                            running_screen_context = f"[prev screen] {last_vlm[:1900]}"
                         else:
                             _elem_labels = [
                                 (e.get("text") or e.get("contentDescription") or "").strip()
@@ -1033,6 +1140,23 @@ class Coordinator:
                             subgoal.parameters["focus_x"] = _cx
                             subgoal.parameters["focus_y"] = _cy
 
+                    # Auto-submit: if the target field is a search bar, automatically press
+                    # Enter (KEYCODE_ENTER via ADB keyevent) after text injection so the
+                    # search is submitted before the suggestion dropdown has a chance to
+                    # appear. This fixes the "wrong suggestion tapped" failure mode where
+                    # the agent tries to find a visual Search button that has no ADB equivalent.
+                    _SEARCH_FIELD_KEYWORDS = frozenset({"search", "find", "filter", "query"})
+                    if any(kw in (_field_hint or "").lower() for kw in _SEARCH_FIELD_KEYWORDS):
+                        subgoal.parameters["auto_submit"] = True
+                        logger.info(
+                            f"Coordinator: auto_submit=True — search field '{_field_hint}' "
+                            "→ press_enter will fire after text injection"
+                        )
+                        _cmd_logger.log_agent_decision("AUTO_SUBMIT_ENABLED", {
+                            "field_hint": _field_hint,
+                            "target": target_value,
+                        }, agent_name="Coordinator")
+
                     elif not _focused_edit and not _all_edits:
                         # No EditText in the accessibility tree. This happens for canvas/vision-mode
                         # apps (e.g. Google Maps) where the field exists visually but isn't exposed
@@ -1177,6 +1301,31 @@ class Coordinator:
             )
             total_actions += 1
 
+            # --- Log gesture execution with pre-action annotated screenshot ---
+            try:
+                from datetime import datetime as _dt
+                _gesture_start = _dt.now()
+                _g_success = action_result.success if hasattr(action_result, "success") else bool(action_result)
+                _g_error = getattr(action_result, "error", None) or (str(action_result) if not _g_success else "")
+                _cmd_logger.log_gesture(
+                    gesture_type=effective_action,
+                    gesture_data={
+                        "target": target_value or "",
+                        "coordinates": list(effective_coordinates) if effective_coordinates else None,
+                        "subgoal": subgoal.description,
+                    },
+                    result={
+                        "success": _g_success,
+                        "error": _g_error,
+                        "details": getattr(action_result, "details", None),
+                    },
+                    execution_time=0.0,
+                    executed_at=_gesture_start,
+                    metadata={"screenshot_b64": _pre_gesture_b64} if _pre_gesture_b64 else {},
+                )
+            except Exception as _ge:
+                logger.debug(f"Coordinator: log_gesture failed (non-fatal): {_ge}")
+
             # --- Post-action screenshot + logcat for debugging (human-only, not fed to VLM) ---
             try:
                 from agents.verifier_agent import get_settle_delay
@@ -1261,6 +1410,7 @@ class Coordinator:
                     # restart the same phase and re-issue the completed action.
                     if subgoal.parameters.get("__phase_complete__"):
                         goal.advance_phase()
+                        running_screen_context = "[new phase — screen not yet observed]"
                     # Skip to next subgoal on persistent failure
                     goal.advance_subgoal()
                     replan_count = 0  # G5: fresh replan budget for each new subgoal
@@ -1367,13 +1517,13 @@ class Coordinator:
                     if _post_launch_bundle:
                         _vd = getattr(_post_launch_bundle, "visual_description", None)
                         if _vd:
-                            running_screen_context = str(_vd)[:800]
+                            running_screen_context = str(_vd)[:2000]
                         elif _post_launch_bundle.ui_tree and _post_launch_bundle.ui_tree.elements:
                             _labels = [
                                 (e.get("text") or e.get("contentDescription") or "").strip()
                                 for e in _post_launch_bundle.ui_tree.elements[:8]
                             ]
-                            running_screen_context = "; ".join(l for l in _labels if l)[:800]
+                            running_screen_context = "; ".join(l for l in _labels if l)[:2000]
                         _post_launch_screen_type = "native"
                         logger.info(f"Coordinator: post-launch screen context refreshed: {running_screen_context[:80]}")
                 except Exception as e:
@@ -1395,6 +1545,7 @@ class Coordinator:
                 if subgoal.parameters.get("__phase_complete__") and goal.phases:
                     _prev = goal.current_phase.description if goal.current_phase else "?"
                     goal.advance_phase()
+                    running_screen_context = "[new phase — screen not yet observed]"
                     logger.info(f"Coordinator: phase complete (open_app) → {goal.current_phase.description if goal.current_phase else 'all done'}")
                 self._broadcast_step(session_id, success=True)
                 continue
@@ -1402,6 +1553,8 @@ class Coordinator:
             # --- Verify (W4 stabilization + W5 error detection) ---
             self.task_progress.emit_agent_status("Verifier", f"Checking: {subgoal.description[:40]}")
             post_bundle, post_signature, post_elements = await self.verifier.capture_post_state(intent, action_type=effective_action)
+            if post_elements:
+                _last_post_elements = post_elements  # track for pre_elements fallback when perception is skipped
             screen_changed = signatures_differ(pre_signature, post_signature)
             screen_hash_history.append(post_signature)
 
@@ -1461,20 +1614,22 @@ class Coordinator:
                     recovery_injection_count += 1
                     screen_hash_history.clear()
 
-                    # Build rich obstacle for the planner
+                    # Build rich obstacle for the planner — use post_elements (the
+                    # freshest available elements, captured after the last action)
+                    # instead of screen_state.elements (which pre-dates the action).
                     visible_labels = []
-                    desc_text = None
-                    if screen_state is not None:
-                        for el in (screen_state.elements or [])[:20]:
-                            label = (el.get("text") or "").strip() or (el.get("contentDescription") or "").strip()
-                            if label:
-                                visible_labels.append(label)
-                        desc_text = screen_state.screen_description
+                    for el in (post_elements or [])[:20]:
+                        label = (el.get("text") or "").strip() or (el.get("contentDescription") or "").strip()
+                        if label:
+                            visible_labels.append(label)
+                    desc_text = (
+                        screen_state.screen_description if screen_state is not None else None
+                    )
 
                     obstacle = (
                         f"Screen unchanged after 3 attempts on subgoal '{subgoal.description}'. "
-                        f"Visible elements: {visible_labels[:20]}. "
-                        f"VLM description: {desc_text or 'not available'}. "
+                        f"Current visible elements (post-action): {visible_labels[:20]}. "
+                        f"Prior VLM description: {desc_text or 'not available'}. "
                         f"Running screen context: {running_screen_context or 'not available'}"
                     )
 
@@ -1510,7 +1665,10 @@ class Coordinator:
             # before spending a VLM call on the reactive step generator.
             _heuristic_complete, _heuristic_reason = _detect_goal_completion(
                 goal.original_utterance, post_elements,
-                pre_elements=screen_state.elements if screen_state else None,
+                # When perception was skipped (pre-resolved coords), screen_state is None.
+                # Fall back to the previous subgoal's post-action elements, which are the
+                # best available snapshot of the screen just before this action executed.
+                pre_elements=screen_state.elements if screen_state else _last_post_elements,
             )
             if _heuristic_complete and action_result.success:
                 logger.info(f"Coordinator: heuristic goal completion — {_heuristic_reason}")
@@ -1563,6 +1721,7 @@ class Coordinator:
                     prev_subgoal=subgoal,
                     prev_action_succeeded=action_result.success,
                     agent_memory=_last_rsg_memory,
+                    web_hints=_web_hints,
                 )
             if next_step:
                 _last_rsg_memory = next_step.parameters.pop("__agent_memory__", _last_rsg_memory)
@@ -1570,7 +1729,7 @@ class Coordinator:
                 verification_reason = next_step.parameters.pop("__verification_reason__", "VLM confirmed")
                 _reactive_ctx = next_step.parameters.get("__screen_context__", "")
                 if _reactive_ctx:
-                    running_screen_context = str(_reactive_ctx)[:800]
+                    running_screen_context = str(_reactive_ctx)[:2000]
             elif not action_result.success:
                 verification_passed = False
                 verification_reason = f"Action execution failed: {action_result.error}"
@@ -1732,9 +1891,10 @@ class Coordinator:
 
                     # --- Same-target reactive loop guard ---
                     # If the ReactiveStepGenerator keeps recommending the exact same
-                    # action+target (e.g. tap 'rasputin' autocomplete) without the
-                    # phase ever completing, we are stuck. Force a replan after 4
-                    # consecutive repeats so the planner can try a different approach.
+                    # action+target (e.g. tap 'iphone 17 pro' autocomplete) without the
+                    # phase ever completing, we are stuck.
+                    # Threshold: 2 for tap actions (autocomplete/search bar loops are
+                    # caught fast), 3 for other action types.
                     _rkey = f"{next_step.action_type}:{(next_step.target or '').strip().lower()}"
                     if _rkey == _last_reactive_key:
                         _same_reactive_count += 1
@@ -1742,7 +1902,9 @@ class Coordinator:
                         _same_reactive_count = 0
                         _last_reactive_key = _rkey
 
-                    if _same_reactive_count >= 4:
+                    _loop_threshold = 2 if next_step.action_type == "tap" else 3
+
+                    if _same_reactive_count >= _loop_threshold:
                         logger.warning(
                             f"Coordinator: reactive loop — '{_last_reactive_key}' repeated "
                             f"{_same_reactive_count + 1}x without phase completion — forcing replan"
@@ -1758,11 +1920,13 @@ class Coordinator:
                             )
                         else:
                             obstacle = (
-                                f"Tapping '{next_step.target}' was attempted 5+ times in a row "
-                                f"without completing the phase. The screen appears stuck (keyboard "
-                                f"may still be visible or autocomplete is intercepting taps). "
-                                f"Try a different approach: dismiss the keyboard, press a search/enter "
-                                f"button, or look for the target in the visible results list."
+                                f"Tapping '{next_step.target}' was repeated {_loop_threshold + 1}x "
+                                f"without completing the phase. Possible causes: (1) search bar is "
+                                f"being tapped instead of a suggestion/result row, (2) the screen "
+                                f"already shows search results so this search phase is complete, "
+                                f"(3) keyboard or autocomplete is intercepting taps. "
+                                f"If search results are visible, mark the search phase complete. "
+                                f"Otherwise try pressing Enter/Search button instead of tapping the suggestion."
                             )
                             new_subgoals = self.planner.replan(
                                 goal, obstacle,
@@ -1781,6 +1945,7 @@ class Coordinator:
                 if subgoal.parameters.get("__phase_complete__") and goal.phases:
                     _prev = goal.current_phase.description if goal.current_phase else "?"
                     goal.advance_phase()
+                    running_screen_context = "[new phase — screen not yet observed]"
                     logger.info(f"Coordinator: phase complete → {goal.current_phase.description if goal.current_phase else 'all done'}")
                     _cmd_logger.log_agent_decision("PHASE_COMPLETE", {
                         "signal": "step_flag",
@@ -1841,16 +2006,28 @@ class Coordinator:
         except Exception:
             pass  # best-effort; don't fail the task over this
 
-        # Write a Reflexion lesson after task abort so future attempts improve.
-        if goal.aborted and step_memory:
+        # Write a Reflexion lesson when the task failed OR when it required replanning.
+        # Previously this only fired on full abort — recoveries generated no lessons even
+        # though the agent just learned something hard.  Now we capture both cases:
+        #   • Abort: straight failure lesson ("what went wrong")
+        #   • Replan + success: recovery lesson ("what the agent had to change mid-task")
+        # Both are useful for future attempts at the same goal.
+        if step_memory and (goal.aborted or replan_count > 0):
             try:
                 from services.reflexion_service import get_reflexion_service
                 reflexion = get_reflexion_service()
                 if reflexion:
+                    if goal.aborted:
+                        _lesson_reason = goal.abort_reason or "task aborted"
+                    else:
+                        _lesson_reason = (
+                            f"task succeeded after {replan_count} replan(s) — "
+                            "recording recovery path for future attempts"
+                        )
                     await reflexion.generate_lesson(
                         goal.original_utterance,
                         step_memory,
-                        goal.abort_reason or "task aborted",
+                        _lesson_reason,
                     )
             except Exception as _refl_err:
                 logger.debug(f"Reflexion lesson write skipped: {_refl_err}")

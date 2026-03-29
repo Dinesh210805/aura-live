@@ -138,6 +138,13 @@ Failure to dismiss means the next `tap` target will be hidden behind the keyboar
 Do NOT add scroll steps. The executor auto-scrolls to find elements.
 Only add swipe if the user explicitly asks to scroll.
 
+━━━ KNOWN CONTACTS (canonical spellings — always use these exact names in subgoal targets) ━━━
+Voice transcription often garbles these names. Use ONLY the correct spellings below:
+- "Saathvic" — variants: sathvic, satvic, sathvik, saatvic, SATHVIC, "saath vic"
+- "Elakiya"  — variants: elakia, e car, eka, elakya, EKA, "e la kia"
+- "Anu"      — variants: anu aa, anna, anu a
+Always write the canonical name (e.g. target: "Saathvic") — never the garbled version.
+
 ━━━ OUTPUT (JSON ONLY) ━━━
 Output ONLY a JSON object. No text before or after.
 

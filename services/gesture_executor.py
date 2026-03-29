@@ -190,6 +190,10 @@ class GestureExecutor:
             # App launch actions - require package lookup
             elif action_type in ["open_app", "launch_app", "launch", "open"]:
                 result = await self._execute_app_launch(action)
+            # Wait is handled before NO_UI_ACTIONS — it has all-default ActionMeta
+            # flags and would otherwise be swallowed by the NO_UI_ACTIONS branch.
+            elif action_type == "wait":
+                result = await self._execute_wait(action)
             # System actions (home, back, torch, etc.) - NO UI needed
             elif action_type in NO_UI_ACTIONS:
                 result = await self._execute_system_action(action)
@@ -210,8 +214,6 @@ class GestureExecutor:
                 result = await self._execute_app_launch(action)
             elif action_type == "deep_link":
                 result = await self._execute_deep_link(action)
-            elif action_type == "wait":
-                result = await self._execute_wait(action)
             else:
                 result = GestureResult(
                     success=False,

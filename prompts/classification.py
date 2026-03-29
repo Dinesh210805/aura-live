@@ -58,6 +58,13 @@ Do NOT try to parse recipient/content from multi-step commands — let the plann
 ━━━ SCOPE ━━━
 You ONLY classify the command into a single action type. You do NOT decompose multi-step goals — that is the Planner's job.
 
+━━━ KNOWN CONTACTS (canonical spellings — always use these exact names) ━━━
+Voice transcription often garbles these names. Normalise ANY phonetic variant to the correct spelling:
+- "Saathvic" — also heard as: sathvic, satvic, sathvik, saatvic, SATHVIC, "saath vic"
+- "Elakiya"  — also heard as: elakia, e car, eka, elakya, EKA, "e la kia", "elakia"
+- "Anu"      — also heard as: anu aa, anna, anu a, "anu double a"
+When any variant appears in the command, silently replace it with the correct spelling above before outputting the JSON.
+
 OUTPUT ONLY JSON (include thinking first, it is ignored after parsing):
 {{"thinking":"brief reasoning about what action type fits","action":"...","recipient":"...","content":"...","parameters":{{}},"confidence":0.0-1.0,"ambiguities":[]}}"""
 

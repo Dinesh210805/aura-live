@@ -65,6 +65,7 @@ class CommanderAgent:
 
             result = self.llm_service.run(
                 prompt,
+                model=self.llm_service.settings.commander_model,
                 max_tokens=400,
                 response_format={"type": "json_object"},
                 caller_agent="commander",  # G11: attribute tokens to commander
@@ -85,6 +86,27 @@ class CommanderAgent:
             raw.pop("ambiguities", None)
             if thinking:
                 logger.debug(f"Commander thinking: {thinking[:80]}")
+
+            # Guard: some small LLMs emit duplicate "action" keys — Python's json.loads
+            # silently keeps the LAST value, which may be a nested dict (the sub-action)
+            # instead of the expected action-type string.  When that happens:
+            # 1. Pull the outer action string from the nested dict's own "action" field.
+            # 2. Merge any useful fields (recipient, content) from the nested dict upward
+            #    so we don't lose the original intent information.
+            # 3. Detect multi-step intent and delegate to planner via general_interaction.
+            _raw_action = raw.get("action", "general_interaction")
+            if isinstance(_raw_action, dict):
+                logger.debug("Commander: duplicate-key JSON detected — flattening nested action")
+                _inner = _raw_action
+                # The outer (first) action is gone; reconstruct as a multi-step delegation
+                # because the LLM was trying to express two actions at once.
+                raw["action"] = "general_interaction"
+                raw.setdefault("parameters", {})["delegate_to_planner"] = True
+                # Preserve recipient/content from the inner dict if not already set
+                if not raw.get("recipient") and _inner.get("recipient"):
+                    raw["recipient"] = _inner["recipient"]
+                if not raw.get("content") and _inner.get("content"):
+                    raw["content"] = _inner["content"]
 
             raw["action"] = self._normalize_action(raw.get("action", "general_interaction"))
             raw = self._normalize_intent_fields(raw)

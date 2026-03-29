@@ -55,6 +55,12 @@ NOTE: WhatsApp group creation is PARTICIPANT-FIRST — contacts are selected on 
 → phases: ["Check weather"]
 → commit_actions: []
 
+{web_hints_block}━━━ KNOWN CONTACTS (canonical spellings — always use these exact names in phases) ━━━
+Voice transcription often garbles these names. Use ONLY the correct spellings below in phase descriptions:
+- "Saathvic" — variants: sathvic, satvic, sathvik, saatvic, SATHVIC, "saath vic"
+- "Elakiya"  — variants: elakia, e car, eka, elakya, EKA, "e la kia"
+- "Anu"      — variants: anu aa, anna, anu a
+
 ━━━ OUTPUT (JSON ONLY) ━━━
 {{
   "goal_summary": "one-line summary of what the user wants",
@@ -66,9 +72,19 @@ NOTE: WhatsApp group creation is PARTICIPANT-FIRST — contacts are selected on 
 }}"""
 
 
-def get_skeleton_planning_prompt(utterance: str, screen_context: str, app_inventory: str = "") -> str:
+def get_skeleton_planning_prompt(
+    utterance: str,
+    screen_context: str,
+    app_inventory: str = "",
+    web_hints: str = "",
+) -> str:
+    web_hints_block = (
+        f"━━━ HOW-TO REFERENCE (official docs/guides) ━━━\n{web_hints}\n"
+        "Use as reference for correct navigation paths. Live screen observations take precedence.\n\n"
+    ) if web_hints else ""
     return SKELETON_PLANNING_PROMPT.format(
         utterance=utterance,
         screen_context=screen_context or "Unknown (no screen data available)",
         app_inventory=app_inventory or "Not available",
+        web_hints_block=web_hints_block,
     )

@@ -216,8 +216,12 @@ async def main():
     # Tier 2 — async graph
     results["graph"] = await test_graph_pipeline()
 
-    # Tier 3 — async reflexion
-    results["reflexion"] = await test_reflexion()
+    # Tier 3 — async reflexion (60 s hard timeout)
+    try:
+        results["reflexion"] = await asyncio.wait_for(test_reflexion(), timeout=60)
+    except asyncio.TimeoutError:
+        fail("Reflexion tier timed out (>60s)")
+        results["reflexion"] = False
 
     # ─ summary ─
     header("SUMMARY")

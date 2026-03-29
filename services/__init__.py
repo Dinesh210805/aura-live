@@ -11,7 +11,6 @@ and device interaction services.
 # from .vlm import VLMService
 # from .tts import TTSService
 # from .real_accessibility import real_accessibility_service
-# from .vlm_element_locator import VLMElementLocator
 # from .reasoning_engine import ReasoningEngine
 # from .goal_decomposer import GoalDecomposer
 # from .failure_analyzer import FailureAnalyzer

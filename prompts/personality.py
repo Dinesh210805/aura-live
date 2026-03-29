@@ -7,6 +7,26 @@ Centralized personality definitions for consistent AI behavior.
 # User configuration
 USER_NAME = "Dinesh kumar"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# KNOWN CONTACTS — canonical spellings for frequently used contacts.
+# STT (speech-to-text) often garbles these phonetically unusual names.
+# Always use EXACTLY these spellings in responses and task confirmations.
+# ──────────────────────────────────────────────────────────────────────────────
+KNOWN_CONTACTS = {
+    "Saathvic": ["sathvic", "satvic", "sathvik", "saatvic", "saath vic"],
+    "Elakiya":  ["elakia", "e car", "eka", "elakya", "e la kia"],
+    "Anu":      ["anu aa", "anna", "anu a"],
+}
+
+KNOWN_CONTACTS_PROMPT_BLOCK = """
+## KNOWN CONTACTS (correct spellings — always use these exactly)
+Voice input often garbles certain names. When you mention or confirm any of these contacts,
+use ONLY the canonical spelling — never the garbled STT version:
+- Saathvic  (not: sathvic / satvic / sathvik / SATHVIC)
+- Elakiya   (not: elakia / e car / EKA / elakya)
+- Anu       (not: anu aa / anna / anu a)
+"""
+
 # ==============================================================================
 # AURA CAPABILITIES
 # ==============================================================================

@@ -6,7 +6,16 @@ the flow between nodes in the AURA task execution graph.
 Uses fuzzy logic for intelligent agent routing.
 """
 
+import re
 from typing import Literal
+
+# Compiled once at import time — word-boundary match for conversational transcripts.
+# Substring matching ("hi" in "I need to open WhatsApp") causes false positives.
+_CONVERSATIONAL_TRANSCRIPT_RE = re.compile(
+    r"\b(?:hello|hi|hey|help|bye|thanks|thank\s+you|"
+    r"good\s+(?:morning|evening|night)|who\s+are\s+you|what\s+can\s+you\s+do)\b",
+    re.IGNORECASE,
+)
 
 from config.action_types import (
     CONVERSATIONAL_ACTIONS,
@@ -14,6 +23,7 @@ from config.action_types import (
     NO_SCREEN_ACTIONS,
     NO_UI_ACTIONS,
     SIMPLE_DEVICE_ACTIONS,
+    WEB_SEARCH_ACTIONS,
 )
 from utils.logger import get_logger
 
@@ -88,10 +98,10 @@ def should_continue_after_intent_parsing(
     state: TaskState,
 ) -> Literal[
     "perception",
-    "execute",
     "speak",
     "error_handler",
     "coordinator",
+    "web_search",
 ]:
     """
     Determine next step after intent parsing.
@@ -126,15 +136,28 @@ def should_continue_after_intent_parsing(
         logger.info(f"Low confidence ({confidence}), routing to error handler")
         return "error_handler"
 
+    # If Commander explicitly flagged this for planning, honour it before any
+    # conversational short-circuit.  This handles the common case where the LLM
+    # returns action="general_interaction" + delegate_to_planner=true for complex
+    # multi-step commands like "open YouTube, search X, and play the first video".
+    # NOTE: the Commander nests this flag inside "parameters", so check both levels.
+    _intent_params = intent.get("parameters") or {}
+    if isinstance(_intent_params, list):
+        _intent_params = {}
+    if intent.get("delegate_to_planner") or _intent_params.get("delegate_to_planner"):
+        logger.info(f"delegate_to_planner=true on '{action}' — routing to coordinator")
+        return "coordinator"
+
+    # Web search actions — route to dedicated node before any device routing.
+    # Commander returns action="web_search" for queries like weather, news, facts.
+    if action in WEB_SEARCH_ACTIONS:
+        logger.info(f"Web search action '{action}' — routing to web_search node")
+        return "web_search"
+
     # Conversational check FIRST — before any device routing.
     # Catches all aliases the Commander LLM may return (greet, hello, general_query, etc.)
-    _conversational_transcript_words = [
-        "hello", "hi", "hey", "help", "what can you do", "who are you",
-        "good morning", "good evening", "good night", "thanks", "thank you", "bye",
-    ]
-    if action in CONVERSATIONAL_ACTIONS or any(
-        word in transcript for word in _conversational_transcript_words
-    ):
+    # Uses word-boundary regex to avoid false positives like "hi" inside "WhatsApp".
+    if action in CONVERSATIONAL_ACTIONS or _CONVERSATIONAL_TRANSCRIPT_RE.search(transcript):
         logger.info(f"Conversational action '{action}' — routing to speak")
         return "speak"
 
@@ -270,65 +293,6 @@ def should_continue_after_perception(
     return "coordinator"
 
 
-def should_continue_after_execution(
-    state: TaskState,
-) -> Literal["speak", "error_handler", "perception", "validate_outcome"]:
-    """
-    Determine next step after execution.
-    
-    UPDATED: Routes to validate_outcome for goal-driven execution when agent_state
-    is present. Falls back to legacy behavior for simple commands.
-
-    Args:
-        state: Current task state.
-
-    Returns:
-        Next node to execute.
-    """
-    status = state.get("status", "")
-    executed_steps = state.get("executed_steps", [])
-    plan = state.get("plan", [])
-    current_step = state.get("current_step", 0)
-    agent_state = state.get("agent_state")
-    
-    # === GOAL-DRIVEN EXECUTION (NEW) ===
-    # If agent_state exists and has a goal, route to validation
-    if agent_state and hasattr(agent_state, 'goal') and agent_state.goal:
-        logger.info("🎯 Goal-driven execution: routing to validate_outcome")
-        return "validate_outcome"
-    
-    # === LEGACY MULTI-STEP HANDLING ===
-    # If status is "multi_step_continue", we need to loop back for next step
-    if status == "multi_step_continue":
-        pending_steps = state.get("pending_steps", [])
-        multi_step_index = state.get("multi_step_index", 0)
-        multi_step_total = state.get("multi_step_total", 1)
-        
-        logger.info(f"🔗 MULTI-STEP: Step {multi_step_index}/{multi_step_total} complete, {len(pending_steps)} remaining")
-        logger.info(f"   ↳ Routing to perception for fresh UI analysis")
-        return "perception"  # Get fresh UI state for next step
-
-    # Check for execution-specific failures via status field
-    if status == "execution_failed":
-        retry_count = state.get("retry_count", 0)
-        max_retries = state.get("max_retries", 3)
-        
-        if retry_count < max_retries:
-            logger.info(f"Execution error, retrying with fresh perception (retry {retry_count + 1}/{max_retries})")
-            return "perception"  # Request fresh perception for retry
-        else:
-            logger.info("Max retries reached, routing to error handler")
-            return "error_handler"
-
-    # Check if all steps are complete
-    if current_step >= len(plan):
-        logger.info("All execution steps complete, routing to speak")
-        return "speak"
-
-    logger.info("Execution step complete, continuing to next step")
-    return "speak"
-
-
 def should_continue_after_speak(
     state: TaskState,
 ) -> Literal["__end__"]:
@@ -347,86 +311,6 @@ def should_continue_after_speak(
     status = state.get("status", "unknown")
     logger.info(f"🔚 SPEAK→END: session={session_id}, status={status}, routing to __end__")
     return "__end__"
-
-
-def should_continue_after_validation(
-    state: TaskState,
-) -> Literal["next_subgoal", "retry_router", "speak"]:
-    """
-    Determine next step after validate_outcome node.
-    
-    Routes based on validation_routing field set by validate_outcome_node:
-    - success: Advance to next subgoal
-    - retry: Go to retry router to determine strategy
-    - abort: Report failure to user
-    
-    Args:
-        state: Current task state with validation_result.
-        
-    Returns:
-        Next node to execute.
-    """
-    validation_routing = state.get("validation_routing", "success")
-    validation_result = state.get("validation_result", {})
-    
-    logger.info(f"🔍 VALIDATION routing: {validation_routing}")
-    
-    if validation_routing == "success":
-        logger.info("Action validated successfully, advancing to next subgoal")
-        return "next_subgoal"
-    
-    if validation_routing == "retry":
-        logger.info(f"Action failed validation: {validation_result.get('reason', 'unknown')}")
-        return "retry_router"
-    
-    if validation_routing == "abort":
-        abort_reason = validation_result.get("abort_reason", "unknown")
-        logger.warning(f"Action aborted: {abort_reason}")
-        return "speak"
-    
-    # Default to success for backward compatibility
-    logger.info("Unknown validation routing, defaulting to next_subgoal")
-    return "next_subgoal"
-
-
-def should_continue_after_retry_router(
-    state: TaskState,
-) -> Literal["perception", "execute", "speak"]:
-    """
-    Determine next step after retry_router node.
-    
-    Routes based on retry_action type:
-    - repeat: Execute same action again
-    - alternate_selector/scroll_then_retry/vision_fallback: Get fresh perception
-    - abort: Report failure to user
-    
-    Args:
-        state: Current task state with retry_action.
-        
-    Returns:
-        Next node to execute.
-    """
-    retry_action = state.get("retry_action", {})
-    action_type = retry_action.get("type", "repeat")
-    
-    logger.info(f"🔄 RETRY routing: action_type={action_type}")
-    
-    if action_type == "abort":
-        logger.warning("All retry strategies exhausted, reporting failure")
-        return "speak"
-    
-    if action_type == "repeat":
-        logger.info("Retrying same action immediately")
-        return "execute"
-    
-    # Strategies that need fresh perception
-    if action_type in ("alternate_selector", "scroll_then_retry", "vision_fallback"):
-        logger.info(f"Strategy '{action_type}' requires fresh perception")
-        return "perception"
-    
-    # Default to perception for safety
-    logger.info("Unknown retry action, defaulting to perception")
-    return "perception"
 
 
 def should_continue_after_error_handling(

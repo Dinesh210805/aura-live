@@ -22,13 +22,10 @@ from services.command_logger import create_new_execution_logger, clear_execution
 from .edges import (
     route_from_start,
     should_continue_after_error_handling,
-    should_continue_after_execution,
     should_continue_after_intent_parsing,
     should_continue_after_perception,
     should_continue_after_speak,
     should_continue_after_stt,
-    should_continue_after_validation,
-    should_continue_after_retry_router,
 )
 from .core_nodes import (
     error_handler_node,
@@ -42,15 +39,11 @@ from .core_nodes import (
 # Import from nodes package (specialized goal-driven nodes)
 from .nodes import perception_node
 
-# Import new goal-driven nodes
-from aura_graph.nodes.validate_outcome_node import validate_outcome_node
-from aura_graph.nodes.retry_router_node import retry_router_node
-from aura_graph.nodes.decompose_goal_node import decompose_goal_node
-from aura_graph.nodes.next_subgoal_node import next_subgoal_node
 from aura_graph.nodes.coordinator_node import (
     coordinator_node,
     initialize_coordinator,
 )
+from aura_graph.nodes.web_search_node import web_search_node
 
 from .state import TaskState
 
@@ -85,6 +78,10 @@ def _create_initial_state(
         "error_message": None,
         "retry_count": 0,
         "max_retries": 3,
+        # Explicitly reset per-task fields so LangGraph checkpointing does not
+        # bleed values from the previous task in the same session thread.
+        "goal_summary": None,
+        "agent_state": None,
         "start_time": time.time(),
         "end_time": None,
         "execution_time": 0.0,
@@ -127,14 +124,11 @@ def create_aura_graph() -> StateGraph:
         graph.add_node("speak", speak_node)
         graph.add_node("error_handler", error_handler_node)
         
-        # Goal-driven execution nodes (NEW)
-        graph.add_node("decompose_goal", decompose_goal_node)
-        graph.add_node("validate_outcome", validate_outcome_node)
-        graph.add_node("retry_router", retry_router_node)
-        graph.add_node("next_subgoal", next_subgoal_node)
-        
-        # Coordinator node - multi-agent execution (PHASE 3)
+        # Coordinator node - multi-agent execution
         graph.add_node("coordinator", coordinator_node)
+
+        # Web search node - real-time Tavily lookups (weather, news, facts)
+        graph.add_node("web_search", web_search_node)
 
         # Set conditional entry point that routes based on input type
         # Note: We use only add_conditional_edges from __start__, not set_entry_point
@@ -163,12 +157,15 @@ def create_aura_graph() -> StateGraph:
             should_continue_after_intent_parsing,
             {
                 "perception": "perception",
-                "execute": "execute",
                 "speak": "speak",
                 "error_handler": "error_handler",
                 "coordinator": "coordinator",
+                "web_search": "web_search",
             },
         )
+
+        # Web search node feeds directly into speak (answer → TTS)
+        graph.add_edge("web_search", "speak")
 
         # Add conditional edges from perception
         graph.add_conditional_edges(
@@ -181,47 +178,6 @@ def create_aura_graph() -> StateGraph:
             },
         )
 
-        # Add conditional edges from execution
-        # UPDATED: Routes to validate_outcome for goal-driven validation loop
-        graph.add_conditional_edges(
-            "execute",
-            should_continue_after_execution,
-            {
-                "speak": "speak",
-                "error_handler": "error_handler",
-                "perception": "perception",
-                "validate_outcome": "validate_outcome",
-            },
-        )
-        
-        # NEW: Conditional edges from validate_outcome node
-        graph.add_conditional_edges(
-            "validate_outcome",
-            should_continue_after_validation,
-            {
-                "next_subgoal": "next_subgoal",  # Success - advance to next subgoal
-                "retry_router": "retry_router",  # Failure - determine retry strategy
-                "speak": "speak",  # Abort - report to user
-            },
-        )
-        
-        # NEW: Conditional edges from retry_router node
-        graph.add_conditional_edges(
-            "retry_router",
-            should_continue_after_retry_router,
-            {
-                "perception": "perception",  # Retry with fresh perception
-                "execute": "execute",  # Retry same action immediately
-                "speak": "speak",  # Abort - all strategies exhausted
-            },
-        )
-        
-        # NEW: Edge from next_subgoal back to perception for next action
-        graph.add_edge("next_subgoal", "perception")
-        
-        # NEW: Edge from decompose_goal to perception
-        graph.add_edge("decompose_goal", "perception")
-        
         # Coordinator edges (multi-agent execution path)
         graph.add_edge("coordinator", "speak")
 
@@ -328,9 +284,6 @@ def compile_aura_graph(checkpointer: Any = None) -> Any:
             llm_service=llm_service, tts_service=tts_service
         )
 
-        # Screen Reader: Visual understanding (Groq Llama 4 Scout VLM - 750 tps)
-        # NOTE: ScreenVLM is created after perception_pipeline below
-
         # Validator: Intent pre-validation (fast, minimal model use)
         validator_agent = ValidatorAgent()
 
@@ -361,7 +314,6 @@ def compile_aura_graph(checkpointer: Any = None) -> Any:
             daemon=True,
         ).start()
 
-        # ScreenVLM is now merged into PerceiverAgent — no separate instance needed.
         # Construction order: PerceiverAgent first (no controller yet) →
         #   PerceptionController (receives perceiver as screen_vlm) →
         #   wire perceiver_agent.perception_controller back.
@@ -877,6 +829,7 @@ def get_graph_info() -> Dict[str, Any]:
             "retry_router",
             "next_subgoal",
             "coordinator",
+            "web_search",
         ],
         "entry_point": "stt",
         "edges": {
@@ -890,6 +843,7 @@ def get_graph_info() -> Dict[str, Any]:
             "next_subgoal": ["perception"],
             "decompose_goal": ["perception"],
             "coordinator": ["speak"],
+            "web_search": ["speak"],
             "error_handler": ["perception", "speak", "END"],
             "speak": ["END"],
         },

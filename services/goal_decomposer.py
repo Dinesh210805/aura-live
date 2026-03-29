@@ -38,6 +38,7 @@ class GoalDecomposer:
         utterance: str,
         current_screen: Optional["PerceptionBundle"] = None,
         step_history: Optional[List[StepMemory]] = None,
+        web_hints: str = "",
     ) -> Goal:
         """
         Decompose a user utterance into a Goal with skeleton phases.
@@ -57,7 +58,7 @@ class GoalDecomposer:
             ]
             screen_context = screen_context + " | Recent steps: " + " → ".join(history_lines)
 
-        phases, commit_actions, summary = self._create_skeleton(utterance, screen_context)
+        phases, commit_actions, summary = self._create_skeleton(utterance, screen_context, web_hints=web_hints)
 
         goal = Goal(
             original_utterance=utterance,
@@ -170,6 +171,7 @@ class GoalDecomposer:
         self,
         utterance: str,
         screen_context: str,
+        web_hints: str = "",
     ):
         """
         Call the LLM to generate a skeleton plan: 2-4 abstract phases.
@@ -183,7 +185,7 @@ class GoalDecomposer:
         except Exception:
             app_inventory = ""
 
-        prompt = get_skeleton_planning_prompt(utterance, screen_context, app_inventory)
+        prompt = get_skeleton_planning_prompt(utterance, screen_context, app_inventory, web_hints=web_hints)
         try:
             result = self.llm_service.run(
                 prompt,

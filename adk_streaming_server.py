@@ -165,7 +165,7 @@ def _get_runner():
 
     # Use the live-capable model; fall back to root_agent's model only if the
     # setting is empty (which would be a misconfiguration).
-    live_model = getattr(settings, "gemini_live_model", None) or "gemini-live-2.5-flash-native-audio"
+    live_model = getattr(settings, "gemini_live_model", None) or "gemini-2.0-flash-live-001"
 
     # Build a live-specific agent that uses the bidi-capable model
     # but still has access to the AURA tool for device control.
@@ -352,8 +352,15 @@ async def handle_live_websocket(
         try:
             _aad_kwargs: dict = {
                 "disabled": False,
-                "prefix_padding_ms": 100,   # 100 ms — catches short commands, filters echo
-                "silence_duration_ms": 400, # 400 ms silence = end of user turn (low latency)
+                "prefix_padding_ms": 350,    # 350 ms sustained speech required to trigger.
+                                             # Filters AURA's own audio echo bouncing off
+                                             # the mic (typically <200 ms bursts) while
+                                             # still allowing genuine user barge-in.
+                "silence_duration_ms": 1200, # 1200 ms silence = end of user turn.
+                                             # Raised from 400 ms so compound commands
+                                             # ("open WhatsApp… then open Maps…") are not
+                                             # split into multiple partial turns by natural
+                                             # pauses between clauses.
                 # start_of_speech_sensitivity intentionally omitted → server default (MEDIUM)
                 # LOW required shouting to trigger; MEDIUM works at normal speaking volume.
             }
@@ -362,7 +369,7 @@ async def handle_live_websocket(
                 activity_handling=_ActivityHandling.START_OF_ACTIVITY_INTERRUPTS,
                 turn_coverage=_TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY,
             )
-            logger.info("[/ws/live] VAD: RealtimeInputConfig applied (100 ms prefix, 400 ms silence, default sensitivity, barge-in ON)")
+            logger.info("[/ws/live] VAD: RealtimeInputConfig applied (350 ms prefix, 1200 ms silence, default sensitivity, barge-in ON)")
         except Exception as _vad_exc:
             logger.warning(f"[/ws/live] Could not build RealtimeInputConfig: {_vad_exc} — using defaults")
 

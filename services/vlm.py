@@ -6,6 +6,9 @@ using different VLM providers (Gemini, Groq, NVIDIA NIM) with automatic fallback
 """
 
 import base64
+import random
+import re
+import time
 from io import BytesIO
 from typing import Any, Optional, Union
 
@@ -32,6 +35,24 @@ from services.command_logger import get_command_logger  # noqa: E402
 
 logger = get_logger(__name__)
 
+# Gemini 429 retry configuration
+_GEMINI_MAX_RETRIES = 3    # attempts after the first 429 before surrendering to fallback
+_GEMINI_BASE_DELAY = 2.0   # initial backoff seconds (doubles each attempt)
+_GEMINI_MAX_DELAY = 60.0   # hard cap so a bad quota day doesn't block forever
+
+
+def _extract_gemini_retry_delay(error_str: str) -> float:
+    """Parse the server-specified retry delay from a Gemini 429 error string.
+
+    The Gemini API embeds a RetryInfo detail with 'retryDelay': '<N>s'.
+    Using that value instead of a fixed sleep avoids both under-sleeping
+    (immediate 429 storm) and over-sleeping (wasted user time).
+    """
+    match = re.search(r"['\"]?retryDelay['\"]?\s*:\s*['\"](\d+(?:\.\d+)?)s['\"]", error_str)
+    if match:
+        return float(match.group(1))
+    return 0.0
+
 
 class VLMService:
     """
@@ -52,6 +73,7 @@ class VLMService:
         self.groq_client: Optional[groq.Groq] = None
         self.gemini_client: Optional[Any] = None
         self.nvidia_client: Optional[Any] = None
+        self.openrouter_client: Optional[Any] = None
 
         # Provider-specific model mappings
         self.provider_models = self._build_provider_models()
@@ -89,6 +111,22 @@ class VLMService:
                 "Gemini VLM not available - google-genai package not installed properly"
             )
 
+        # Initialize OpenRouter client (OpenAI-compatible, vision models)
+        if self.settings.openrouter_api_key and (
+            self.settings.default_vlm_provider == "openrouter"
+            or self.settings.enable_provider_fallback
+        ):
+            try:
+                from openai import OpenAI as _OpenAI
+                self.openrouter_client = _OpenAI(
+                    base_url="https://openrouter.ai/api/v1",
+                    api_key=self.settings.openrouter_api_key,
+                    timeout=60.0,
+                )
+                logger.debug("OpenRouter VLM client initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize OpenRouter VLM client: {e}")
+
         # Initialize NVIDIA NIM client
         if self.settings.nvidia_api_key and (
             self.settings.default_vlm_provider == "nvidia"
@@ -113,14 +151,17 @@ class VLMService:
         """
         primary = self.settings.default_vlm_provider
         models: dict[str, str] = {}
-        for provider in ("gemini", "groq", "nvidia"):
+        for provider in ("gemini", "groq", "nvidia", "openrouter"):
             if provider == primary:
                 models[provider] = self.settings.default_vlm_model
             elif provider == "nvidia":
                 # NVIDIA always uses vlm_secondary_model (its own model family)
                 models[provider] = self.settings.vlm_secondary_model
+            elif provider == "openrouter":
+                # OpenRouter default vision model when used as fallback
+                models[provider] = "nvidia/nemotron-nano-12b-v2-vl:free"
             else:
-                # The other non-primary provider (groq or gemini) uses fallback_vlm_model
+                # groq or gemini non-primary → fallback_vlm_model
                 models[provider] = self.settings.fallback_vlm_model
         return models
 
@@ -177,7 +218,7 @@ class VLMService:
                     fallback_providers.append(preferred_fallback)
                 fallback_providers.extend(
                     p
-                    for p in ["nvidia", "gemini", "groq"]
+                    for p in ["groq", "nvidia", "gemini", "openrouter"]
                     if p != target_provider and p not in fallback_providers
                 )
 
@@ -266,13 +307,32 @@ class VLMService:
             genai_types.Part.from_bytes(data=base64.b64decode(after_b64), mime_type="image/jpeg"),
             genai_types.Part.from_text(text=prompt),
         ]
-        config = genai_types.GenerateContentConfig(temperature=temperature) if genai_types is not None else None
+        try:
+            _thinking_cfg = genai_types.ThinkingConfig(thinking_budget=0) if genai_types is not None else None
+        except (AttributeError, TypeError):
+            _thinking_cfg = None
+        cfg_kwargs: dict = {"temperature": temperature}
+        if _thinking_cfg is not None:
+            cfg_kwargs["thinking_config"] = _thinking_cfg
+        config = genai_types.GenerateContentConfig(**cfg_kwargs) if genai_types is not None else None
         response = self.gemini_client.models.generate_content(
             model=model,
             contents=genai_types.Content(role="user", parts=parts),
             config=config,
         )
-        return response.text or ""
+        result = response.text
+        if not result and hasattr(response, "candidates") and response.candidates:
+            try:
+                for part in response.candidates[0].content.parts:
+                    if (
+                        hasattr(part, "text")
+                        and part.text
+                        and not getattr(part, "thought", False)
+                    ):
+                        result = (result or "") + part.text
+            except Exception:
+                pass
+        return result or ""
 
     def _call_provider(
         self,
@@ -307,6 +367,8 @@ class VLMService:
                 return self._call_groq(model, image_data, prompt, _caller_agent=_caller_agent, **kwargs)
             elif provider == "nvidia":
                 return self._call_nvidia(model, image_data, prompt, _caller_agent=_caller_agent, **kwargs)
+            elif provider == "openrouter":
+                return self._call_openrouter(model, image_data, prompt, _caller_agent=_caller_agent, **kwargs)
             else:
                 raise ModelProviderError(
                     f"Unsupported VLM provider: {provider}",
@@ -385,30 +447,56 @@ class VLMService:
             except Exception:
                 _vlm_screenshot_path = ""
 
-            # Generate content with image and prompt
-            # The new Google GenAI SDK accepts PIL Images directly
-            # Build optional GenerateContentConfig for supported params
-            _gen_config = None
-            if _temperature is not None or _max_tokens is not None or system_prompt:
+            # Always build GenerateContentConfig — at minimum to disable thinking.
+            # gemini-2.5-flash has thinking ON by default (dynamic budget=-1);
+            # thinking_budget=0 disables it for fast, deterministic VLM responses
+            # and prevents response.text from being empty due to thought-only parts.
+            try:
+                from google.genai import types as _gtypes
+                _cfg_kwargs: dict = {}
+                if _temperature is not None:
+                    _cfg_kwargs["temperature"] = _temperature
+                if _max_tokens is not None:
+                    _cfg_kwargs["max_output_tokens"] = _max_tokens
+                if system_prompt:
+                    _cfg_kwargs["system_instruction"] = system_prompt
                 try:
-                    from google.genai import types as _gtypes
-                    _cfg_kwargs: dict = {}
-                    if _temperature is not None:
-                        _cfg_kwargs["temperature"] = _temperature
-                    if _max_tokens is not None:
-                        _cfg_kwargs["max_output_tokens"] = _max_tokens
-                    if system_prompt:
-                        _cfg_kwargs["system_instruction"] = system_prompt
-                    _gen_config = _gtypes.GenerateContentConfig(**_cfg_kwargs)
-                except Exception:
-                    pass  # Config construction is best-effort
+                    _cfg_kwargs["thinking_config"] = _gtypes.ThinkingConfig(
+                        thinking_budget=0
+                    )
+                except (AttributeError, TypeError):
+                    pass  # SDK version predates ThinkingConfig
+                _gen_config = _gtypes.GenerateContentConfig(**_cfg_kwargs)
+            except Exception:
+                _gen_config = None  # Best-effort; fall through without config
 
-            response = self.gemini_client.models.generate_content(
-                model=model,
-                contents=[prompt, image],
-                config=_gen_config,
-                **{k: v for k, v in kwargs.items() if k not in ("config",)},
-            )
+            # Retry loop: handles transient 429 RESOURCE_EXHAUSTED with
+            # exponential backoff + jitter, respecting the server's retryDelay.
+            _extra_kwargs = {k: v for k, v in kwargs.items() if k not in ("config",)}
+            response = None
+            for _attempt in range(_GEMINI_MAX_RETRIES + 1):
+                try:
+                    response = self.gemini_client.models.generate_content(
+                        model=model,
+                        contents=[prompt, image],
+                        config=_gen_config,
+                        **_extra_kwargs,
+                    )
+                    break  # success — exit retry loop
+                except Exception as _api_exc:
+                    _exc_str = str(_api_exc)
+                    _is_429 = "429" in _exc_str or "RESOURCE_EXHAUSTED" in _exc_str
+                    if not _is_429 or _attempt >= _GEMINI_MAX_RETRIES:
+                        raise  # not a rate-limit error, or retries exhausted
+                    _server_delay = _extract_gemini_retry_delay(_exc_str)
+                    _backoff = min(_GEMINI_BASE_DELAY * (2 ** _attempt), _GEMINI_MAX_DELAY)
+                    _jitter = _backoff * random.uniform(0, 0.25)
+                    _wait = max(_server_delay, _backoff + _jitter)
+                    logger.warning(
+                        f"Gemini VLM 429 rate limit — attempt {_attempt + 1}/{_GEMINI_MAX_RETRIES}, "
+                        f"waiting {_wait:.1f}s (server retryDelay={_server_delay:.0f}s, backoff={_backoff:.1f}s)"
+                    )
+                    time.sleep(_wait)
 
             # Log token usage (Gemini uses usage_metadata)
             token_usage = None
@@ -455,8 +543,40 @@ class VLMService:
                 }
             )
 
-            return response.text or ""
+            # Try direct .text accessor first (works for non-thinking models)
+            result_text = response.text if response.text else ""
+
+            # Gemini 2.5+ thinking models put output in candidates[0].content.parts
+            # while response.text may be empty (thinking tokens aren't counted in
+            # candidates_token_count, so Completion: None is normal for thinking models).
+            # Filter out thought=True parts (reasoning summaries) — we only want the
+            # final answer parts (thought=False / absent).
+            if not result_text and hasattr(response, "candidates") and response.candidates:
+                try:
+                    for part in response.candidates[0].content.parts:
+                        if (
+                            hasattr(part, "text")
+                            and part.text
+                            and not getattr(part, "thought", False)
+                        ):
+                            result_text += part.text
+                except Exception:
+                    pass
+
+            # If still empty after both extraction paths, treat as a failure
+            # so the caller's fallback logic kicks in (Groq, NVIDIA, etc.)
+            if not result_text:
+                raise ModelProviderError(
+                    "Gemini VLM returned empty response (possible thinking-only output or safety block)",
+                    provider="gemini",
+                    model=model,
+                    error_code="EMPTY_RESPONSE",
+                )
+
+            return result_text
         except Exception as e:
+            if isinstance(e, ModelProviderError):
+                raise e
             raise ModelProviderError(
                 f"Gemini VLM API call failed: {str(e)}",
                 provider="gemini",
@@ -667,6 +787,142 @@ class VLMService:
             raise ModelProviderError(
                 f"NVIDIA NIM VLM API call failed: {str(e)}",
                 provider="nvidia",
+                model=model,
+                error_code="API_CALL_FAILED",
+                context={"original_error": str(e)},
+            )
+
+    def _call_openrouter(
+        self,
+        model: str,
+        image_data: Union[bytes, str, Image.Image],
+        prompt: str,
+        **kwargs: Any,
+    ) -> str:
+        """Call OpenRouter vision model via OpenAI-compatible API.
+
+        Primary VLM: nvidia/nemotron-nano-12b-v2-vl:free
+        Uses the standard OpenAI vision message format (image_url with base64).
+        Includes exponential backoff for 429 rate-limit errors.
+        """
+        if not self.openrouter_client:
+            raise ModelProviderError(
+                "OpenRouter client not initialized. Check OPENROUTER_API_KEY.",
+                provider="openrouter",
+                error_code="CLIENT_NOT_INITIALIZED",
+            )
+
+        _caller_agent = kwargs.pop("_caller_agent", None)
+        system_prompt = kwargs.pop("system_prompt", "")
+
+        # Reuse Groq's base64 preparation (same JPEG format)
+        base64_image = self._prepare_image_for_groq(image_data)
+
+        # Save VLM input image to HTML log
+        _vlm_screenshot_path = ""
+        try:
+            _vlm_screenshot_path = get_command_logger().log_screenshot(
+                label="vlm_input_openrouter",
+                base64_data=base64_image,
+                ext="jpg",
+            )
+        except Exception:
+            pass
+
+        try:
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            messages.append({
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                    },
+                ],
+            })
+
+            max_tokens = kwargs.pop("max_tokens", 1024)
+            temperature = kwargs.pop("temperature", 0.2)
+
+            # Retry loop for 429 rate-limit errors
+            response = None
+            for _attempt in range(_GEMINI_MAX_RETRIES + 1):
+                try:
+                    response = self.openrouter_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                    )
+                    break
+                except Exception as _api_exc:
+                    _exc_str = str(_api_exc)
+                    _is_429 = "429" in _exc_str or "rate_limit" in _exc_str.lower() or "RESOURCE_EXHAUSTED" in _exc_str
+                    if not _is_429 or _attempt >= _GEMINI_MAX_RETRIES:
+                        raise
+                    _server_delay = _extract_gemini_retry_delay(_exc_str)
+                    _backoff = min(_GEMINI_BASE_DELAY * (2 ** _attempt), _GEMINI_MAX_DELAY)
+                    _jitter = _backoff * random.uniform(0, 0.25)
+                    _wait = max(_server_delay, _backoff + _jitter)
+                    logger.warning(
+                        f"OpenRouter VLM 429 rate limit — attempt {_attempt + 1}/{_GEMINI_MAX_RETRIES}, "
+                        f"waiting {_wait:.1f}s"
+                    )
+                    time.sleep(_wait)
+
+            response_text = response.choices[0].message.content or ""
+
+            # Log token usage
+            token_usage = None
+            if hasattr(response, "usage") and response.usage:
+                usage = response.usage
+                token_usage = {
+                    "prompt_tokens": usage.prompt_tokens,
+                    "completion_tokens": usage.completion_tokens,
+                    "total_tokens": usage.total_tokens,
+                }
+                logger.info(
+                    f"📊 VLM Token Usage (OpenRouter) - Prompt: {usage.prompt_tokens}, "
+                    f"Completion: {usage.completion_tokens}, "
+                    f"Total: {usage.total_tokens}"
+                )
+                token_tracker.track(
+                    agent=_caller_agent or "vlm_service",
+                    model_type="vlm",
+                    provider="openrouter",
+                    model=model,
+                    prompt_tokens=usage.prompt_tokens,
+                    completion_tokens=usage.completion_tokens,
+                    total_tokens=usage.total_tokens,
+                )
+
+            # Log VLM call to command logger
+            cmd_logger = get_command_logger()
+            cmd_logger.log_llm_call(
+                prompt=prompt,
+                response=response_text,
+                provider="openrouter",
+                model=model,
+                agent=_caller_agent,
+                token_usage=token_usage,
+                is_vlm=True,
+                metadata={
+                    "has_image": True,
+                    "screenshot_saved_path": _vlm_screenshot_path,
+                },
+            )
+
+            return response_text
+
+        except Exception as e:
+            if isinstance(e, ModelProviderError):
+                raise e
+            raise ModelProviderError(
+                f"OpenRouter VLM API call failed: {str(e)}",
+                provider="openrouter",
                 model=model,
                 error_code="API_CALL_FAILED",
                 context={"original_error": str(e)},

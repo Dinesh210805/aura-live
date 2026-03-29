@@ -697,17 +697,19 @@ class AuraOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
      * Push a single Live Alert chip update.
      * The animation loop has been removed — the chip updates once per agent/step
      * transition instead of every 350 ms, reducing notification churn.
+     * Always dispatched on serviceScope so it is safe to call from any thread/coroutine.
      */
     private fun pushLiveUpdate(statusText: String) {
         Log.i(TAG, "💠 pushLiveUpdate: verb='$_workingVerb', status='${statusText.take(60)}'")
         _dotAnimJob?.cancel()
-        _dotAnimJob = null
-        updateNotificationForAutomation(
-            statusText = statusText,
-            chipText = buildChipText(),
-            stepCurrent = _workingStepCurrent,
-            stepTotal = _workingStepTotal
-        )
+        _dotAnimJob = serviceScope.launch {
+            updateNotificationForAutomation(
+                statusText = statusText,
+                chipText = buildChipText(),
+                stepCurrent = _workingStepCurrent,
+                stepTotal = _workingStepTotal
+            )
+        }
     }
 
     /**

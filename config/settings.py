@@ -49,6 +49,11 @@ class Settings(BaseSettings):
         env="NVIDIA_API_KEY",
         description="NVIDIA NIM API key for vision and planning models",
     )
+    tavily_api_key: Optional[str] = Field(
+        default=None,
+        env="TAVILY_API_KEY",
+        description="Tavily API key for real-time web search (weather, news, current facts)",
+    )
 
     # LangSmith Observability
     langchain_tracing_v2: bool = Field(
@@ -81,7 +86,7 @@ class Settings(BaseSettings):
         env="DEFAULT_LLM_PROVIDER",
         description="Default LLM provider (fast tasks)",
     )
-    default_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
+    default_vlm_provider: Literal["groq", "gemini", "nvidia", "openrouter"] = Field(
         default="groq",
         env="DEFAULT_VLM_PROVIDER",
         description="Default VLM provider (vision tasks)",
@@ -150,6 +155,11 @@ class Settings(BaseSettings):
         env="DEFAULT_LLM_MODEL",
         description="Default LLM model (intent parsing - Llama 3.1 8B, 560 T/s)",
     )
+    commander_model: str = Field(
+        default="llama-3.3-70b-versatile",
+        env="COMMANDER_MODEL",
+        description="Model used by Commander for intent parsing (needs reliable structured JSON output)",
+    )
     llm_fallback_model: str = Field(
         default="llama-3.3-70b-versatile",
         env="LLM_FALLBACK_MODEL",
@@ -167,12 +177,12 @@ class Settings(BaseSettings):
     )
     # Fallback VLM model for the non-default provider
     fallback_vlm_model: str = Field(
-        default="gemini-2.5-flash",
+        default="meta-llama/llama-4-scout-17b-16e-instruct",
         env="FALLBACK_VLM_MODEL",
         description="Fallback VLM model used when primary VLM provider fails",
     )
-    fallback_vlm_provider: Literal["groq", "gemini", "nvidia"] = Field(
-        default="gemini",
+    fallback_vlm_provider: Literal["groq", "gemini", "nvidia", "openrouter"] = Field(
+        default="openrouter",
         env="FALLBACK_VLM_PROVIDER",
         description="Provider for fallback VLM model",
     )
@@ -368,9 +378,15 @@ class Settings(BaseSettings):
 
     # Gemini Live bidirectional audio+vision streaming
     gemini_live_model: str = Field(
-        default="gemini-live-2.5-flash-native-audio",
+        default="gemini-3.1-flash-live-preview",
         env="GEMINI_LIVE_MODEL",
-        description="Gemini Live model for bidirectional audio+vision streaming",
+        description=(
+            "Gemini Live model for bidirectional audio+vision streaming. "
+            "gemini-3.1-flash-live-preview is the current recommended Live model "
+            "and supports function calling (tool use) in bidi streaming mode. "
+            "gemini-2.5-flash-native-audio-preview-12-2025 uses native audio output "
+            "but does NOT support function calling — use only if tools are removed."
+        ),
     )
     gemini_live_enabled: bool = Field(
         default=False,

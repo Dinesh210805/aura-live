@@ -222,18 +222,12 @@ class TaskState(TypedDict):
     original_intent: Optional[Dict[str, Any]]
     """Original intent saved for multi-step commands (primary action + all steps)."""
 
-    # Goal-Driven Execution State (NEW)
+    # Goal-Driven Execution State
     agent_state: Optional[Any]
     """AgentState object for goal-driven execution with retry strategies and validation."""
 
-    validation_routing: Optional[str]
-    """Routing hint from validate_outcome_node (success/retry/abort)."""
-
     original_request: Optional[str]
     """Original user request text for goal tracking."""
-
-    retry_action: Optional[Dict[str, Any]]
-    """Retry action details from retry_router_node."""
 
     goal_status: Optional[str]
     """Current goal status (in_progress/completed/aborted)."""

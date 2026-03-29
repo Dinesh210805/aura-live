@@ -119,7 +119,7 @@ class AIIntentClassifier:
                 gemini_key = os.getenv("GEMINI_API_KEY")
                 if gemini_key:
                     genai.configure(api_key=gemini_key)
-                    self.gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+                    self.gemini_model = genai.GenerativeModel("gemini-2.0-flash-lite")
                     logger.info("Gemini client initialized successfully")
             except Exception as e:
                 logger.warning(f"Failed to initialize Gemini: {e}")
@@ -277,7 +277,7 @@ Respond ONLY with valid JSON:
                 )
 
                 # Extract JSON from response
-                text = response.text.strip()
+                text = (response.text or "").strip()
                 if text.startswith("```json"):
                     text = text[7:]
                 if text.endswith("```"):

@@ -205,6 +205,15 @@ ACTION_REGISTRY: Dict[str, ActionMeta] = {
     "app_action": ActionMeta(needs_ui=True, needs_coords=True, needs_perception=True),
     
     # =========================================================================
+    # WEB SEARCH (real-time lookup — no device action, fetches from Tavily)
+    # =========================================================================
+    "web_search": ActionMeta(),
+    "web_lookup": ActionMeta(),
+    "search_web": ActionMeta(),
+    "get_weather": ActionMeta(),
+    "get_news": ActionMeta(),
+
+    # =========================================================================
     # CONVERSATIONAL (no device action)
     # =========================================================================
     "greeting": ActionMeta(is_conversational=True),
@@ -216,7 +225,6 @@ ACTION_REGISTRY: Dict[str, ActionMeta] = {
     "general_interaction": ActionMeta(is_conversational=True),
     "general_query": ActionMeta(is_conversational=True),
     "provide_help": ActionMeta(is_conversational=True),
-    "none": ActionMeta(is_conversational=True),
     "status": ActionMeta(is_conversational=True),
     "thanks": ActionMeta(is_conversational=True),
     "goodbye": ActionMeta(is_conversational=True),
@@ -290,6 +298,11 @@ CONVERSATIONAL_ACTIONS: List[str] = _get_actions_where(is_conversational=True)
 
 # DANGEROUS_ACTIONS: Actions requiring confirmation
 DANGEROUS_ACTIONS: List[str] = _get_actions_where(is_dangerous=True)
+
+# WEB_SEARCH_ACTIONS: Actions that fetch live data from the web
+WEB_SEARCH_ACTIONS: List[str] = [
+    "web_search", "web_lookup", "search_web", "get_weather", "get_news"
+]
 
 # VALID_ACTIONS: All known action types
 VALID_ACTIONS: List[str] = list(ACTION_REGISTRY.keys())

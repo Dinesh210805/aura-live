@@ -402,6 +402,7 @@ class CommandLogger:
         .entry-AGENT_DECISION.decision-LOOP_DETECTED .entry-header { background: #200a0a; border-left: 3px solid var(--red); }
         .entry-AGENT_DECISION.decision-REPLAN .entry-header { background: #180a2a; border-left: 3px solid var(--purple); }
         .entry-AGENT_DECISION.decision-INTENT_PARSED .entry-header { background: #0a1624; border-left: 3px solid var(--cyan); }
+        .entry-AGENT_DECISION.decision-PERCEIVER_INPUT .entry-header { background: #0a1820; border-left: 3px solid #39c5cf; opacity: 0.85; }
 
         .ts { color: var(--muted); font-size: 11px; font-weight: 400; font-family: 'JetBrains Mono', monospace; }
         .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
@@ -502,11 +503,12 @@ class CommandLogger:
         .screenshot-grid .screenshot-row img { max-width: 100%; }
 
         /* ── Gesture parallel layout (details + annotated screenshot) ── */
-        .gesture-layout { display: flex; gap: 16px; align-items: flex-start; }
+        .gesture-layout { display: flex; gap: 20px; align-items: flex-start; }
         .gesture-details { flex: 1; min-width: 0; }
-        .gesture-screenshot { flex-shrink: 0; width: 260px; }
-        .gesture-screenshot img { max-width: 100%; border-radius: 8px; border: 2px solid var(--green); display: block; }
+        .gesture-screenshot { flex-shrink: 0; width: 320px; }
+        .gesture-screenshot img { max-width: 100%; border-radius: 8px; border: 2px solid var(--green); display: block; box-shadow: 0 0 16px rgba(63,185,80,0.18); }
         .gesture-screenshot .screenshot-label { color: var(--green); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+        .gesture-coord-pill { display: inline-block; background: #0d2d17; border: 1px solid #1b5e30; border-radius: 4px; color: #56d364; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; padding: 3px 10px; margin: 6px 0; }
 
         /* ── VLM parallel layout (response + input image side-by-side) ── */
         .vlm-layout { display: flex; gap: 16px; align-items: flex-start; }
@@ -891,7 +893,13 @@ class CommandLogger:
                 n = entry.get("gesture_number", "?")
                 icon = "&#x26A1;"
                 badge = f'<span class="badge badge-GESTURE">GESTURE #{n}</span>'
-                label = esc(entry.get("gesture_type", "").upper())
+                _gtype = esc(entry.get("gesture_type", "").upper())
+                _gdata = entry.get("gesture_data", {})
+                _coords = _gdata.get("coordinates")
+                _gtarget = _gdata.get("target") or ""
+                _coord_str = f' <span style="color:#56d364;font-family:monospace">({_coords[0]},{_coords[1]})</span>' if _coords else ""
+                _target_str = f' &mdash; <span style="color:#adbac7;font-style:italic">{esc(_gtarget[:40])}</span>' if _gtarget else ""
+                label = f'{_gtype}{_coord_str}{_target_str}'
                 collapsed = False
             elif entry_type == "COMMAND":
                 icon = "&#x1F4CB;"
@@ -910,6 +918,7 @@ class CommandLogger:
                     "PROMPT_GUARD_BLOCKED": "&#x1F6E1;", "SENSITIVE_ACTION_BLOCKED": "&#x1F6E1;",
                     "ERROR_SCREEN_DETECTED": "&#x1F4A5;", "PERCEPTION_FAILED": "&#x274C;",
                     "POST_ACTION_SCREENSHOT": "&#x1F4F7;",
+                    "PERCEIVER_INPUT": "&#x1F50E;",
                 }
                 icon = icon_map.get(dt, "&#x1F9E0;")
                 _AGENT_LABELS = {
@@ -1023,28 +1032,40 @@ class CommandLogger:
                 success = entry.get("result", {}).get("success", False)
                 result_data = entry.get("result", {})
                 meta = entry.get("metadata") or {}
+                gdata = entry.get("gesture_data", {})
+                coords = gdata.get("coordinates")
                 # Annotate the pre-gesture screenshot with the gesture target
                 ann_path = ""
                 ss_b64 = meta.get("screenshot_b64")
                 if ss_b64:
                     ann_path = self.log_annotated_gesture_screenshot(
                         entry.get("gesture_type", "gesture"),
-                        entry.get("gesture_data", {}),
+                        gdata,
                         ss_b64,
                     )
                 detail_parts = []
-                detail_parts.append(f'<div class="kv-row"><span class="kv-key">Sent at</span><span class="kv-val">{esc(timing.get("sent_at",""))}</span></div>')
-                detail_parts.append(f'<div class="kv-row"><span class="kv-key">Duration</span><span class="kv-val">{entry.get("execution_time",0)*1000:.1f}ms</span></div>')
-                detail_parts.append(f'<div class="kv-row"><span class="kv-key">Result</span><span class="kv-val {"ok" if success else "fail"}">{"SUCCESS" if success else "FAILED"}</span></div>')
+                # Prominent coordinate callout
+                if coords:
+                    detail_parts.append(
+                        f'<div style="margin:6px 0 10px">'
+                        f'<span class="gesture-coord-pill">&#x1F3AF; ({coords[0]}, {coords[1]})</span>'
+                        f'</div>'
+                    )
+                if gdata.get("target"):
+                    detail_parts.append(f'<div class="kv-row"><span class="kv-key">Target</span><span class="kv-val" style="color:#79c0ff">{esc(gdata["target"])}</span></div>')
+                if gdata.get("subgoal"):
+                    detail_parts.append(f'<div class="kv-row"><span class="kv-key">Subgoal</span><span class="kv-val">{esc(gdata["subgoal"])}</span></div>')
+                detail_parts.append(f'<div class="kv-row"><span class="kv-key">Result</span><span class="kv-val {"ok" if success else "fail"}">{"&#x2705; SUCCESS" if success else "&#x274C; FAILED"}</span></div>')
                 if result_data.get("error"):
                     detail_parts.append(f'<div class="kv-row"><span class="kv-key">Error</span><span class="kv-val fail">{esc(result_data["error"])}</span></div>')
-                detail_parts.append(jblk(entry.get("gesture_data", {}), "Gesture data"))
+                if timing.get("executed_at"):
+                    detail_parts.append(f'<div class="kv-row"><span class="kv-key">Executed at</span><span class="kv-val">{esc(timing["executed_at"])}</span></div>')
                 if result_data.get("details"):
                     detail_parts.append(jblk(result_data["details"], "Result details"))
                 if ann_path:
                     ss_col = (
                         f'<div class="gesture-screenshot">'
-                        f'<div class="screenshot-label">&#x1F3AF; Gesture target</div>'
+                        f'<div class="screenshot-label">&#x1F3AF; Pre-gesture screen (annotated)</div>'
                         f'<img src="{esc(ann_path)}" loading="lazy">'
                         f'</div>'
                     )
@@ -1133,6 +1154,24 @@ class CommandLogger:
                             f'<th>#</th><th>Text</th><th>Content Desc</th><th>Class</th><th>Resource ID</th><th>Bounds</th><th>Center</th><th>Flags</th>'
                             f'</tr></thead><tbody>{rows}</tbody></table></div>'
                         )
+                elif dt == "PERCEIVER_INPUT":
+                    # What the perceiver was given — shown compactly (collapsible intent)
+                    _step = details.get("step", "?")
+                    _subgoal = details.get("subgoal", "")
+                    _action = details.get("action_type", "")
+                    _target = details.get("target", "")
+                    _cmd = details.get("user_command", "")
+                    body_parts.append(
+                        f'<div style="display:flex;gap:16px;flex-wrap:wrap;padding:4px 0">'
+                        f'<div class="kv-row" style="flex:1"><span class="kv-key">Step</span><span class="kv-val" style="color:#39c5cf;font-weight:700">#{_step}</span></div>'
+                        f'<div class="kv-row" style="flex:3"><span class="kv-key">Action</span><span class="kv-val" style="font-family:monospace;color:#f0a500">{esc(_action)}</span></div>'
+                        f'</div>'
+                    )
+                    body_parts.append(f'<div class="kv-row"><span class="kv-key">Subgoal</span><span class="kv-val"><strong>{esc(_subgoal)}</strong></span></div>')
+                    if _target:
+                        body_parts.append(f'<div class="kv-row"><span class="kv-key">Target</span><span class="kv-val" style="color:#79c0ff">{esc(_target)}</span></div>')
+                    if _cmd:
+                        body_parts.append(f'<div class="kv-row"><span class="kv-key">User command</span><span class="kv-val" style="color:var(--muted2);font-style:italic">{esc(_cmd)}</span></div>')
                 elif dt == "POST_ACTION_SCREENSHOT":
                     body_parts.append(f'<div class="kv-row"><span class="kv-key">Subgoal</span><span class="kv-val">{esc(details.get("subgoal",""))}</span></div>')
                     body_parts.append(f'<div class="kv-row"><span class="kv-key">Action</span><span class="kv-val">{esc(details.get("action_type",""))}</span></div>')

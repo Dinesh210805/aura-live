@@ -68,6 +68,7 @@ class ReactiveStepGenerator:
         screen_width: int = 1080,
         screen_height: int = 1920,
         agent_memory: str = "",
+        web_hints: str = "",
     ) -> Optional[Subgoal]:
         """
         Generate the next concrete step for the current phase.
@@ -144,6 +145,8 @@ class ReactiveStepGenerator:
             if use_vision:
                 # System/user split: static rules cached by Groq at 50% token cost.
                 sys_msg, user_msg = get_reactive_step_messages(**_prompt_kwargs)
+                if web_hints:
+                    user_msg = f"📖 HOW-TO REFERENCE (official guide):\n{web_hints}\n\n{user_msg}"
                 if reflexion_lesson:
                     user_msg = f"\n⚠️ LESSON FROM PREVIOUS ATTEMPT:\n{reflexion_lesson}\n\n{user_msg}"
                 logger.info("ReactiveStepGenerator: VLM call (system/user split, cached rules)")
@@ -160,6 +163,8 @@ class ReactiveStepGenerator:
                 )
             else:
                 prompt = get_reactive_step_prompt(**_prompt_kwargs)
+                if web_hints:
+                    prompt = f"📖 HOW-TO REFERENCE (official guide):\n{web_hints}\n\n{prompt}"
                 if reflexion_lesson:
                     prompt = f"\n⚠️ LESSON FROM PREVIOUS ATTEMPT:\n{reflexion_lesson}\n\n{prompt}"
                 settings = self.llm_service.settings
@@ -198,7 +203,7 @@ class ReactiveStepGenerator:
             if _gesture:
                 parsed["action_type"] = _gesture
 
-            if ui_elements and (_element_id is not None or _from_element is not None):
+            if isinstance(ui_elements, list) and ui_elements and (_element_id is not None or _from_element is not None):
                 from utils.ui_element_finder import get_element_center
 
                 def _som_center(idx):
@@ -457,7 +462,7 @@ class ReactiveStepGenerator:
             if m.key_state_after:
                 entry += f" [→ {m.key_state_after}]"
             parts.append(entry)
-        return " → ".join(parts)
+        return "\n".join(parts)
 
     def _last_failure_reason(self, step_history: List[StepMemory]) -> str:
         for m in reversed(step_history):

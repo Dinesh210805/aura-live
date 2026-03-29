@@ -65,13 +65,28 @@ def _fallback_intent(intent: dict[str, Any], original_action: str) -> dict[str, 
     """
     result = intent.copy()
     result["action"] = "general_interaction"
-    
+
     # Store original action as goal for downstream agents to reason about
     params = result.get("parameters", {})
     params["original_action"] = original_action
-    params["goal"] = intent.get("content") or original_action
+    params["goal"] = intent.get("content") or params.get("goal") or original_action
+
+    # If the LLM hallucinated an unknown action name but the intent clearly
+    # targets an app with task-like parameters (e.g. complex_app_goal +
+    # recipient="Google Maps" + parameters.goal/location), treat it as a
+    # delegatable task so the coordinator handles it rather than speak.
+    task_params = {
+        k for k in params
+        if k not in ("visual_reference", "original_action", "goal", "error")
+    }
+    if intent.get("recipient") and task_params:
+        params["delegate_to_planner"] = True
+        logger.info(
+            f"Unknown action '{original_action}' + recipient '{intent.get('recipient')}' "
+            f"+ params {list(task_params)} → delegate_to_planner=True"
+        )
+
     result["parameters"] = params
-    
     logger.info(f"Unknown action '{original_action}' → general_interaction (goal preserved)")
     return result
 

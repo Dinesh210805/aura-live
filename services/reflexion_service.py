@@ -18,6 +18,23 @@ from typing import Optional
 
 from utils.logger import get_logger
 
+# Module-level constant — action-verb buckets for goal key normalisation.
+# open_app must precede send_message so "open WhatsApp" hits "open" first.
+# Defined here (not inside _goal_key) so it is built once, not per-call.
+_ACTION_BUCKETS: list[tuple[str, list[str]]] = [
+    ("open_app",        ["open", "launch", "start"]),
+    ("send_message",    ["send", "message", "text", "sms"]),
+    ("make_call",       ["call", "dial", "phone", "ring"]),
+    ("play_media",      ["play", "listen", "watch", "stream", "music", "video", "song", "podcast"]),
+    ("search",          ["search", "find", "look up", "google", "browse"]),
+    ("navigate",        ["navigate", "directions", "route", "maps"]),
+    ("take_screenshot", ["screenshot", "capture screen"]),
+    ("settings",        ["setting", "toggle", "enable", "disable", "turn on", "turn off",
+                          "wifi", "bluetooth", "volume", "brightness"]),
+    ("email",           ["email", "mail", "compose"]),
+    ("social",          ["post", "tweet", "like", "share", "comment"]),
+]
+
 logger = get_logger(__name__)
 
 _REFLEXION_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="reflexion_worker")
@@ -140,41 +157,46 @@ class ReflexionService:
         except Exception as e:
             logger.warning(f"Failed to store reflexion lesson: {e}")
 
+    # Known app names to scope lessons per-app.
+    # e.g. "play_media__spotify" vs "play_media__youtube" — distinct lesson pools.
+    _APP_NAMES: tuple = (
+        "spotify", "youtube", "whatsapp", "gmail", "maps", "instagram",
+        "netflix", "zomato", "swiggy", "telegram", "twitter", "snapchat",
+        "facebook", "tiktok", "amazon", "flipkart", "chrome", "settings",
+        "contacts", "camera", "gallery", "photos", "calendar", "clock",
+        "calculator", "files", "drive", "meet", "zoom", "slack",
+    )
+
     @staticmethod
     def _goal_key(goal: str) -> str:
         """
-        Bucket lessons by action type inferred from the goal text.
+        Bucket lessons by (action_type, app) so Spotify and YouTube lessons
+        never pollute each other.
 
-        "send message to john" and "whatsapp john about meeting" both map to
-        'send_message', so they share a lesson pool — no vector DB needed.
+        "play liked songs in spotify" → "play_media__spotify"
+        "play a video on youtube"     → "play_media__youtube"
+        "send message to john"        → "send_message"  (no app detected)
+
         Falls back to a 3-word slug when no action bucket matches.
+        Uses the module-level _ACTION_BUCKETS constant (built once at import time).
         """
         import re
 
-        # Match on ACTION VERBS only — not app names.
-        # open_app must come before send_message so "open WhatsApp" hits "open" first.
-        _ACTION_BUCKETS: list[tuple[str, list[str]]] = [
-            ("open_app",       ["open", "launch", "start"]),
-            ("send_message",   ["send", "message", "text", "sms"]),
-            ("make_call",      ["call", "dial", "phone", "ring"]),
-            ("play_media",     ["play", "listen", "watch", "stream", "music", "video", "song", "podcast"]),
-            ("search",         ["search", "find", "look up", "google", "browse"]),
-            ("navigate",       ["navigate", "directions", "route", "maps"]),
-            ("take_screenshot",["screenshot", "capture screen"]),
-            ("settings",       ["setting", "toggle", "enable", "disable", "turn on", "turn off", "wifi",
-                                 "bluetooth", "volume", "brightness"]),
-            ("email",          ["email", "mail", "compose"]),
-            ("social",         ["post", "tweet", "like", "share", "comment"]),
-        ]
-
         text = goal.lower().strip()
+
+        # Extract app name if present — lessons are app-specific
+        app_tag = next(
+            (a for a in ReflexionService._APP_NAMES if a in text), ""
+        )
+
         for bucket, keywords in _ACTION_BUCKETS:
             if any(kw in text for kw in keywords):
-                return bucket
+                return f"{bucket}__{app_tag}" if app_tag else bucket
 
         # Fallback: first 3 meaningful words as slug
         words = re.findall(r'[a-z]+', text)[:3]
-        return "_".join(words) or "unknown"
+        slug = "_".join(words) or "unknown"
+        return f"{slug}__{app_tag}" if app_tag else slug
 
 
 # Module-level singleton

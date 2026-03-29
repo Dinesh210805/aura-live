@@ -6,7 +6,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from config.action_types import opens_settings_panel
-from prompts.personality import AURA_PERSONALITY, EMOTIONAL_PATTERNS, EMOTIONAL_RESPONSES
+from prompts.personality import AURA_PERSONALITY, EMOTIONAL_PATTERNS, EMOTIONAL_RESPONSES, KNOWN_CONTACTS_PROMPT_BLOCK
 from services.llm import LLMService
 from services.tts import TTSService
 from utils.logger import get_logger
@@ -123,8 +123,8 @@ class ResponderAgent:
         conversation_history: Optional[List[Dict[str, str]]] = None,
     ) -> str:
         """Build compact LLM prompt with full context awareness."""
-        parts = [AURA_PERSONALITY]
-        
+        parts = [AURA_PERSONALITY, KNOWN_CONTACTS_PROMPT_BLOCK]
+
         # Introduction note
         if has_introduced or turn > 0:
             parts.append("DO NOT introduce yourself again.")

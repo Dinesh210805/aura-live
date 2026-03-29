@@ -46,13 +46,14 @@ class PlannerAgent:
         intent: Dict[str, Any],
         perception: Optional["PerceptionBundle"] = None,
         step_history: Optional[List[StepMemory]] = None,
+        web_hints: str = "",
     ) -> Goal:
         """
         Decompose utterance into a Goal with ordered Subgoals.
 
         Validates that commit actions from the utterance are covered.
         """
-        goal = self.decomposer.decompose(utterance, current_screen=perception, step_history=step_history)
+        goal = self.decomposer.decompose(utterance, current_screen=perception, step_history=step_history, web_hints=web_hints)
         self._ensure_commit_coverage(utterance, goal)
         return goal
 

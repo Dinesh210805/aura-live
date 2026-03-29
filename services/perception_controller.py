@@ -33,7 +33,7 @@ logger = get_logger(__name__)
 # TYPE_CHECKING import to avoid circular dependency
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from agents.visual_locator import ScreenVLM
+    from agents.perceiver_agent import PerceiverAgent
 
 
 class PerceptionController:
@@ -51,11 +51,11 @@ class PerceptionController:
     ]
     MAX_RETRIES_PER_LEVEL = 2
 
-    def __init__(self, screen_vlm: Optional["ScreenVLM"] = None):
+    def __init__(self, screen_vlm: Optional["PerceiverAgent"] = None):
         """Initialize Perception Controller.
         
         Args:
-            screen_vlm: Optional ScreenVLM agent for VLM-based descriptions
+            screen_vlm: Optional PerceiverAgent for VLM-based descriptions
         """
         self.ui_tree_service = get_ui_tree_service()
         self.screenshot_service = get_screenshot_service()
@@ -552,7 +552,7 @@ class PerceptionController:
 _perception_controller: Optional[PerceptionController] = None
 
 
-def get_perception_controller(screen_vlm: Optional["ScreenVLM"] = None) -> "PerceptionController":
+def get_perception_controller(screen_vlm: Optional["PerceiverAgent"] = None) -> "PerceptionController":
     """Get the global PerceptionController singleton.
 
     Must be called with screen_vlm on first invocation.

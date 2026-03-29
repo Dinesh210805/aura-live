@@ -5,6 +5,9 @@ This module provides a unified interface for interacting with different
 LLM providers (Groq, Gemini, NVIDIA NIM) with automatic fallback and error handling.
 """
 
+import random
+import re
+import time
 from typing import Any, Optional
 
 import groq
@@ -27,6 +30,19 @@ from utils.token_tracker import token_tracker
 from services.command_logger import get_command_logger
 
 logger = get_logger(__name__)
+
+# Gemini 429 retry configuration (shared constants, same policy as vlm.py)
+_GEMINI_MAX_RETRIES = 3
+_GEMINI_BASE_DELAY = 2.0
+_GEMINI_MAX_DELAY = 60.0
+
+
+def _extract_gemini_retry_delay(error_str: str) -> float:
+    """Parse the server-specified retryDelay from a Gemini 429 error string."""
+    match = re.search(r"['\"]?retryDelay['\"]?\s*:\s*['\"](\d+(?:\.\d+)?)s['\"]", error_str)
+    if match:
+        return float(match.group(1))
+    return 0.0
 
 
 class LLMService:
@@ -363,22 +379,71 @@ class LLMService:
             _agent_name = kwargs.pop("_caller_agent", "llm_service")  # G11
             _sys_prompt = kwargs.pop("_system_prompt", None)  # G15
 
-            # Create config object if we have parameters
-            config = None
-            if config_params and genai_types is not None:
-                config = genai_types.GenerateContentConfig(**config_params)
+            # Disable thinking for all LLM calls. gemini-2.5-flash has thinking ON
+            # by default (dynamic budget). thinking_budget=0 disables it, giving
+            # fast deterministic responses and ensuring response.text is never empty
+            # due to thought-only parts. Silently skipped on older SDK versions.
+            if genai_types is not None:
+                try:
+                    config_params["thinking_config"] = genai_types.ThinkingConfig(
+                        thinking_budget=0
+                    )
+                except (AttributeError, TypeError):
+                    pass  # SDK version predates ThinkingConfig
 
-            # G15: prepend system prompt to contents if provided
-            contents = f"{_sys_prompt}\n\n---\n\n{prompt}" if _sys_prompt else prompt
-            if _sys_prompt and config_params and genai_types is not None:
-                # Also set as system_instruction when using GenerateContentConfig
+            # G15: system prompt goes into system_instruction (proper API field)
+            if _sys_prompt:
                 config_params["system_instruction"] = _sys_prompt
-                config = genai_types.GenerateContentConfig(**config_params)
-            response = self.gemini_client.models.generate_content(
-                model=model, contents=contents, config=config
-            )
-            
+            contents = prompt
+
+            # Always build a config so thinking_config is always applied
+            config = None
+            if genai_types is not None:
+                try:
+                    config = genai_types.GenerateContentConfig(**config_params)
+                except Exception:
+                    config = None
+
+            # Retry loop: handles transient 429 RESOURCE_EXHAUSTED with
+            # exponential backoff + jitter, respecting the server's retryDelay.
+            response = None
+            for _attempt in range(_GEMINI_MAX_RETRIES + 1):
+                try:
+                    response = self.gemini_client.models.generate_content(
+                        model=model, contents=contents, config=config
+                    )
+                    break  # success
+                except Exception as _api_exc:
+                    _exc_str = str(_api_exc)
+                    _is_429 = "429" in _exc_str or "RESOURCE_EXHAUSTED" in _exc_str
+                    if not _is_429 or _attempt >= _GEMINI_MAX_RETRIES:
+                        raise
+                    _server_delay = _extract_gemini_retry_delay(_exc_str)
+                    _backoff = min(_GEMINI_BASE_DELAY * (2 ** _attempt), _GEMINI_MAX_DELAY)
+                    _jitter = _backoff * random.uniform(0, 0.25)
+                    _wait = max(_server_delay, _backoff + _jitter)
+                    logger.warning(
+                        f"Gemini LLM 429 rate limit — attempt {_attempt + 1}/{_GEMINI_MAX_RETRIES}, "
+                        f"waiting {_wait:.1f}s (server retryDelay={_server_delay:.0f}s, backoff={_backoff:.1f}s)"
+                    )
+                    time.sleep(_wait)
+
             response_text = response.text
+            # Fallback: extract from candidate parts when response.text is None.
+            # Filters out thought=True parts (thinking summaries) to get only the
+            # final answer text.
+            if not response_text and hasattr(response, "candidates") and response.candidates:
+                try:
+                    for part in response.candidates[0].content.parts:
+                        if (
+                            hasattr(part, "text")
+                            and part.text
+                            and not getattr(part, "thought", False)
+                        ):
+                            response_text = (response_text or "") + part.text
+                except Exception:
+                    pass
+            response_text = response_text or ""
 
             # Log token usage (Gemini uses usage_metadata)
             token_usage = None
@@ -445,6 +510,9 @@ class LLMService:
             kwargs.pop("response_format", None)
             kwargs.pop("reasoning_effort", None)
             kwargs.pop("tools", None)
+            # Strip internal meta-params (not valid OpenAI kwargs)
+            _agent_name = kwargs.pop("_caller_agent", "llm_service")  # G11
+            _sys_prompt = kwargs.pop("_system_prompt", None)  # G15
 
             # Extract thinking params if present
             thinking = kwargs.pop("thinking", None)
@@ -455,10 +523,17 @@ class LLMService:
                 from services.nvidia_nim import call_nvidia_reasoning
                 response_text = call_nvidia_reasoning(
                     self.nvidia_client, actual_model, prompt,
+                    system_prompt=_sys_prompt,
                     budget_tokens=thinking.get("budget_tokens", 2048),
                     **kwargs,
                 )
             else:
+                # Pass system prompt as a messages array when present
+                if _sys_prompt:
+                    kwargs["messages"] = [
+                        {"role": "system", "content": _sys_prompt},
+                        {"role": "user", "content": prompt},
+                    ]
                 response_text = call_nvidia_chat(
                     self.nvidia_client, actual_model, prompt, **kwargs
                 )

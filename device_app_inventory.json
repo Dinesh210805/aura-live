@@ -3,6 +3,14 @@
     "OnePlus CPH2661": {
       "apps": [
         {
+          "package_name": "com.android.se.overlay.target.odm",
+          "app_name": "com.android.se.overlay.target.odm",
+          "is_system_app": true,
+          "version_name": "14",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
           "package_name": "android.frameworkres.overlay",
           "app_name": "android.frameworkres.overlay",
           "is_system_app": true,
@@ -22,7 +30,7 @@
           "package_name": "com.oneplus.calculator",
           "app_name": "Calculator",
           "is_system_app": true,
-          "version_name": "16.2.32",
+          "version_name": "16.2.40",
           "deep_links": [],
           "intent_filters": [
             {
@@ -37,7 +45,7 @@
           "package_name": "net.oneplus.weather",
           "app_name": "Weather",
           "is_system_app": true,
-          "version_name": "16.34.2",
+          "version_name": "16.36.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -52,7 +60,15 @@
           "package_name": "com.oplus.healthservice",
           "app_name": "healthservice",
           "is_system_app": true,
-          "version_name": "15.0.4",
+          "version_name": "16.1.8",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.ncm.overlay.common",
+          "app_name": "com.android.ncm.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
           "deep_links": [],
           "intent_filters": []
         },
@@ -91,7 +107,7 @@
           "package_name": "com.google.android.youtube",
           "app_name": "YouTube",
           "is_system_app": true,
-          "version_name": "21.12.524",
+          "version_name": "21.13.163",
           "deep_links": [],
           "intent_filters": [
             {
@@ -137,7 +153,7 @@
           "package_name": "com.oplus.smartengine",
           "app_name": "SmartEngine",
           "is_system_app": true,
-          "version_name": "12.0.142",
+          "version_name": "12.0.146",
           "deep_links": [],
           "intent_filters": []
         },
@@ -145,7 +161,7 @@
           "package_name": "com.tailscale.ipn",
           "app_name": "Tailscale",
           "is_system_app": false,
-          "version_name": "1.94.2-t0a29cf18b-g1a1b1c9ae",
+          "version_name": "1.96.4-t8cf541dfd-g980f12083",
           "deep_links": [],
           "intent_filters": [
             {
@@ -176,7 +192,7 @@
           "package_name": "com.microsoft.appmanager",
           "app_name": "Link to Windows",
           "is_system_app": true,
-          "version_name": "1.26022.70.0",
+          "version_name": "1.26031.158.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -191,7 +207,7 @@
           "package_name": "com.android.providers.telephony",
           "app_name": "Phone Call/SMS Storage",
           "is_system_app": true,
-          "version_name": "16.20.40",
+          "version_name": "16.20.50",
           "deep_links": [],
           "intent_filters": []
         },
@@ -199,7 +215,7 @@
           "package_name": "com.oneplus.oshare",
           "app_name": "OnePlus Share",
           "is_system_app": true,
-          "version_name": "16.4.35",
+          "version_name": "16.4.60",
           "deep_links": [],
           "intent_filters": []
         },
@@ -207,7 +223,7 @@
           "package_name": "com.oplus.securitykeyboard",
           "app_name": "Secure Keyboard",
           "is_system_app": true,
-          "version_name": "16.0.4",
+          "version_name": "16.0.5",
           "deep_links": [],
           "intent_filters": []
         },
@@ -218,6 +234,62 @@
           "version_name": "16",
           "deep_links": [],
           "intent_filters": []
+        },
+        {
+          "package_name": "com.truecaller",
+          "app_name": "Truecaller",
+          "is_system_app": false,
+          "version_name": "26.12.6",
+          "deep_links": [
+            "mms",
+            "mmsto",
+            "sms",
+            "smsto",
+            "tel"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "tel"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "sms"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "smsto"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "mms"
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "mmsto"
+            }
+          ]
         },
         {
           "package_name": "com.oplus.crashbox",
@@ -231,7 +303,7 @@
           "package_name": "com.google.android.googlequicksearchbox",
           "app_name": "Google",
           "is_system_app": true,
-          "version_name": "17.11.56.ve.arm64",
+          "version_name": "17.12.51.ve.arm64",
           "deep_links": [
             "android-app",
             "content",
@@ -287,7 +359,7 @@
           "package_name": "com.coloros.smartsidebar",
           "app_name": "Smart Sidebar",
           "is_system_app": true,
-          "version_name": "16.7.1",
+          "version_name": "16.11.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -318,7 +390,7 @@
           "package_name": "com.android.providers.calendar",
           "app_name": "Calendar storage",
           "is_system_app": true,
-          "version_name": "16.0.6",
+          "version_name": "16.2.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -341,7 +413,7 @@
           "package_name": "in.redbus.android",
           "app_name": "redBus",
           "is_system_app": false,
-          "version_name": "81.6.1",
+          "version_name": "81.7.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -388,7 +460,7 @@
           "package_name": "org.telegram.messenger",
           "app_name": "Telegram",
           "is_system_app": false,
-          "version_name": "12.5.2",
+          "version_name": "12.6.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -418,7 +490,7 @@
           "package_name": "com.oneplus.note",
           "app_name": "Notes",
           "is_system_app": false,
-          "version_name": "16.2.62",
+          "version_name": "16.2.72",
           "deep_links": [],
           "intent_filters": [
             {
@@ -457,7 +529,7 @@
           "package_name": "com.heytap.cloud",
           "app_name": "HeyTap Cloud",
           "is_system_app": true,
-          "version_name": "10.0.26",
+          "version_name": "10.0.28",
           "deep_links": [],
           "intent_filters": [
             {
@@ -467,14 +539,6 @@
               ]
             }
           ]
-        },
-        {
-          "package_name": "com.qualcomm.qti.xrwifi",
-          "app_name": "XR Wifi Service",
-          "is_system_app": true,
-          "version_name": "0.1.3",
-          "deep_links": [],
-          "intent_filters": []
         },
         {
           "package_name": "com.android.virtualmachine.res",
@@ -520,7 +584,7 @@
           "package_name": "com.oplus.location",
           "app_name": "Location Service",
           "is_system_app": true,
-          "version_name": "16.50.251103",
+          "version_name": "16.50.260126",
           "deep_links": [],
           "intent_filters": []
         },
@@ -528,7 +592,7 @@
           "package_name": "com.oneplus.soundrecorder",
           "app_name": "Recorder",
           "is_system_app": false,
-          "version_name": "16.11.0",
+          "version_name": "16.13.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -574,7 +638,7 @@
           "package_name": "com.android.launcher",
           "app_name": "System Launcher",
           "is_system_app": true,
-          "version_name": "16.4.11",
+          "version_name": "16.4.22",
           "deep_links": [],
           "intent_filters": []
         },
@@ -582,7 +646,7 @@
           "package_name": "com.oplus.onetrace",
           "app_name": "OneTrace",
           "is_system_app": true,
-          "version_name": "1.3.45",
+          "version_name": "1.3.46",
           "deep_links": [],
           "intent_filters": []
         },
@@ -590,7 +654,7 @@
           "package_name": "com.coloros.translate",
           "app_name": "Translate",
           "is_system_app": false,
-          "version_name": "16.0.24",
+          "version_name": "16.0.26",
           "deep_links": [],
           "intent_filters": [
             {
@@ -605,7 +669,7 @@
           "package_name": "com.myairtelapp",
           "app_name": "Airtel",
           "is_system_app": false,
-          "version_name": "4.138.3",
+          "version_name": "4.139.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -643,7 +707,7 @@
           "package_name": "com.oplus.screenrecorder",
           "app_name": "Screen recording",
           "is_system_app": true,
-          "version_name": "16.4.0",
+          "version_name": "16.4.10",
           "deep_links": [],
           "intent_filters": []
         },
@@ -698,7 +762,7 @@
           "package_name": "com.whatsapp",
           "app_name": "WhatsApp",
           "is_system_app": false,
-          "version_name": "2.26.11.73",
+          "version_name": "2.26.12.72",
           "deep_links": [
             "sms",
             "smsto"
@@ -746,7 +810,7 @@
           "package_name": "com.coloros.weather.service",
           "app_name": "Weather Services",
           "is_system_app": true,
-          "version_name": "16.18.0",
+          "version_name": "16.20.2",
           "deep_links": [],
           "intent_filters": []
         },
@@ -762,7 +826,7 @@
           "package_name": "com.google.android.apps.docs.editors.sheets",
           "app_name": "Sheets",
           "is_system_app": false,
-          "version_name": "1.26.121.00.90",
+          "version_name": "1.26.131.00.90",
           "deep_links": [],
           "intent_filters": [
             {
@@ -777,7 +841,7 @@
           "package_name": "com.google.android.apps.docs.editors.slides",
           "app_name": "Slides",
           "is_system_app": false,
-          "version_name": "1.26.121.00.90",
+          "version_name": "1.26.131.00.90",
           "deep_links": [],
           "intent_filters": [
             {
@@ -856,7 +920,7 @@
           "package_name": "com.google.android.apps.messaging",
           "app_name": "Messages",
           "is_system_app": true,
-          "version_name": "messages.android_20260313_00_RC00.phone_dynamic",
+          "version_name": "messages.android_20260324_00_RC00.phone_dynamic",
           "deep_links": [
             "content",
             "mms",
@@ -927,7 +991,7 @@
           "package_name": "vendor.qti.hardware.cacert.server",
           "app_name": "CACertApp",
           "is_system_app": true,
-          "version_name": "14.0",
+          "version_name": "14.3",
           "deep_links": [],
           "intent_filters": []
         },
@@ -958,7 +1022,7 @@
           "package_name": "com.oneplus.brickmode",
           "app_name": "Zen Space",
           "is_system_app": false,
-          "version_name": "16.4.5",
+          "version_name": "16.7.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -973,7 +1037,7 @@
           "package_name": "com.oneplus.deskclock",
           "app_name": "Clock",
           "is_system_app": true,
-          "version_name": "16.8.34",
+          "version_name": "16.13.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -988,7 +1052,7 @@
           "package_name": "com.oplus.deepthinker",
           "app_name": "Intelligent Services",
           "is_system_app": true,
-          "version_name": "16.0.0",
+          "version_name": "16.0.120",
           "deep_links": [],
           "intent_filters": []
         },
@@ -996,7 +1060,7 @@
           "package_name": "com.openai.chatgpt",
           "app_name": "ChatGPT",
           "is_system_app": false,
-          "version_name": "1.2026.076",
+          "version_name": "1.2026.083",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1011,7 +1075,7 @@
           "package_name": "com.oplus.qualityprotect",
           "app_name": "QualityProtect",
           "is_system_app": true,
-          "version_name": "16.0.52",
+          "version_name": "16.0.59",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1019,7 +1083,7 @@
           "package_name": "com.oplus.apprecover",
           "app_name": "Recover system apps",
           "is_system_app": true,
-          "version_name": "16.0.12",
+          "version_name": "16.0.14",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1042,7 +1106,7 @@
           "package_name": "com.mediatek.omacp",
           "app_name": "Omacp",
           "is_system_app": true,
-          "version_name": "16.0.1",
+          "version_name": "16.0.2",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1074,7 +1138,7 @@
           "package_name": "com.oplus.aod",
           "app_name": "Always-On Display",
           "is_system_app": true,
-          "version_name": "16.001.0026",
+          "version_name": "16.001.0032",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1090,7 +1154,7 @@
           "package_name": "com.oplus.dmp",
           "app_name": "SearchService",
           "is_system_app": true,
-          "version_name": "16.13.80_466be15_251229",
+          "version_name": "16.13.91_289b712_260202",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1106,7 +1170,7 @@
           "package_name": "com.oplus.nas",
           "app_name": "Network services",
           "is_system_app": true,
-          "version_name": "16.0.38",
+          "version_name": "16.0.50",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1114,7 +1178,7 @@
           "package_name": "com.oplus.nhs",
           "app_name": "Network Health Service",
           "is_system_app": true,
-          "version_name": "16.0.06",
+          "version_name": "16.0.07",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1130,7 +1194,7 @@
           "package_name": "com.oplus.ota",
           "app_name": "Software update",
           "is_system_app": true,
-          "version_name": "16.0.21",
+          "version_name": "16.0.23",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1146,7 +1210,7 @@
           "package_name": "com.oplus.sau",
           "app_name": "System Upgrade Services",
           "is_system_app": true,
-          "version_name": "16.0.15",
+          "version_name": "16.0.18",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1162,7 +1226,7 @@
           "package_name": "com.oplus.vdc",
           "app_name": "VDC Service",
           "is_system_app": true,
-          "version_name": "16.0.12",
+          "version_name": "16.0.13",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1170,7 +1234,7 @@
           "package_name": "com.heytap.market",
           "app_name": "APP Picks",
           "is_system_app": true,
-          "version_name": "16.5.25_IN",
+          "version_name": "16.12.62_IN",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1224,7 +1288,7 @@
           "package_name": "com.oneplus.backuprestore",
           "app_name": "Clone Phone",
           "is_system_app": false,
-          "version_name": "16.10.0",
+          "version_name": "16.10.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1239,7 +1303,7 @@
           "package_name": "com.lemon.lvoverseas",
           "app_name": "CapCut",
           "is_system_app": false,
-          "version_name": "15.5.0",
+          "version_name": "17.2.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1254,7 +1318,7 @@
           "package_name": "in.amazon.mShop.android.shopping",
           "app_name": "Amazon",
           "is_system_app": false,
-          "version_name": "32.6.0.300",
+          "version_name": "32.7.0.300",
           "deep_links": [
             "upi"
           ],
@@ -1294,7 +1358,7 @@
           "package_name": "com.github.android",
           "app_name": "GitHub",
           "is_system_app": false,
-          "version_name": "1.251.0",
+          "version_name": "1.252.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1443,7 +1507,7 @@
           "package_name": "com.microsoft.skydrive",
           "app_name": "OneDrive",
           "is_system_app": false,
-          "version_name": "7.50",
+          "version_name": "7.51.1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1458,7 +1522,7 @@
           "package_name": "com.coloros.scenemode",
           "app_name": "Simple mode",
           "is_system_app": true,
-          "version_name": "16.1.4",
+          "version_name": "16.1.5",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1550,6 +1614,14 @@
           "intent_filters": []
         },
         {
+          "package_name": "com.gms.android.ncm.overlay.common",
+          "app_name": "com.gms.android.ncm.overlay.common",
+          "is_system_app": true,
+          "version_name": "16",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
           "package_name": "com.google.android.marvin.talkback",
           "app_name": "Android Accessibility Suite",
           "is_system_app": true,
@@ -1561,7 +1633,7 @@
           "package_name": "com.reddit.frontpage",
           "app_name": "Reddit",
           "is_system_app": false,
-          "version_name": "2026.12.0",
+          "version_name": "2026.13.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1672,7 +1744,7 @@
           "package_name": "com.coloros.bootreg",
           "app_name": "Startup Wizard",
           "is_system_app": true,
-          "version_name": "16.0.140",
+          "version_name": "16.0.240",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1680,7 +1752,7 @@
           "package_name": "com.oplus.phonemanager",
           "app_name": "Phone Manager",
           "is_system_app": true,
-          "version_name": "16.14.6",
+          "version_name": "16.17.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1742,7 +1814,7 @@
           "package_name": "com.oneplus.gallery",
           "app_name": "Photos",
           "is_system_app": true,
-          "version_name": "16.16.18",
+          "version_name": "16.24.4",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1765,7 +1837,7 @@
           "package_name": "com.olx.southasia",
           "app_name": "OLX India",
           "is_system_app": false,
-          "version_name": "19.87.013",
+          "version_name": "19.88.009",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1804,7 +1876,7 @@
           "package_name": "com.oplus.pantanal.ums",
           "app_name": "Ubiquitous Manager Service",
           "is_system_app": true,
-          "version_name": "16.1.74",
+          "version_name": "16.1.126",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1852,7 +1924,7 @@
           "package_name": "com.android.stk",
           "app_name": "SIM Toolkit",
           "is_system_app": true,
-          "version_name": "16.0.30",
+          "version_name": "16.0.35",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1884,7 +1956,7 @@
           "package_name": "com.instagram.android",
           "app_name": "Instagram",
           "is_system_app": false,
-          "version_name": "422.0.0.44.64",
+          "version_name": "423.0.0.47.66",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1922,7 +1994,7 @@
           "package_name": "com.google.ai.edge.gallery",
           "app_name": "Edge Gallery",
           "is_system_app": false,
-          "version_name": "1.0.10",
+          "version_name": "1.0.11",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1937,7 +2009,7 @@
           "package_name": "com.pinterest",
           "app_name": "Pinterest",
           "is_system_app": false,
-          "version_name": "14.11.0",
+          "version_name": "14.12.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2014,7 +2086,7 @@
           "package_name": "com.google.android.gm",
           "app_name": "Gmail",
           "is_system_app": true,
-          "version_name": "2026.03.16.884796058.Release",
+          "version_name": "2026.03.23.889563172.Release",
           "deep_links": [
             "mailto"
           ],
@@ -2054,7 +2126,7 @@
           "package_name": "com.google.android.apps.tachyon",
           "app_name": "Meet",
           "is_system_app": true,
-          "version_name": "350.0.886313852.duo.android_20260309.00_p3",
+          "version_name": "351.0.888843116.duo.android_20260316.01_p6",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2077,7 +2149,7 @@
           "package_name": "com.oplus.audio.effectcenter",
           "app_name": "AudioEffectCenter",
           "is_system_app": true,
-          "version_name": "16.0.15",
+          "version_name": "16.0.25",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2179,7 +2251,7 @@
           "package_name": "com.google.android.setupwizard",
           "app_name": "Android Setup",
           "is_system_app": true,
-          "version_name": "236.808841380",
+          "version_name": "236.827749626",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2243,7 +2315,7 @@
           "package_name": "com.facebook.services",
           "app_name": "Meta Services",
           "is_system_app": true,
-          "version_name": "158.0.36",
+          "version_name": "159.0.36",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2313,7 +2385,7 @@
           "package_name": "com.coloros.accessibilityassistant",
           "app_name": "AI VoiceScribe",
           "is_system_app": true,
-          "version_name": "16.1.32",
+          "version_name": "16.1.34",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2344,7 +2416,7 @@
           "package_name": "com.oplus.aimemory",
           "app_name": "Mind Space",
           "is_system_app": true,
-          "version_name": "16.0.314",
+          "version_name": "16.0.317",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2415,7 +2487,7 @@
           "package_name": "com.google.android.apps.wellbeing",
           "app_name": "Digital Wellbeing",
           "is_system_app": true,
-          "version_name": "1.39.887792051 (814527)",
+          "version_name": "1.39.892086365 (814537)",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2447,7 +2519,7 @@
           "package_name": "com.instagram.barcelona",
           "app_name": "Threads",
           "is_system_app": false,
-          "version_name": "422.0.0.50.64",
+          "version_name": "423.3.0.54.66",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2470,7 +2542,7 @@
           "package_name": "com.google.android.dialer",
           "app_name": "Phone",
           "is_system_app": true,
-          "version_name": "213.0.880525119",
+          "version_name": "215.0.888983929",
           "deep_links": [
             "tel"
           ],
@@ -2494,7 +2566,7 @@
           "package_name": "com.redteamobile.roaming",
           "app_name": "ORoaming",
           "is_system_app": true,
-          "version_name": "16.1.3",
+          "version_name": "16.2.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2679,7 +2751,7 @@
           "package_name": "com.twitter.android",
           "app_name": "X",
           "is_system_app": false,
-          "version_name": "11.77.0-release.0",
+          "version_name": "11.78.0-release.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2699,10 +2771,33 @@
           "intent_filters": []
         },
         {
+          "package_name": "com.dvloper.granny",
+          "app_name": "Granny",
+          "is_system_app": false,
+          "version_name": "1.8.8",
+          "deep_links": [],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            }
+          ]
+        },
+        {
           "package_name": "com.google.ambient.streaming",
           "app_name": "Cross-device services",
           "is_system_app": true,
           "version_name": "1.0.1085.0",
+          "deep_links": [],
+          "intent_filters": []
+        },
+        {
+          "package_name": "com.android.musicfx",
+          "app_name": "MusicFX",
+          "is_system_app": true,
+          "version_name": "1.4",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2718,7 +2813,7 @@
           "package_name": "com.oplus.customize.coreapp",
           "app_name": "CustCoreApp",
           "is_system_app": true,
-          "version_name": "16.0.5",
+          "version_name": "16.0.8",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2741,7 +2836,7 @@
           "package_name": "com.google.android.apps.docs",
           "app_name": "Drive",
           "is_system_app": false,
-          "version_name": "2.26.117.0.all.alldpi",
+          "version_name": "2.26.127.4.all.alldpi",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2756,7 +2851,7 @@
           "package_name": "com.google.android.apps.maps",
           "app_name": "Maps",
           "is_system_app": true,
-          "version_name": "26.12.05.884026066",
+          "version_name": "26.13.06.887680004",
           "deep_links": [
             "geo",
             "google.navigation"
@@ -2788,7 +2883,7 @@
           "package_name": "com.oplus.uiengine",
           "app_name": "Diverse engine",
           "is_system_app": true,
-          "version_name": "13.5.17",
+          "version_name": "13.5.19",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2827,7 +2922,7 @@
           "package_name": "com.oplus.aiwriter",
           "app_name": "AI Writer",
           "is_system_app": true,
-          "version_name": "16.0.70",
+          "version_name": "16.0.100",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2835,7 +2930,7 @@
           "package_name": "com.oplus.mediaturbo",
           "app_name": "MediaTurbo",
           "is_system_app": true,
-          "version_name": "16.0.024",
+          "version_name": "16.1.015",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2851,7 +2946,7 @@
           "package_name": "com.oplus.statistics.rom",
           "app_name": "Basic Data Services",
           "is_system_app": true,
-          "version_name": "5.8.94.02",
+          "version_name": "5.8.100.00",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2897,7 +2992,7 @@
           "package_name": "com.lenskart.app",
           "app_name": "Lenskart",
           "is_system_app": false,
-          "version_name": "5.5.3",
+          "version_name": "5.5.5",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2936,7 +3031,7 @@
           "package_name": "com.google.android.webview",
           "app_name": "Android System WebView",
           "is_system_app": true,
-          "version_name": "146.0.7680.120",
+          "version_name": "146.0.7680.164",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3006,7 +3101,7 @@
           "package_name": "com.google.android.contactkeys",
           "app_name": "Android System Key Verifier",
           "is_system_app": false,
-          "version_name": "1.323.871251543",
+          "version_name": "1.339.884950673",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3046,7 +3141,7 @@
           "package_name": "com.android.server.telecom",
           "app_name": "Call Management",
           "is_system_app": true,
-          "version_name": "16.13.10",
+          "version_name": "16.16.1",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3109,7 +3204,7 @@
           "package_name": "com.android.chrome",
           "app_name": "Chrome",
           "is_system_app": true,
-          "version_name": "146.0.7680.164",
+          "version_name": "146.0.7680.177",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3132,7 +3227,7 @@
           "package_name": "com.coloros.compass2",
           "app_name": "Compass",
           "is_system_app": true,
-          "version_name": "16.1.14",
+          "version_name": "16.1.18",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3147,7 +3242,7 @@
           "package_name": "com.oneplus.filemanager",
           "app_name": "My Files",
           "is_system_app": true,
-          "version_name": "16.5.4",
+          "version_name": "16.5.10",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3162,7 +3257,7 @@
           "package_name": "com.oplus.wirelesssettings",
           "app_name": "Wireless Settings",
           "is_system_app": true,
-          "version_name": "16.7.5",
+          "version_name": "16.9.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3170,7 +3265,7 @@
           "package_name": "com.google.android.packageinstaller",
           "app_name": "Package installer",
           "is_system_app": true,
-          "version_name": "16-13928101",
+          "version_name": "16-14547281",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3296,7 +3391,7 @@
           "package_name": "com.oplus.securityguard",
           "app_name": "Security events",
           "is_system_app": true,
-          "version_name": "16.2.0",
+          "version_name": "16.4.1",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3304,7 +3399,7 @@
           "package_name": "com.google.android.videos",
           "app_name": "Google TV",
           "is_system_app": false,
-          "version_name": "4.39.4265.875078044.1-release",
+          "version_name": "4.39.4323.888244609.2-release",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3319,7 +3414,7 @@
           "package_name": "com.oplus.ambient.livealert",
           "app_name": "LiveSports",
           "is_system_app": true,
-          "version_name": "16.1.17",
+          "version_name": "16.1.20",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3367,7 +3462,7 @@
           "package_name": "com.oplus.uxdesign",
           "app_name": "Wallpapers & style",
           "is_system_app": true,
-          "version_name": "16.0.0",
+          "version_name": "16.0.7",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3375,7 +3470,7 @@
           "package_name": "ai.x.grok",
           "app_name": "Grok",
           "is_system_app": false,
-          "version_name": "1.1.47-release.03",
+          "version_name": "1.1.49-release.00",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3398,7 +3493,7 @@
           "package_name": "com.coloros.lockassistant",
           "app_name": "Assistant",
           "is_system_app": true,
-          "version_name": "16.3.0",
+          "version_name": "16.4.30",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3454,7 +3549,7 @@
           "package_name": "com.granturismo.gcamator",
           "app_name": "GCamator",
           "is_system_app": false,
-          "version_name": "5.4.276",
+          "version_name": "5.4.282",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3533,7 +3628,7 @@
           "package_name": "com.coloros.sceneservice",
           "app_name": "Enhanced Smart Data Service",
           "is_system_app": true,
-          "version_name": "16.2.42",
+          "version_name": "16.2.114",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3619,7 +3714,7 @@
           "package_name": "com.google.android.apps.photos",
           "app_name": "Photos",
           "is_system_app": true,
-          "version_name": "7.68.0.884121604",
+          "version_name": "7.69.0.890655694",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3634,7 +3729,7 @@
           "package_name": "com.google.android.calendar",
           "app_name": "Calendar",
           "is_system_app": true,
-          "version_name": "2026.11.3-888574798-release",
+          "version_name": "2026.12.1-892294696-release",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3697,7 +3792,7 @@
           "package_name": "com.microsoft.office.officehubrow",
           "app_name": "M365 Copilot",
           "is_system_app": false,
-          "version_name": "16.0.19915.20008",
+          "version_name": "16.0.19922.20016",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3712,7 +3807,7 @@
           "package_name": "com.oplus.beaconlink",
           "app_name": "BeaconLink",
           "is_system_app": true,
-          "version_name": "15.52.10",
+          "version_name": "15.53.5",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3786,10 +3881,34 @@
           ]
         },
         {
+          "package_name": "com.facebook.katana",
+          "app_name": "Facebook",
+          "is_system_app": false,
+          "version_name": "555.0.0.49.59",
+          "deep_links": [
+            "fb"
+          ],
+          "intent_filters": [
+            {
+              "action": "android.intent.action.MAIN",
+              "categories": [
+                "android.intent.category.LAUNCHER"
+              ]
+            },
+            {
+              "action": "android.intent.action.VIEW",
+              "categories": [
+                "android.intent.category.BROWSABLE"
+              ],
+              "data_scheme": "fb"
+            }
+          ]
+        },
+        {
           "package_name": "com.amazon.avod.thirdpartyclient",
           "app_name": "Prime Video",
           "is_system_app": false,
-          "version_name": "3.0.444.1547",
+          "version_name": "3.0.447.1047",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3858,7 +3977,7 @@
           "package_name": "com.oplus.games",
           "app_name": "Game Assistant",
           "is_system_app": true,
-          "version_name": "10.27.2",
+          "version_name": "10.29.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3873,7 +3992,7 @@
           "package_name": "com.oplus.metis",
           "app_name": "Smart Decision-Making Service",
           "is_system_app": true,
-          "version_name": "16.8.296",
+          "version_name": "16.8.322",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3881,7 +4000,7 @@
           "package_name": "com.oplus.omoji",
           "app_name": "Omoji",
           "is_system_app": true,
-          "version_name": "16.0.10",
+          "version_name": "16.0.11",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3905,7 +4024,7 @@
           "package_name": "com.oplus.stdsp",
           "app_name": "StdSP Core",
           "is_system_app": true,
-          "version_name": "2.19.1_2d65a3e_260325",
+          "version_name": "2.19.2_aeb4a93_260401",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3913,7 +4032,7 @@
           "package_name": "com.oplus.consumerIRApp",
           "app_name": "IR Remote",
           "is_system_app": false,
-          "version_name": "16.2.0",
+          "version_name": "16.3.5",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3982,7 +4101,7 @@
           "package_name": "com.oplus.exsystemservice",
           "app_name": "System Service",
           "is_system_app": true,
-          "version_name": "1.4.0",
+          "version_name": "1.4.1",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4021,7 +4140,7 @@
           "package_name": "com.android.wallpaper.livepicker",
           "app_name": "Motion wallpaper selector",
           "is_system_app": true,
-          "version_name": "16.0.46",
+          "version_name": "16.0.56",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4060,7 +4179,7 @@
           "package_name": "com.oplus.wallpapers",
           "app_name": "Wallpapers",
           "is_system_app": true,
-          "version_name": "16.04.0005_sp6",
+          "version_name": "16.05.0030_sp8",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4084,7 +4203,7 @@
           "package_name": "com.google.mainline.adservices",
           "app_name": "Main components",
           "is_system_app": true,
-          "version_name": "2025-10-01T+",
+          "version_name": "2025-11-01T+",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4092,7 +4211,7 @@
           "package_name": "com.facebook.system",
           "app_name": "Meta App Installer",
           "is_system_app": true,
-          "version_name": "130.0.18",
+          "version_name": "131.0.28",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4108,7 +4227,7 @@
           "package_name": "com.microsoft.copilot",
           "app_name": "Copilot",
           "is_system_app": false,
-          "version_name": "30.0.440325002",
+          "version_name": "30.0.440331002",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4123,7 +4242,7 @@
           "package_name": "com.chess",
           "app_name": "Chess",
           "is_system_app": false,
-          "version_name": "4.9.30-googleplay",
+          "version_name": "4.9.31-googleplay",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4146,7 +4265,7 @@
           "package_name": "org.mozilla.firefox",
           "app_name": "Firefox",
           "is_system_app": false,
-          "version_name": "149.0",
+          "version_name": "149.0.1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4207,7 +4326,7 @@
           "package_name": "com.heytap.colorfulengine",
           "app_name": "Colorful Engine",
           "is_system_app": true,
-          "version_name": "16.0.57",
+          "version_name": "16.0.65",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4215,7 +4334,7 @@
           "package_name": "com.oplus.trafficmonitor",
           "app_name": "Data usage",
           "is_system_app": true,
-          "version_name": "16.3.7",
+          "version_name": "16.5.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4254,7 +4373,7 @@
           "package_name": "com.linkedin.android",
           "app_name": "LinkedIn",
           "is_system_app": false,
-          "version_name": "4.1.1185.1",
+          "version_name": "4.1.1188",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4284,7 +4403,7 @@
           "package_name": "com.qualcomm.qti.cne",
           "app_name": "CneApp",
           "is_system_app": true,
-          "version_name": "14.2",
+          "version_name": "14.5",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4300,7 +4419,7 @@
           "package_name": "com.oplus.wifibackuprestore",
           "app_name": "WifiBackupRestore",
           "is_system_app": true,
-          "version_name": "16.0.3",
+          "version_name": "16.0.6",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4408,7 +4527,7 @@
           "package_name": "com.google.android.projection.gearhead",
           "app_name": "Android Auto",
           "is_system_app": true,
-          "version_name": "16.4.661034-release",
+          "version_name": "16.5.661214-release",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4448,7 +4567,7 @@
           "package_name": "com.anthropic.claude",
           "app_name": "Claude",
           "is_system_app": false,
-          "version_name": "1.260323.7",
+          "version_name": "1.260330.27",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4594,7 +4713,7 @@
           "package_name": "com.rapido.passenger",
           "app_name": "Rapido",
           "is_system_app": false,
-          "version_name": "8.100.0",
+          "version_name": "8.101.0",
           "deep_links": [
             "geo"
           ],
@@ -4618,7 +4737,7 @@
           "package_name": "com.heytap.accessory",
           "app_name": "Quick Connect",
           "is_system_app": true,
-          "version_name": "16.12.15",
+          "version_name": "16.13.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4634,7 +4753,7 @@
           "package_name": "com.digilocker.android",
           "app_name": "Digilocker",
           "is_system_app": false,
-          "version_name": "9.2.8",
+          "version_name": "9.2.9",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4665,7 +4784,7 @@
           "package_name": "com.oplus.riderMode",
           "app_name": "Outdoor mode",
           "is_system_app": false,
-          "version_name": "1.1.12",
+          "version_name": "1.1.17",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4712,7 +4831,7 @@
           "package_name": "com.oplus.securitypermission",
           "app_name": "Permission manager",
           "is_system_app": true,
-          "version_name": "16.03.001",
+          "version_name": "16.05.000",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4766,7 +4885,7 @@
           "package_name": "com.coloros.ocrscanner",
           "app_name": "Scan",
           "is_system_app": true,
-          "version_name": "16.1.9",
+          "version_name": "16.3.4",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4789,7 +4908,7 @@
           "package_name": "com.nearme.instant.platform",
           "app_name": "InstantWeb Service Framework",
           "is_system_app": true,
-          "version_name": "10.2.10",
+          "version_name": "10.2.11",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4797,7 +4916,7 @@
           "package_name": "com.oplus.aiunit",
           "app_name": "AI Service Engine",
           "is_system_app": true,
-          "version_name": "16.0.23",
+          "version_name": "16.0.26",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4805,7 +4924,7 @@
           "package_name": "com.android.phone",
           "app_name": "Phone Services",
           "is_system_app": true,
-          "version_name": "16.17.0",
+          "version_name": "16.21.7",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4821,7 +4940,7 @@
           "package_name": "com.oplus.blur",
           "app_name": "PostEffect",
           "is_system_app": true,
-          "version_name": "15.1.41",
+          "version_name": "16.1.46",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4829,7 +4948,7 @@
           "package_name": "com.oplus.cast",
           "app_name": "Screencast",
           "is_system_app": true,
-          "version_name": "16.0.022",
+          "version_name": "16.0.024",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4837,7 +4956,7 @@
           "package_name": "com.oplus.cosa",
           "app_name": "App Enhancement Services",
           "is_system_app": true,
-          "version_name": "16.0.104",
+          "version_name": "16.0.142",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4845,7 +4964,7 @@
           "package_name": "com.oplus.cota",
           "app_name": "Configuration Update",
           "is_system_app": true,
-          "version_name": "2.1.8",
+          "version_name": "2.1.13",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4861,7 +4980,7 @@
           "package_name": "com.oplus.ndsf",
           "app_name": "DSF",
           "is_system_app": true,
-          "version_name": "16.0.07",
+          "version_name": "16.0.09",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4893,7 +5012,7 @@
           "package_name": "com.android.email.partnerprovider",
           "app_name": "EmailPartnerProvider",
           "is_system_app": true,
-          "version_name": "1.0.17",
+          "version_name": "1.0.18",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4916,7 +5035,7 @@
           "package_name": "com.oplus.contentportal",
           "app_name": "Content Portal",
           "is_system_app": true,
-          "version_name": "16.1.2",
+          "version_name": "16.5.1",
           "deep_links": [],
           "intent_filters": []
         },
@@ -4932,7 +5051,7 @@
           "package_name": "com.oplus.camera",
           "app_name": "Camera",
           "is_system_app": true,
-          "version_name": "6.020.618",
+          "version_name": "6.020.873",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5073,7 +5192,7 @@
           "package_name": "com.android.systemui",
           "app_name": "System UI",
           "is_system_app": true,
-          "version_name": "16.00.09",
+          "version_name": "16.00.12",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5097,7 +5216,7 @@
           "package_name": "com.heytap.mydevices",
           "app_name": "My Devices",
           "is_system_app": true,
-          "version_name": "16.5.25",
+          "version_name": "16.7.5",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5105,7 +5224,7 @@
           "package_name": "com.facebook.appmanager",
           "app_name": "Meta App Manager",
           "is_system_app": true,
-          "version_name": "130.0.18",
+          "version_name": "131.0.28",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5136,7 +5255,7 @@
           "package_name": "com.coloros.operationManual",
           "app_name": "Help & feedback",
           "is_system_app": true,
-          "version_name": "16.60.10",
+          "version_name": "16.60.50",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5190,7 +5309,7 @@
           "package_name": "com.coloros.floatassistant",
           "app_name": "Assistive Ball",
           "is_system_app": true,
-          "version_name": "16.1.8",
+          "version_name": "16.1.10",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5206,7 +5325,7 @@
           "package_name": "com.coloros.childrenspace",
           "app_name": "Kids mode",
           "is_system_app": true,
-          "version_name": "16.1.3",
+          "version_name": "16.1.6",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5237,7 +5356,7 @@
           "package_name": "com.oplus.linker",
           "app_name": "Device Connect",
           "is_system_app": true,
-          "version_name": "16.7.25",
+          "version_name": "16.7.45",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5269,7 +5388,7 @@
           "package_name": "com.oplus.melody",
           "app_name": "Wireless Earphones",
           "is_system_app": true,
-          "version_name": "16.4.4",
+          "version_name": "16.5.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5308,7 +5427,7 @@
           "package_name": "notion.id",
           "app_name": "Notion",
           "is_system_app": false,
-          "version_name": "0.6.3743",
+          "version_name": "0.6.3760",
           "deep_links": [
             "notion"
           ],
@@ -5348,7 +5467,7 @@
           "package_name": "com.oplus.obrain",
           "app_name": "OBrain",
           "is_system_app": true,
-          "version_name": "16.0.16",
+          "version_name": "16.0.17",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5379,7 +5498,7 @@
           "package_name": "com.oneplus.colorx",
           "app_name": "Graphics Enhancement Service",
           "is_system_app": true,
-          "version_name": "16.0.42",
+          "version_name": "16.0.54",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5442,7 +5561,7 @@
           "package_name": "com.android.providers.contacts",
           "app_name": "Contacts Storage",
           "is_system_app": true,
-          "version_name": "16.10.10",
+          "version_name": "16.20.0",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5450,7 +5569,7 @@
           "package_name": "com.oplus.screenshot",
           "app_name": "Screenshot",
           "is_system_app": true,
-          "version_name": "16.5.4",
+          "version_name": "16.8.16",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5458,7 +5577,7 @@
           "package_name": "com.coloros.colordirectservice",
           "app_name": "Screen recognition",
           "is_system_app": true,
-          "version_name": "16.4.4",
+          "version_name": "16.6.6",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5498,7 +5617,7 @@
           "package_name": "com.canva.editor",
           "app_name": "Canva",
           "is_system_app": false,
-          "version_name": "2.354.0",
+          "version_name": "2.355.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5566,7 +5685,7 @@
           "package_name": "com.snapchat.android",
           "app_name": "Snapchat",
           "is_system_app": false,
-          "version_name": "13.85.0.53",
+          "version_name": "13.86.1.0",
           "deep_links": [
             "snapchat"
           ],
@@ -5590,7 +5709,7 @@
           "package_name": "com.google.android.inputmethod.latin",
           "app_name": "Gboard",
           "is_system_app": true,
-          "version_name": "17.0.9.880768217-release-arm64-v8a",
+          "version_name": "17.0.10.880768217-release-arm64-v8a",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5610,11 +5729,11 @@
           ]
         }
       ],
-      "last_updated": 1774804947323,
-      "app_count": 534
+      "last_updated": 1775533673850,
+      "app_count": 540
     }
   },
   "_metadata": {
-    "last_updated": 1774804947323
+    "last_updated": 1775533673850
   }
 }

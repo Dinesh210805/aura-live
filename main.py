@@ -47,6 +47,7 @@ logging.getLogger("websockets.protocol").setLevel(logging.WARNING)
 
 # Global services (initialized at startup)
 graph_app = None
+query_engine = None  # AuraQueryEngine — set when AURA_QUERY_ENGINE_ENABLED=true
 
 
 @asynccontextmanager
@@ -121,6 +122,20 @@ async def lifespan(app: FastAPI):
             logger.info("ADK agent: compiled graph registered")
         except Exception as _adk_err:
             logger.warning(f"ADK agent graph registration skipped: {_adk_err}")
+
+        # Initialize AuraQueryEngine (feature-gated)
+        global query_engine
+        if settings.query_engine_enabled:
+            try:
+                from aura_graph.query_engine import AuraQueryEngine
+                query_engine = AuraQueryEngine(
+                    app=graph_app,
+                    task_timeout_seconds=getattr(settings, "task_timeout_seconds", 120.0),
+                )
+                app.state.query_engine = query_engine
+                logger.info(f"AuraQueryEngine initialized: {query_engine}")
+            except Exception as _qe_err:
+                logger.warning(f"AuraQueryEngine initialization failed (non-fatal): {_qe_err}")
 
         # Initialize accessibility service (singleton, already created)
         from services.real_accessibility import real_accessibility_service

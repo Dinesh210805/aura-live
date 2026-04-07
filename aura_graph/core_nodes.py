@@ -6,7 +6,6 @@ the AURA task execution graph. Each node represents a distinct
 step in the user command processing pipeline.
 """
 
-import base64
 import time
 from typing import TYPE_CHECKING, Any, Dict, List
 
@@ -21,6 +20,7 @@ from services.real_accessibility import RealAccessibilityService
 from services.real_device_executor import RealDeviceExecutorService
 from services.stt import STTService
 from services.tts import TTSService
+from services.tts_response_formatter import format_tts_response
 from services.vlm import VLMService
 from utils.exceptions import AgentExecutionError, ModelProviderError
 from utils.logger import get_logger
@@ -937,19 +937,16 @@ def speak_node(state: TaskState) -> Dict[str, Any]:
                 logger.warning("Screen reading requested but no perception bundle or screen reader agent available")
                 feedback_message = "I can't see your screen right now. Please ensure the app has proper permissions."
 
-            # Convert to speech and return
+            # Build TTS payload and return
             if feedback_message:
-                audio_data = responder_agent.speak_feedback(feedback_message)
-                audio_base64 = None
-                if audio_data and len(audio_data) >= 44:
-                    audio_base64 = base64.b64encode(audio_data).decode("ascii")
-                    logger.info(f"Screen description converted to speech ({len(audio_data)} bytes)")
+                voice_id = state.get("voice_id")
+                tts_payload = format_tts_response(feedback_message, voice=voice_id)
+                logger.info(f"Screen description ready for TTS ({len(feedback_message)} chars)")
 
                 return {
                     "feedback_message": feedback_message,
                     "spoken_response": feedback_message,
-                    "spoken_audio": audio_base64,
-                    "spoken_audio_format": "audio/wav" if audio_base64 else None,
+                    "tts_response": tts_payload,
                     "status": "completed",
                     "end_time": time.time(),
                 }
@@ -1119,29 +1116,10 @@ def speak_node(state: TaskState) -> Dict[str, Any]:
             if session:
                 session.mark_introduced()
 
-        # Convert to speech and capture audio payload for clients
-        audio_data = responder_agent.speak_feedback(feedback_message)
-        audio_base64 = None
-        if audio_data:
-            # Validate audio before encoding - ensure it's not empty or corrupted
-            if len(audio_data) < 44:  # WAV header minimum is 44 bytes
-                logger.warning(
-                    f"Audio data too small ({len(audio_data)} bytes), skipping"
-                )
-            else:
-                audio_base64 = base64.b64encode(audio_data).decode("ascii")
-                # Validate base64 encoding
-                if not audio_base64 or len(audio_base64) < 50:
-                    logger.warning(
-                        f"Base64 audio encoding failed or too small ({len(audio_base64) if audio_base64 else 0} chars), skipping"
-                    )
-                    audio_base64 = None
-                else:
-                    logger.info(
-                        f"Feedback converted to speech successfully ({len(audio_data)} bytes)"
-                    )
-        else:
-            logger.info("Using text-only feedback (TTS unavailable)")
+        # Build TTS payload for the Android client (text-only, synthesised on-device)
+        voice_id = state.get("voice_id")
+        tts_payload = format_tts_response(feedback_message, voice=voice_id)
+        logger.info(f"Feedback ready for Android TTS ({len(feedback_message)} chars)")
 
         # Record end time
         execution_time = time.time() - start_time
@@ -1150,8 +1128,8 @@ def speak_node(state: TaskState) -> Dict[str, Any]:
         output_details = {
             "feedback_message": feedback_message,
             "feedback_length": len(feedback_message) if feedback_message else 0,
-            "has_audio": audio_data is not None,
-            "audio_format": "audio/wav" if audio_data else None,
+            "has_tts_payload": bool(tts_payload),
+            "tts_format": "tts_text",
             "intent_processed": intent_obj is not None,
             "execution_results_count": (
                 len(execution_results) if execution_results else 0
@@ -1172,8 +1150,7 @@ def speak_node(state: TaskState) -> Dict[str, Any]:
         return {
             "feedback_message": feedback_message,
             "spoken_response": feedback_message,
-            "spoken_audio": audio_base64,
-            "spoken_audio_format": "audio/wav" if audio_base64 else None,
+            "tts_response": tts_payload,
             "end_time": time.time(),
             "status": "completed",
         }
@@ -1211,8 +1188,7 @@ def speak_node(state: TaskState) -> Dict[str, Any]:
         return {
             "feedback_message": fallback_message,
             "spoken_response": fallback_message,
-            "spoken_audio": None,
-            "spoken_audio_format": None,
+            "tts_response": {},
             "end_time": time.time(),
             "status": "failed",
         }

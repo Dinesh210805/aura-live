@@ -1,6 +1,7 @@
 package com.aura.aura_ui.di
 
 import android.content.Context
+import androidx.room.Room
 import com.aura.aura_ui.data.database.AuraDatabase
 import com.aura.aura_ui.data.manager.ServerConfigManager
 import com.aura.aura_ui.data.network.AuraApiService
@@ -173,8 +174,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuraDatabase(): AuraDatabase {
-        return AuraDatabase()
+    fun provideAuraDatabase(@ApplicationContext context: Context): AuraDatabase {
+        return Room.databaseBuilder(
+            context,
+            AuraDatabase::class.java,
+            "aura_database"
+        ).build()
     }
 
     @Provides

@@ -94,10 +94,23 @@ class Settings(BaseSettings):
     default_stt_provider: Literal["groq", "gemini"] = Field(
         default="groq", env="DEFAULT_STT_PROVIDER", description="Default STT provider"
     )
-    default_tts_provider: Literal["edge-tts"] = Field(
-        default="edge-tts",
+    default_tts_provider: Literal["edge-tts", "android"] = Field(
+        default="android",
         env="DEFAULT_TTS_PROVIDER",
-        description="Default TTS provider (Edge-TTS — local Microsoft library, no API key)",
+        description=(
+            "Default TTS provider. 'android' = send text to Android TextToSpeech "
+            "(low-latency, no server audio synthesis). 'edge-tts' = server-side "
+            "Microsoft Edge-TTS (requires pydub + ffmpeg, ~1.4 s latency)."
+        ),
+    )
+    android_tts_enabled: bool = Field(
+        default=True,
+        env="ANDROID_TTS_ENABLED",
+        description=(
+            "When True the server sends {type:'tts_response', text, voice} over WebSocket "
+            "and the Android client synthesises speech locally via AuraTTSManager. "
+            "Set False to revert to server-side edge-tts WAV streaming (legacy)."
+        ),
     )
 
     # Planning provider (separate from fast LLM)
@@ -392,6 +405,17 @@ class Settings(BaseSettings):
         default=False,
         env="GEMINI_LIVE_ENABLED",
         description="Enable /ws/live endpoint with Gemini Live bidi streaming (Phase 2)",
+    )
+
+    # --- Query Engine (Phase 3 orchestration layer) ---
+    query_engine_enabled: bool = Field(
+        default=False,
+        env="AURA_QUERY_ENGINE_ENABLED",
+        description=(
+            "Enable AuraQueryEngine as the single entry point for task execution. "
+            "When False, graph nodes are invoked directly (legacy mode). "
+            "Set to True to enable streaming TaskUpdate events from AuraQueryEngine."
+        ),
     )
     gemini_live_voice: str = Field(
         default="Charon",

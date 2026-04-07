@@ -41,7 +41,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     libgl1-mesa-dri \
     libglib2.0-0 \
     libgomp1 \
-    ffmpeg \
     portaudio19-dev \
     libasound2-dev \
     curl \

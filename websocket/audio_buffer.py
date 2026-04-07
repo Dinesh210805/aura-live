@@ -2,22 +2,36 @@
 
 
 class AudioBuffer:
-    """Buffer for managing streaming audio chunks."""
+    """Buffer for managing streaming audio chunks with overflow protection."""
 
-    def __init__(self):
+    def __init__(self, threshold: int = 16000, max_size: int = 1024 * 1024):
         self.chunks = []
         self.total_size = 0
-        self.max_buffer_size = 1024 * 1024  # 1MB buffer
+        self.threshold = threshold
+        self.max_size = max_size
 
     def add_chunk(self, chunk: bytes) -> bool:
-        """Add audio chunk to buffer. Returns True if buffer is ready for processing."""
+        """
+        Add audio chunk to buffer.
+
+        Args:
+            chunk: Audio data chunk
+
+        Returns:
+            True if buffer is ready for processing (total >= threshold)
+        """
         if len(chunk) == 0:
             return False
+
+        if self.total_size + len(chunk) > self.max_size:
+            from utils.logger import get_logger
+            get_logger(__name__).warning("AudioBuffer full, clearing old data")
+            self.clear()
 
         self.chunks.append(chunk)
         self.total_size += len(chunk)
 
-        return self.total_size >= 16000  # ~1 second of audio at 16kHz
+        return self.total_size >= self.threshold
 
     def get_audio_data(self) -> bytes:
         """Get combined audio data and reset buffer."""

@@ -22,6 +22,90 @@ router = APIRouter(tags=["WebSocket Streaming"])
 conversation_manager = ConversationManager(max_turns=5)
 
 
+async def _execute_task(
+    transcript: str,
+    app_instance,
+    websocket: WebSocket,
+    session_id: str = None,
+    thread_id: str = None,
+    track_workflow: bool = True,
+) -> dict:
+    """
+    Execute an AURA task, routing through AuraQueryEngine when available.
+
+    When the engine is active it streams granular TaskUpdate progress events to
+    the WebSocket client (type: "progress_update") before returning the final
+    result dict — giving the Android app live feedback during execution.
+
+    Falls back transparently to execute_aura_task_from_streaming() when the
+    engine is not initialised (AURA_QUERY_ENGINE_ENABLED=false or startup failed).
+    """
+    import main as _main  # late import avoids circular dependency at module load
+    engine = getattr(_main, "query_engine", None)
+
+    if engine is not None:
+        from aura.streaming.task_update import UpdateType
+
+        final_result: dict = {
+            "status": "failed",
+            "spoken_response": "",
+            "intent": None,
+            "execution_time": 0.0,
+            "tts_response": None,
+            "error_message": None,
+            "debug_info": {},
+        }
+        try:
+            async for update in engine.submit_message(
+                user_input=transcript,
+                session_id=session_id,
+                thread_id=thread_id or session_id,
+                track_workflow=track_workflow,
+            ):
+                # Stream granular progress to the client
+                try:
+                    await websocket.send_json(
+                        {"type": "progress_update", **update.to_dict()}
+                    )
+                except Exception:
+                    pass  # WS may have disconnected; continue executing
+
+                # Harvest final state from terminal events
+                if update.type == UpdateType.TASK_COMPLETED:
+                    d = update.data
+                    final_result.update({
+                        "status": d.get("status", "completed"),
+                        "spoken_response": d.get("spoken_response", ""),
+                        "tts_response": d.get("tts_response"),
+                        "intent": d.get("intent"),
+                        "execution_time": d.get("execution_time", 0.0),
+                        "error_message": d.get("error_message"),
+                        "debug_info": d.get("debug_info", {}),
+                        "feedback_message": d.get("feedback_message", ""),
+                    })
+                elif update.type == UpdateType.TASK_FAILED:
+                    final_result["status"] = "failed"
+                    final_result["error_message"] = (
+                        update.data.get("error") or update.message
+                    )
+        except Exception as exc:
+            logger.error(f"[_execute_task] Engine error: {exc}")
+            final_result["status"] = "failed"
+            final_result["error_message"] = str(exc)
+        return final_result
+
+    # Fallback: direct graph invocation (engine disabled or not yet initialised)
+    from aura_graph.graph import execute_aura_task_from_streaming
+    return await execute_aura_task_from_streaming(
+        app=app_instance,
+        streaming_transcript=transcript,
+        config=None,
+        thread_id=thread_id or session_id,
+        track_workflow=track_workflow,
+        session_id=session_id,
+    )
+
+
 async def background_websocket_reader(websocket: WebSocket, stop_event: asyncio.Event):
     """
     Background task to read websocket messages during task execution.
@@ -645,7 +729,6 @@ async def websocket_audio_stream_final(websocket: WebSocket):
     language_hint = None  # Default: auto-detect
 
     try:
-        from aura_graph.graph import execute_aura_task_from_streaming
         from config.settings import get_settings
         from services.stt import STTService
 
@@ -740,10 +823,11 @@ async def websocket_audio_stream_final(websocket: WebSocket):
                             _ss_voice = get_screenshot_service()
                             _ss_voice.mark_task_active()
                             try:
-                                result = await execute_aura_task_from_streaming(
-                                    app=app_instance,
-                                    streaming_transcript=transcript,
-                                    config=None,
+                                result = await _execute_task(
+                                    transcript=transcript,
+                                    app_instance=app_instance,
+                                    websocket=websocket,
+                                    session_id=None,
                                     thread_id=None,
                                     track_workflow=True,
                                 )
@@ -758,10 +842,11 @@ async def websocket_audio_stream_final(websocket: WebSocket):
                                     "spoken_response": result.get(
                                         "spoken_response", ""
                                     ),
-                                    "spoken_audio": result.get("spoken_audio"),
-                                    "spoken_audio_format": result.get(
-                                        "spoken_audio_format"
-                                    ),
+                                    # tts_response carries {text, voice, format} for
+                                    # Android AuraTTSManager (on-device synthesis).
+                                    # spoken_audio / spoken_audio_format are omitted
+                                    # in the android_tts path — kept for legacy/demo.
+                                    "tts_response": result.get("tts_response"),
                                     "status": result.get("status", "completed"),
                                     "execution_time": result.get("execution_time", 0.0),
                                     "debug_info": result.get("debug_info", {}),
@@ -880,16 +965,23 @@ async def websocket_conversation(websocket: WebSocket):
     try:
         import main
         from agents.responder import ResponderAgent
-        from aura_graph.graph import execute_aura_task_from_streaming
         from config.settings import get_settings
         from services.llm import LLMService
         from services.stt import STTService
-        from services.tts import TTSService
 
         settings = get_settings()
         stt_service = STTService(settings)
-        tts_service = TTSService(settings)
         llm_service = LLMService(settings)
+
+        # Only instantiate TTSService when server-side audio synthesis is active.
+        # When android_tts_enabled=True the server sends {tts_response: {text, voice}}
+        # and synthesis happens on-device, so TTSService is never called.
+        if settings.android_tts_enabled:
+            tts_service = None
+        else:
+            from services.tts import TTSService
+            tts_service = TTSService(settings)
+
         responder = ResponderAgent(llm_service=llm_service, tts_service=tts_service)
         app_instance = main.graph_app
 
@@ -1050,13 +1142,13 @@ async def websocket_conversation(websocket: WebSocket):
 
                                 _ss.mark_task_active()
                                 try:
-                                    result = await execute_aura_task_from_streaming(
-                                        app=app_instance,
-                                        streaming_transcript=text_command,
-                                        config=None,
+                                    result = await _execute_task(
+                                        transcript=text_command,
+                                        app_instance=app_instance,
+                                        websocket=websocket,
+                                        session_id=session_id,
                                         thread_id=session_id,
                                         track_workflow=True,
-                                        session_id=session_id,
                                     )
                                 finally:
                                     _ss.mark_task_done()
@@ -1211,14 +1303,14 @@ async def websocket_conversation(websocket: WebSocket):
 
                                     _ss_conv.mark_task_active()
                                     try:
-                                        # Execute task through AURA graph
-                                        result = await execute_aura_task_from_streaming(
-                                            app=app_instance,
-                                            streaming_transcript=transcript,
-                                            config=None,
+                                        # Execute task through AURA graph (or engine)
+                                        result = await _execute_task(
+                                            transcript=transcript,
+                                            app_instance=app_instance,
+                                            websocket=websocket,
+                                            session_id=session_id,
                                             thread_id=session_id,
                                             track_workflow=True,
-                                            session_id=session_id,  # NEW: Pass session for context
                                         )
                                     finally:
                                         _ss_conv.mark_task_done()

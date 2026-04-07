@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'AURA brain active. Read wiki/index.md before starting. Wiki at: aura brain vault/Aura brain/wiki/'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Task complete. Run wiki-update skill now.'"
+          }
+        ]
+      }
+    ]
+  }
+}

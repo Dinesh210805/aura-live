@@ -378,7 +378,7 @@ class PerceiverAgent:
                 elements.append({
                     "bounds": {"left": x1, "top": y1, "right": x2, "bottom": y2},
                     "clickable": d.class_name != "text_block",
-                    "text": d.label or "",
+                    "text": d.id or "",
                     "contentDescription": "",
                     "className": d.class_name or "View",
                 })
@@ -552,13 +552,7 @@ class PerceiverAgent:
                 if (right - left) * (bottom - top) > screen_area * 0.6:
                     continue
 
-            meaningful = [
-                (el, l, t, r, b) for i, (el, l, t, r, b) in enumerate(candidates)
-                if not any(
-                    i != j and (ol <= l and ot <= t and or_ >= r and ob >= b)
-                    for j, (_, ol, ot, or_, ob) in enumerate(candidates)
-                )
-            ]
+            meaningful = candidates  # no containment filtering — see locate_with_annotated_ui_tree
 
             if not meaningful:
                 return screenshot_b64, []
@@ -771,13 +765,7 @@ RULES:
                     if (right - left) * (bottom - top) > screen_area * 0.6:
                         continue
                     candidates.append((el, left, top, right, bottom))
-                meaningful = [
-                    (el, l, t, r, b) for i, (el, l, t, r, b) in enumerate(candidates)
-                    if not any(
-                        i != j and (ol <= l and ot <= t and or_ >= r and ob >= b)
-                        for j, (_, ol, ot, or_, ob) in enumerate(candidates)
-                    )
-                ]
+                meaningful = candidates  # no containment filtering — see locate_with_annotated_ui_tree
 
                 if meaningful:
                     arr = np.frombuffer(_b64.b64decode(screenshot_b64), dtype=np.uint8)
@@ -954,8 +942,31 @@ SEARCH SUGGESTION RULE — when autocomplete suggestions appear under a search b
                             _commit_kws = {"add", "cart", "buy", "pay", "delete", "remove", "purchase", "send", "order"}
                             _is_commit_target = bool(_target_words & _commit_kws)
 
-                            _should_reject = (not _has_overlap and not _el_is_unlabelled) or \
-                                             (not _has_overlap and _el_is_unlabelled and _is_commit_target)
+                            # Math/symbol operators whose accessibility label is the English word
+                            # (same alias table as locate_with_annotated_ui_tree).
+                            _SYMBOL_ALIASES_DAL: Dict[str, set] = {
+                                "+": {"add", "plus", "addition"},
+                                "-": {"subtract", "minus", "subtraction", "negative"},
+                                "*": {"multiply", "times", "multiplication", "asterisk"},
+                                "/": {"divide", "division"},
+                                "=": {"equals", "equal"},
+                                "%": {"percent", "percentage"},
+                                "^": {"power", "exponent"},
+                                "√": {"sqrt", "square", "root"},
+                                "×": {"multiply", "times"},
+                                "÷": {"divide", "division"},
+                                "·": {"multiply", "times", "dot"},
+                                ".": {"point", "decimal"},
+                                "(": {"left", "parenthesis", "open"},
+                                ")": {"right", "parenthesis", "close"},
+                            }
+                            _target_stripped_dal = target.strip()
+                            _alias_words = _SYMBOL_ALIASES_DAL.get(_target_stripped_dal, set()) \
+                                if len(_target_stripped_dal) <= 2 else set()
+                            _has_alias_match = bool(_label_words & _alias_words)
+
+                            _should_reject = (not _has_overlap and not _el_is_unlabelled and not _has_alias_match) or \
+                                             (not _has_overlap and _el_is_unlabelled and _is_commit_target and not _has_alias_match)
 
                             if _should_reject:
                                 # Either: element has a label that doesn't match (hallucination),
@@ -1243,13 +1254,11 @@ RESPOND ONLY WITH JSON."""
             if (right - left) * (bottom - top) > screen_area * 0.6:
                 continue
             candidates.append((el, left, top, right, bottom))
-        meaningful: List[tuple] = [
-            (el, l, t, r, b) for i, (el, l, t, r, b) in enumerate(candidates)
-            if not any(
-                i != j and (ol <= l and ot <= t and or_ >= r and ob >= b)
-                for j, (_, ol, ot, or_, ob) in enumerate(candidates)
-            )
-        ]
+        # Use all valid candidates — parent-containment filtering removed.
+        # That filter silently dropped valid interactive children (e.g. inner icon
+        # buttons, calculator keys) whenever their bounds sat inside a parent cell,
+        # causing index mismatches between VLM picks and coordinate resolution.
+        meaningful: List[tuple] = candidates
 
         if not meaningful:
             return None
@@ -1422,8 +1431,32 @@ Rules:
             _commit_kws2 = {"add", "cart", "buy", "pay", "delete", "remove", "purchase", "send", "order"}
             _is_commit_target2 = bool(_target_words2 & _commit_kws2)
 
-            _should_reject2 = (not _has_overlap2 and not _el_is_unlabelled2) or \
-                              (not _has_overlap2 and _el_is_unlabelled2 and _is_commit_target2)
+            # Math/symbol operators whose accessibility label is the English word,
+            # not the character. Without this, "+" target fails the cross-check
+            # because {"+"} ∩ {"add"} = ∅ — triggering a spurious OmniParser fallback
+            # that picks the wrong element (e.g. Equals instead of Add).
+            _SYMBOL_ALIASES: Dict[str, set] = {
+                "+": {"add", "plus", "addition"},
+                "-": {"subtract", "minus", "subtraction", "negative"},
+                "*": {"multiply", "times", "multiplication", "asterisk"},
+                "/": {"divide", "division"},
+                "=": {"equals", "equal"},
+                "%": {"percent", "percentage"},
+                "^": {"power", "exponent"},
+                "√": {"sqrt", "square", "root"},
+                "×": {"multiply", "times"},
+                "÷": {"divide", "division"},
+                "·": {"multiply", "times", "dot"},
+                ".": {"point", "decimal"},
+                "(": {"left", "parenthesis", "open"},
+                ")": {"right", "parenthesis", "close"},
+            }
+            _target_stripped = target.strip()
+            _alias_words2 = _SYMBOL_ALIASES.get(_target_stripped, set()) if len(_target_stripped) <= 2 else set()
+            _has_alias_match2 = bool(_label_words2 & _alias_words2)
+
+            _should_reject2 = (not _has_overlap2 and not _el_is_unlabelled2 and not _has_alias_match2) or \
+                              (not _has_overlap2 and _el_is_unlabelled2 and _is_commit_target2 and not _has_alias_match2)
 
             if _should_reject2:
                 # Element has a label that shares no words with target, OR element is

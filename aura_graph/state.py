@@ -152,10 +152,17 @@ class TaskState(TypedDict):
     """Final spoken response to the user."""
 
     spoken_audio: Optional[str]
-    """Base64-encoded audio data for the spoken response."""
+    """Base64-encoded audio data for the spoken response (legacy edge-tts path)."""
 
     spoken_audio_format: Optional[str]
-    """MIME type for the spoken audio payload (e.g., 'audio/wav')."""
+    """MIME type for the spoken audio payload (legacy, e.g., 'audio/wav')."""
+
+    tts_response: Optional[Dict[str, Any]]
+    """Android-native TTS payload: {text, voice, format:'tts_text'}.
+    Replaces spoken_audio/spoken_audio_format when ANDROID_TTS_ENABLED=true."""
+
+    voice_id: Optional[str]
+    """User-preferred TTS voice ID (e.g., 'en-US-AriaNeural'). Passed to format_tts_response()."""
 
     # Intelligent agent routing
     used_agents: Optional[List[str]]

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from config.action_types import opens_settings_panel
 from prompts.personality import AURA_PERSONALITY, EMOTIONAL_PATTERNS, EMOTIONAL_RESPONSES, KNOWN_CONTACTS_PROMPT_BLOCK
 from services.llm import LLMService
-from services.tts import TTSService
+from services.tts import TTSService  # kept for speak_feedback() fallback / voice preview
 from utils.logger import get_logger
 from utils.types import ActionResult, FullConversationContext, IntentObject
 
@@ -43,9 +43,9 @@ PANEL_ACTION_RESPONSES = {
 class ResponderAgent:
     """LLM-powered response generator with context awareness."""
 
-    def __init__(self, llm_service: LLMService, tts_service: TTSService):
+    def __init__(self, llm_service: LLMService, tts_service: Optional[TTSService] = None):
         self.llm_service = llm_service
-        self.tts_service = tts_service
+        self.tts_service = tts_service  # None when android_tts_enabled=True
 
     def generate_feedback(
         self,
@@ -246,6 +246,14 @@ Reply in 1-2 sentences. Be natural and brief:""")
         return "Done!"
 
     def speak_feedback(self, message: str, voice_settings: Optional[Dict[str, Any]] = None) -> Optional[bytes]:
-        """Convert message to speech."""
+        """Convert message to speech via edge-tts (legacy / voice preview path).
+
+        Returns None when android_tts_enabled=True because the Android client handles
+        synthesis locally.  Call ``format_tts_response()`` from
+        ``services.tts_response_formatter`` for the primary path instead.
+        """
+        if self.tts_service is None:
+            logger.debug("speak_feedback: tts_service not available (android_tts_enabled=True)")
+            return None
         voice = voice_settings.get("voice") if voice_settings else None
         return self.tts_service.speak(message, voice=voice)

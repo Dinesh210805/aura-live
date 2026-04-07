@@ -48,20 +48,68 @@ def get_settle_delay(action_type: str | None = None) -> float:
         return DEFAULT_STABILIZE_DELAY
     return ACTION_SETTLE_DELAYS.get(action_type.lower(), DEFAULT_STABILIZE_DELAY)
 
+# ── String-based error indicators ─────────────────────────────────────────
+# Grouped by category so new entries are easy to find and add.
 ERROR_INDICATORS = [
-    "page not found",
-    "couldn't load",
-    "couldn't connect",
-    "network error",
-    "try again",
-    "something went wrong",
-    "no internet",
-    "connection error",
+    # App crashes
     "unfortunately",
     "has stopped",
     "isn't responding",
+    "keeps stopping",
+    "app has stopped",
+    "not responding",
+    # Connectivity
+    "no internet",
     "no connection",
+    "network error",
+    "connection error",
+    "couldn't connect",
+    "unable to connect",
+    "couldn't reach",
+    "check your connection",
+    "connection timed out",
+    "timed out",
+    # Load / server failures
+    "couldn't load",
+    "failed to load",
+    "something went wrong",
+    "went wrong",
+    "error occurred",
+    "request failed",
+    "server error",
+    "service unavailable",
+    "temporarily unavailable",
+    "not available",
+    # Retry prompts
+    "try again",
+    "please try again",
+    # WebView HTTP errors (appear as inline text on error pages)
+    "page not found",
+    "404 not found",
+    "500 internal",
+    "502 bad gateway",
+    "503 service",
+    # Soft error phrases
+    "oops",
+    "uh oh",
+    "whoops",
 ]
+
+# ── Structural error signals ───────────────────────────────────────────────
+# Class names whose presence strongly suggests a crash/error overlay.
+_ERROR_CLASS_FRAGMENTS = [
+    "errordialog",
+    "crashdialog",
+    "alertdialog",
+]
+
+# A "retry" button label combined with low content density = error screen.
+_RETRY_LABELS = {"retry", "try again", "reload", "refresh", "reconnect"}
+
+# Minimum number of substantive (text-bearing) elements expected on a real
+# screen. If the element count is lower AND no "intentionally minimal"
+# indicators are present, we treat it as a crash/blank.
+_MIN_REAL_SCREEN_ELEMENTS = 4
 
 class VerifierAgent:
     """Captures post-action state and detects error screens."""
@@ -99,14 +147,54 @@ class VerifierAgent:
         return bundle, post_signature, elements
 
     def is_error_screen(self, elements: List[Dict]) -> bool:
-        """Return True if any of the first 10 elements signal an error state."""
-        for el in elements[:10]:
-            combined = (
-                f"{(el.get('text') or '').lower()} "
-                f"{(el.get('contentDescription') or '').lower()}"
-            )
+        """
+        Return True if the current screen is in an error / crash state.
+
+        Uses three independent detection strategies in priority order:
+
+        1. String match — scan element labels for known error phrases.
+           Scans ALL elements (not just top 10) so errors buried in scroll
+           containers are also caught.
+
+        2. Structural — class name fragments that signal crash/error dialogs
+           (AlertDialog, CrashDialog, etc.).
+
+        3. Low-density + retry button — very few text elements AND at least
+           one "retry"-family button label ⟹ network/loading error screen
+           even if none of the phrases above matched (e.g. custom branded
+           error screens that say "Something broke, tap below" in a graphic).
+        """
+        if not elements:
+            return False
+
+        text_bearing_count = 0
+        retry_button_present = False
+
+        for el in elements:
+            text = (el.get("text") or "").strip().lower()
+            desc = (el.get("contentDescription") or "").strip().lower()
+            class_name = (el.get("className") or "").lower()
+            combined = f"{text} {desc}"
+
+            # Strategy 1: string match
             if any(ind in combined for ind in ERROR_INDICATORS):
                 return True
+
+            # Strategy 2: error/crash dialog class name
+            if any(frag in class_name for frag in _ERROR_CLASS_FRAGMENTS):
+                return True
+
+            # Accumulators for strategy 3
+            label = text or desc
+            if label:
+                text_bearing_count += 1
+                if label in _RETRY_LABELS:
+                    retry_button_present = True
+
+        # Strategy 3: sparse screen + retry button
+        if retry_button_present and text_bearing_count < _MIN_REAL_SCREEN_ELEMENTS:
+            return True
+
         return False
 
     async def semantic_verify(self, action_desc: str, elements: List[Dict], success_hint: str = "") -> tuple[bool, str]:
@@ -115,13 +203,19 @@ class VerifierAgent:
         Falls back to (True, "no llm") if LLM service is unavailable.
 
         Returns (passed: bool, reason: str).
+
+        Output contract: VERDICT: PASS / FAIL / PARTIAL
+          - PASS   → action succeeded, continue
+          - PARTIAL → action partially succeeded (e.g. loading started but not complete); treated
+                      as passed=True so the coordinator can proceed rather than retry
+          - FAIL   → genuine failure; coordinator should trigger retry ladder
         """
         if not self.llm_service:
             return True, "no llm service"
         if not elements:
             return True, "no elements to check"
 
-        # Build a compact element summary (top 15, text + contentDesc only)
+        # Build compact element summary (top 15, text + contentDesc only)
         lines = []
         for el in elements[:15]:
             text = (el.get("text") or "").strip()
@@ -133,26 +227,50 @@ class VerifierAgent:
         el_summary = "\n".join(f"- {l}" for l in lines) if lines else "(no text elements)"
         hint_line = f"\nExpected outcome hint: {success_hint}" if success_hint else ""
 
+        # Inject app-specific contextual rules so the verifier knows, e.g.,
+        # that a Pause button = music playing = success (not an intermediate state).
+        from prompts.dynamic_rules import get_contextual_rules
+        screen_ctx = " ".join(lines).lower()
+        contextual_rules = get_contextual_rules(screen_ctx)
+        rules_section = (
+            f"\n\n━━━ APP-SPECIFIC RULES (apply these before deciding) ━━━\n{contextual_rules}"
+            if contextual_rules else ""
+        )
+
         prompt = (
             f"You are verifying whether a mobile UI action produced the expected result.\n\n"
             f"ACTION EXECUTED: {action_desc}{hint_line}\n\n"
-            f"CURRENT SCREEN ELEMENTS (top 15):\n{el_summary}\n\n"
+            f"CURRENT SCREEN ELEMENTS (top 15):\n{el_summary}"
+            f"{rules_section}\n\n"
+            f"=== CRITICAL: KNOWN FAILURE MODES — OVERRIDE THESE BIASES ===\n"
+            f"1. FALSE PASS — You mark PASS because the action technically ran, but the screen\n"
+            f"   is still in a loading/animation state (spinner, progress bar, 'Loading…' text).\n"
+            f"   FIX: If loading indicators are visible alongside partial results → output PARTIAL.\n"
+            f"2. FALSE FAIL — You mark FAIL because a dialog or overlay is visible, but it is a\n"
+            f"   routine system permission request or action confirmation (Allow/Deny, OK/Cancel).\n"
+            f"   FIX: Standard permission or confirmation dialogs are NOT failures → output PASS.\n"
+            f"=== END CRITICAL ===\n\n"
             f"━━━ VERIFICATION CHECKLIST ━━━\n"
-            f"① Does the screen show evidence the action completed? "
-            f"(e.g. sent indicator, new page loaded, item added, setting changed)\n"
-            f"② Are there error indicators? "
-            f"(e.g. 'try again', 'failed', 'no internet', 'something went wrong')\n"
-            f"③ Is the screen state consistent with success or failure?\n\n"
-            f"Respond with exactly: YES <one sentence reason>  OR  NO <one sentence reason>\n"
+            f"① Evidence of completion: sent indicator, new page loaded, item added, setting changed\n"
+            f"② Genuine error indicators: app crash, 'failed', 'no internet', 'something went wrong'\n"
+            f"   (NOT routine dialogs — see failure mode #2 above)\n"
+            f"③ Intermediate state: loading spinner, progress bar, 'Loading…' alongside partial result\n\n"
+            f"Respond with EXACTLY one of these three lines:\n"
+            f"  VERDICT: PASS   <one sentence of evidence>\n"
+            f"  VERDICT: FAIL   <one sentence of evidence>\n"
+            f"  VERDICT: PARTIAL   <what succeeded and what still needs to happen>\n"
             f"Examples:\n"
-            f"  YES Message 'Sent' indicator visible in chat.\n"
-            f"  NO Error dialog 'Couldn't send' is showing on screen."
+            f"  VERDICT: PASS   'Sent' indicator visible in chat thread.\n"
+            f"  VERDICT: FAIL   Error dialog 'Couldn't send message' is blocking the screen.\n"
+            f"  VERDICT: PARTIAL   Library tab opened but content is still loading — spinner visible."
         )
 
         try:
             from concurrent.futures import ThreadPoolExecutor
-            from functools import partial
+            from functools import partial as functools_partial
             from prompts import PromptMode, build_aura_agent_prompt
+            import re as _re
+
             _sys = build_aura_agent_prompt(
                 agent_name="Verifier", mode=PromptMode.MINIMAL
             )  # G15: MINIMAL boilerplate for sub-agent call
@@ -160,18 +278,29 @@ class VerifierAgent:
             with ThreadPoolExecutor(max_workers=1) as ex:
                 result = await loop.run_in_executor(
                     ex,
-                    partial(
+                    functools_partial(
                         self.llm_service.run,
                         prompt,
-                        max_tokens=80,
+                        max_tokens=100,
                         caller_agent="verifier",
                         system_prompt=_sys,
                     )
                 )
             result = (result or "").strip()
-            passed = result.upper().startswith("YES")
+
+            # Parse structured VERDICT: PASS / FAIL / PARTIAL
+            verdict_match = _re.search(r'VERDICT:\s*(PASS|FAIL|PARTIAL)', result, _re.IGNORECASE)
+            if verdict_match:
+                verdict = verdict_match.group(1).upper()
+                # PARTIAL counts as passed — coordinator proceeds, not retries
+                passed = verdict in ("PASS", "PARTIAL")
+            else:
+                # Fallback: legacy YES/NO for model non-compliance
+                _clean = _re.sub(r'^[^a-zA-Z]+', '', result)
+                passed = _clean.upper().startswith("YES")
+
             reason = result[:150]
-            logger.debug(f"Verifier semantic_verify: {passed} — {reason[:80]}")
+            logger.debug(f"Verifier semantic_verify: passed={passed} — {reason[:80]}")
             return passed, reason
         except Exception as e:
             logger.warning(f"Verifier semantic_verify failed (non-fatal): {e}")

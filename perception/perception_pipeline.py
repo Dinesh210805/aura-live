@@ -471,7 +471,26 @@ class PerceptionPipeline:
                     reason="No UI elements detected by CV",
                     source="cv_vlm",
                 )
-            
+
+            # Minimum detection guard — if OmniParser returns very few candidates
+            # (< 3) it almost certainly failed to parse the screen (common on dense
+            # native Android UIs where YOLOv8 misses most buttons).  Proceeding to
+            # VLMSelector with 1-2 detections forces it to pick from an incomplete
+            # set, which reliably selects the wrong element.  Return failure instead
+            # so the caller can surface a clean "not found" rather than a wrong tap.
+            _MIN_DETECTIONS = 3
+            if len(detections) < _MIN_DETECTIONS:
+                logger.warning(
+                    f"OmniParser returned only {len(detections)} detection(s) for "
+                    f"intent '{intent[:50]}' — below minimum {_MIN_DETECTIONS}. "
+                    f"Skipping VLMSelector to avoid picking from an incomplete candidate set."
+                )
+                return LocateResult(
+                    success=False,
+                    reason=f"Too few OmniParser detections ({len(detections)}) to trust VLM selection",
+                    source="cv_vlm",
+                )
+
             # Step 2: Draw Set-of-Marks
             annotated = self.detector.draw_set_of_marks(screenshot, detections)
             annotated_b64 = self.detector.annotated_image_to_base64(annotated)

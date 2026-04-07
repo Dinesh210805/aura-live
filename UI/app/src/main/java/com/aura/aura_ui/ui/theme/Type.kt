@@ -16,129 +16,153 @@ val provider = GoogleFont.Provider(
     certificates = R.array.com_google_android_gms_fonts_certs
 )
 
-// Inter - Modern, clean, Apple-like font
-val InterFont = GoogleFont("Inter")
+// Space Grotesk — geometric display font with subtle character, great for hero text
+private val SpaceGroteskFont = GoogleFont("Space Grotesk")
 
-// Aura Font Family using Inter
-val AuraFontFamily = FontFamily(
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Light),
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Normal),
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Medium),
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.SemiBold),
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Bold),
+// DM Sans — low-contrast geometric, clean at body sizes
+private val DMSansFont = GoogleFont("DM Sans")
+
+// Inter — legacy fallback, kept for compatibility
+private val InterFont = GoogleFont("Inter")
+
+/**
+ * Display / hero font. Used for displayLarge/Medium/Small + headlineLarge/Medium/Small.
+ * Space Grotesk has enough personality to feel designed without being eccentric.
+ */
+val AuraDisplayFamily = FontFamily(
+    Font(googleFont = SpaceGroteskFont, fontProvider = provider, weight = FontWeight.Light),
+    Font(googleFont = SpaceGroteskFont, fontProvider = provider, weight = FontWeight.Normal),
+    Font(googleFont = SpaceGroteskFont, fontProvider = provider, weight = FontWeight.Medium),
+    Font(googleFont = SpaceGroteskFont, fontProvider = provider, weight = FontWeight.SemiBold),
+    Font(googleFont = SpaceGroteskFont, fontProvider = provider, weight = FontWeight.Bold),
 )
 
-// AURA Premium Typography System - Apple-Inspired
+/**
+ * Body / UI font. Used for title/body/label styles.
+ * DM Sans keeps reading comfortable at smaller sizes where Space Grotesk's quirks show less well.
+ */
+val AuraBodyFamily = FontFamily(
+    Font(googleFont = DMSansFont, fontProvider = provider, weight = FontWeight.Light),
+    Font(googleFont = DMSansFont, fontProvider = provider, weight = FontWeight.Normal),
+    Font(googleFont = DMSansFont, fontProvider = provider, weight = FontWeight.Medium),
+    Font(googleFont = DMSansFont, fontProvider = provider, weight = FontWeight.SemiBold),
+    Font(googleFont = DMSansFont, fontProvider = provider, weight = FontWeight.Bold),
+)
+
+// Legacy alias — existing callsites referencing AuraFontFamily continue to compile
+val AuraFontFamily = AuraBodyFamily
+
+// AURA Premium Typography System
 val Typography = Typography(
-    // Display styles - Large hero text
+    // ── Display ── large hero text, screen titles
     displayLarge = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraDisplayFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp,
     ),
     displayMedium = TextStyle(
-        fontFamily = AuraFontFamily,
-        fontWeight = FontWeight.Bold,
+        fontFamily = AuraDisplayFamily,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 45.sp,
         lineHeight = 52.sp,
         letterSpacing = (-0.5).sp,
     ),
     displaySmall = TextStyle(
-        fontFamily = AuraFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = AuraDisplayFamily,
+        fontWeight = FontWeight.Medium,
         fontSize = 36.sp,
         lineHeight = 44.sp,
-        letterSpacing = 0.sp,
+        letterSpacing = (-0.25).sp,
     ),
-    
-    // Headline styles - Section headers
+
+    // ── Headline ── section headers
     headlineLarge = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraDisplayFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = (-0.25).sp,
     ),
     headlineMedium = TextStyle(
-        fontFamily = AuraFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = AuraDisplayFamily,
+        fontWeight = FontWeight.Medium,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
     ),
     headlineSmall = TextStyle(
-        fontFamily = AuraFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = AuraDisplayFamily,
+        fontWeight = FontWeight.Medium,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp,
     ),
-    
-    // Title styles - Card headers
+
+    // ── Title ── card headers, list titles
     titleLarge = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
     ),
     titleMedium = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp,
     ),
     titleSmall = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
     ),
-    
-    // Body text - Main content
+
+    // ── Body ── main content
     bodyLarge = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.sp,
     ),
     bodyMedium = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp,
     ),
     bodySmall = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp,
     ),
-    
-    // Label styles - Buttons and small UI elements
+
+    // ── Label ── buttons, chips, small UI elements
     labelLarge = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
     ),
     labelMedium = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
     ),
     labelSmall = TextStyle(
-        fontFamily = AuraFontFamily,
+        fontFamily = AuraBodyFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,

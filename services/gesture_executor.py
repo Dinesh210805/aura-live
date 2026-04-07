@@ -478,6 +478,12 @@ class GestureExecutor:
             "text": text,
             "timestamp": time.time()
         }
+        # Forward field coordinates so Android Strategy 0 can locate the
+        # target EditText by bounds without issuing a tap (needed for WebView-
+        # hosted inputs like Google Maps search bar).
+        if action.get("focus_x") is not None:
+            gesture_data["focus_x"] = action["focus_x"]
+            gesture_data["focus_y"] = action["focus_y"]
 
         strategy, success, error = await self._send_gesture(gesture_data)
 

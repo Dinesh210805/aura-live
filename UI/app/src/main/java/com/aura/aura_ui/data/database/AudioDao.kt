@@ -1,10 +1,12 @@
 package com.aura.aura_ui.data.database
 
+import androidx.room.Dao
+
 /**
  * DAO interface for audio-related database operations.
- * For now, this is just a placeholder interface.
+ * Currently a placeholder; future implementations can add audio-history queries.
  */
+@Dao
 interface AudioDao {
-    // For now, this can be a simple interface
-    // Future implementations can add methods for storing audio history, etc.
+    // Reserved for future audio history storage
 }

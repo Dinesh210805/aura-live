@@ -105,6 +105,7 @@ PROMPT_VERSIONS = {
     "screen_reader": "1.0.0",
     "reactive_step": "4.1.0",
     "dynamic_rules": "1.0.0",
+    "verifier": "2.0.0",  # adversarial prompting + VERDICT contract + dynamic rules injection
 }
 
 __all__ = [

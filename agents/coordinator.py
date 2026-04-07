@@ -20,7 +20,7 @@ from aura_graph.agent_state import (
     Goal, RetryStrategy, RETRY_LADDER, Subgoal, StepMemory,
 )
 from config.success_criteria import get_success_criteria
-from services.ui_signature import compute_ui_signature, signatures_differ
+from services.ui_signature import compute_ui_signature, compute_content_signature, signatures_differ
 from utils.logger import get_logger
 from services.command_logger import get_command_logger
 
@@ -805,22 +805,23 @@ class Coordinator:
                     highlighted_path = ""
                     if bundle and bundle.screenshot and bundle.screenshot.screenshot_base64:
                         _pre_gesture_b64 = bundle.screenshot.screenshot_base64  # captured before actor fires
-                        ss_path = _cmd_logger.log_screenshot(
-                            label=f"screen_{subgoal.description[:30]}",
-                            base64_data=bundle.screenshot.screenshot_base64,
-                        )
+                        # Log annotated version as the primary screenshot (ss_path).
+                        # This replaces the plain unannotated capture so the HTML log
+                        # always shows numbered bounding boxes for the pre-gesture screen.
                         if screen_state.vlm_annotated_b64:
-                            ann_path = _cmd_logger.log_screenshot(
-                                label=f"screen_{subgoal.description[:26]}_ann",
+                            ss_path = _cmd_logger.log_screenshot(
+                                label=f"screen_{subgoal.description[:30]}",
                                 base64_data=screen_state.vlm_annotated_b64,
                             )
+                            ann_path = ss_path  # same image; no duplicate needed
                         else:
-                            ann_path = _cmd_logger.log_annotated_screenshot(
-                                label=f"screen_{subgoal.description[:26]}_ann",
+                            ss_path = _cmd_logger.log_annotated_screenshot(
+                                label=f"screen_{subgoal.description[:30]}",
                                 base64_data=bundle.screenshot.screenshot_base64,
                                 elements=screen_state.elements or [],
                                 target_match=screen_state.target_match,
                             )
+                            ann_path = ss_path
                         if screen_state.highlighted_b64:
                             highlighted_path = _cmd_logger.log_screenshot(
                                 label=f"screen_{subgoal.description[:24]}_hl",
@@ -835,23 +836,25 @@ class Coordinator:
                             _raw_desc = _raw_desc[:_part_b_idx].strip()
                         running_screen_context = _raw_desc[:2000]
                     elif screen_state.elements:
-                        # Prefer last known VLM description over raw labels — the ReactiveStep LLM
-                        # needs meaningful screen context even on fast-path iterations where
-                        # describe_screen() was skipped (open_app, scroll, etc.)
-                        last_vlm = next(
-                            (m.screen_description for m in reversed(step_memory) if m.screen_description),
-                            None,
-                        )
-                        if last_vlm:
-                            running_screen_context = f"[prev screen] {last_vlm[:1900]}"
+                        # Build a fresh label string from the CURRENT UI tree rather than
+                        # falling back to the previous step's VLM description ([prev screen]).
+                        # Using stale context here breaks the visual chain — the RSG would
+                        # reason about the old screen state even after a gesture changed it.
+                        _elem_labels = [
+                            (e.get("text") or e.get("contentDescription") or "").strip()
+                            for e in screen_state.elements[:12]
+                            if (e.get("text") or e.get("contentDescription") or "").strip()
+                        ]
+                        if _elem_labels:
+                            running_screen_context = "; ".join(_elem_labels[:8])
                         else:
-                            _elem_labels = [
-                                (e.get("text") or e.get("contentDescription") or "").strip()
-                                for e in screen_state.elements[:8]
-                                if (e.get("text") or e.get("contentDescription") or "").strip()
-                            ]
-                            if _elem_labels:
-                                running_screen_context = "; ".join(_elem_labels[:6])
+                            # Truly no text — fall back to last known VLM desc but label it clearly
+                            last_vlm = next(
+                                (m.screen_description for m in reversed(step_memory) if m.screen_description),
+                                None,
+                            )
+                            if last_vlm:
+                                running_screen_context = f"[prev screen] {last_vlm[:1900]}"
                     _cmd_logger.log_agent_decision("PERCEPTION_RESULT", {
                         "subgoal": subgoal.description,
                         "replan_suggested": screen_state.replan_suggested,
@@ -1006,7 +1009,7 @@ class Coordinator:
                     }
 
             # --- Snapshot pre-action (W1 fix) ---
-            pre_signature = await self._snapshot_pre(intent)
+            pre_signature, pre_content_sig = await self._snapshot_pre(intent)
 
             # --- Act ---
             # Fallback for press_enter: if the previous attempt didn't change the
@@ -1334,14 +1337,26 @@ class Coordinator:
                     intent=intent, action_type="verify", force_screenshot=True,
                 )
                 if post_bundle and post_bundle.screenshot and post_bundle.screenshot.screenshot_base64:
-                    ss_path = _cmd_logger.log_screenshot(
-                        label=f"post_{effective_action}_{subgoal.description[:25]}",
-                        base64_data=post_bundle.screenshot.screenshot_base64,
-                    )
+                    _post_elements: list = []
+                    if post_bundle.ui_tree and hasattr(post_bundle.ui_tree, "elements"):
+                        _post_elements = post_bundle.ui_tree.elements or []
+                    _post_label = f"post_{effective_action}_{subgoal.description[:25]}"
+                    if _post_elements:
+                        ss_path = _cmd_logger.log_annotated_screenshot(
+                            label=_post_label,
+                            base64_data=post_bundle.screenshot.screenshot_base64,
+                            elements=_post_elements,
+                        )
+                    else:
+                        ss_path = _cmd_logger.log_screenshot(
+                            label=_post_label,
+                            base64_data=post_bundle.screenshot.screenshot_base64,
+                        )
                     _cmd_logger.log_agent_decision("POST_ACTION_SCREENSHOT", {
                         "subgoal": subgoal.description,
                         "action_type": effective_action,
                         "screenshot_path": ss_path,
+                        "annotated": bool(_post_elements),
                     }, agent_name="Perceiver")
             except Exception:
                 pass  # screenshot capture is best-effort
@@ -1555,7 +1570,15 @@ class Coordinator:
             post_bundle, post_signature, post_elements = await self.verifier.capture_post_state(intent, action_type=effective_action)
             if post_elements:
                 _last_post_elements = post_elements  # track for pre_elements fallback when perception is skipped
-            screen_changed = signatures_differ(pre_signature, post_signature)
+            post_content_sig = compute_content_signature(post_elements)
+            # screen_changed is True when EITHER the structural tree OR the text
+            # content of display/input elements differs.  The content signature
+            # catches text-only updates (calculator display "1" → "1+", form
+            # field values, result counts) that are invisible to structural hashing.
+            screen_changed = (
+                signatures_differ(pre_signature, post_signature)
+                or signatures_differ(pre_content_sig, post_content_sig)
+            )
             screen_hash_history.append(post_signature)
 
             # Loop detection: 3+ consecutive identical hashes
@@ -1733,6 +1756,44 @@ class Coordinator:
             elif not action_result.success:
                 verification_passed = False
                 verification_reason = f"Action execution failed: {action_result.error}"
+
+            # --- Semantic double-check for irreversible commit actions ---
+            # The RSG's __verification_passed__ flag is optimistic for commit actions
+            # (send, delete, pay, etc.) because the model can't always distinguish
+            # "screen looks normal after send" from "send actually went through".
+            # semantic_verify() does a targeted LLM check with a compact element
+            # summary specifically focused on success/failure signals.
+            # Only fires when RSG says passed AND action was a commit-type tap.
+            _COMMIT_TARGET_KWS = {
+                "send", "delete", "remove", "buy", "purchase", "pay",
+                "order", "confirm", "submit", "post", "upload", "share",
+            }
+            _target_kws = set((subgoal.target or "").lower().split())
+            _is_commit_tap = (
+                action_type == "tap"
+                and bool(_target_kws & _COMMIT_TARGET_KWS)
+                and action_result.success
+            )
+            # Skip semantic double-check when the screen already changed: a UI
+            # signature change is stronger evidence than an LLM's text assessment,
+            # and is_error_screen() already catches crash/retry patterns above.
+            # Only run it for "silent" commits where the screen doesn't visibly shift.
+            if verification_passed and _is_commit_tap and not screen_changed:
+                _success_hint = subgoal.parameters.get("success_hint", "")
+                _sem_passed, _sem_reason = await self.verifier.semantic_verify(
+                    action_desc=(
+                        f"{action_type} '{subgoal.target}' — {subgoal.description[:80]}"
+                    ),
+                    elements=post_elements,
+                    success_hint=_success_hint,
+                )
+                if not _sem_passed:
+                    verification_passed = False
+                    verification_reason = f"Semantic guard failed: {_sem_reason}"
+                    logger.warning(
+                        f"Coordinator: semantic_verify overrode RSG pass for "
+                        f"commit action '{subgoal.target}': {_sem_reason[:80]}"
+                    )
 
             # Generic postcondition guard (app-agnostic): proceed/confirm taps
             # such as Next/OK/Done/Create/Continue must produce an observable
@@ -2427,12 +2488,15 @@ class Coordinator:
 
         return "replan"
 
-    async def _snapshot_pre(self, intent: Dict[str, Any]) -> str:
+    async def _snapshot_pre(self, intent: Dict[str, Any]) -> tuple:
         """
-        Capture a fresh UI signature right before action execution.
+        Capture structural + content signatures right before action execution.
 
-        This is separate from perceive — it captures the true pre-action
-        state for accurate verification (W1 fix).
+        Returns:
+            (structural_sig, content_sig) — both are 16-char hex strings.
+            structural_sig hashes the first-20-element tree (class/bounds/flags).
+            content_sig hashes ALL text-bearing element labels — catches display
+            changes (calculator: "1" → "1+") that structural hashing misses.
         """
         bundle = await self.perceiver.perception_controller.request_perception(
             intent=intent,
@@ -2442,7 +2506,7 @@ class Coordinator:
         elements = []
         if bundle.ui_tree and hasattr(bundle.ui_tree, "elements"):
             elements = bundle.ui_tree.elements or []
-        return compute_ui_signature(elements)
+        return compute_ui_signature(elements), compute_content_signature(elements)
 
     def _apply_replan(self, goal: Goal, new_subgoals: List["Subgoal"]) -> None:
         """Replace remaining subgoals with new plan from replanner."""

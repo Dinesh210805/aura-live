@@ -110,6 +110,12 @@ class ActorAgent:
         if target:
             if action_type == "type":
                 action["text"] = target
+                # Remap coordinates to focus_x/focus_y so Android Strategy 0
+                # can locate the target EditText by bounds without a tap.
+                if coordinates:
+                    action["focus_x"] = coordinates[0]
+                    action["focus_y"] = coordinates[1]
+                    del action["x"], action["y"], action["format"]
             elif action_type == "open_app":
                 action["app_name"] = target
             else:

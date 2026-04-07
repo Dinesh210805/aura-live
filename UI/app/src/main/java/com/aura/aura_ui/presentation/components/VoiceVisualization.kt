@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -18,83 +17,76 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aura.aura_ui.conversation.ConversationPhase
 import com.aura.aura_ui.ui.theme.*
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.sin
+import kotlinx.coroutines.delay
+
+/** Amplitude below this value is treated as silence — no waveform motion. */
+private const val SILENCE_THRESHOLD = 0.04f
 
 /**
- * Professional voice waveform visualization component
- * Displays animated bars that respond to audio amplitude
+ * Bar-based waveform that reacts ONLY to actual voice input.
+ *
+ * A single [animateFloatAsState] tracks amplitude, dropping to 0 when
+ * [isActive] is false or [amplitude] stays below [SILENCE_THRESHOLD].
+ * Bar heights are derived via a gaussian envelope so the centre bars
+ * are tallest, giving a natural "voice hill" shape.
  */
 @Composable
 fun VoiceWaveform(
     modifier: Modifier = Modifier,
-    amplitude: Float = 0.5f,
+    amplitude: Float = 0f,
     isActive: Boolean = false,
     barCount: Int = 5,
     primaryColor: Color = MaterialTheme.colorScheme.primary,
     secondaryColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "waveform")
-    
-    // Create animated values for each bar with different phases
-    val animatedAmplitudes = List(barCount) { index ->
-        infiniteTransition.animateFloat(
-            initialValue = 0.3f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 600 + (index * 100),
-                    easing = EaseInOutSine
-                ),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "bar_$index"
-        )
-    }
+    val smoothAmplitude by animateFloatAsState(
+        targetValue = if (isActive && amplitude > SILENCE_THRESHOLD) amplitude.coerceIn(0f, 1f) else 0f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow),
+        label = "waveform_amp",
+    )
+
+    val isSpeaking = isActive && smoothAmplitude > SILENCE_THRESHOLD / 2f
 
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        animatedAmplitudes.forEachIndexed { index, animatedValue ->
-            val barHeight = if (isActive) {
-                (20 + (animatedValue.value * amplitude * 30)).dp
-            } else {
-                8.dp
-            }
-            
-            val barColor = if (isActive) {
-                Brush.verticalGradient(
-                    colors = listOf(primaryColor, secondaryColor)
-                )
-            } else {
-                Brush.verticalGradient(
-                    colors = listOf(
-                        primaryColor.copy(alpha = 0.3f),
-                        secondaryColor.copy(alpha = 0.3f)
-                    )
-                )
-            }
-            
+        repeat(barCount) { index ->
+            val centre = (barCount - 1) / 2f
+            val dist = if (centre > 0f) abs(index - centre) / centre else 0f
+            val gaussian = exp(-dist * dist * 1.5).toFloat()
+            val heightDp = (6f + smoothAmplitude * 44f * gaussian).coerceAtLeast(6f)
+
             Box(
                 modifier = Modifier
                     .width(6.dp)
-                    .height(barHeight)
+                    .height(heightDp.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(barColor)
+                    .background(
+                        if (isSpeaking) {
+                            Brush.verticalGradient(listOf(primaryColor, secondaryColor))
+                        } else {
+                            Brush.verticalGradient(
+                                listOf(primaryColor.copy(alpha = 0.3f), secondaryColor.copy(alpha = 0.3f)),
+                            )
+                        },
+                    ),
             )
         }
     }
 }
 
 /**
- * Circular voice visualization orb for the main mic button
- * Provides immersive visual feedback during voice interaction
+ * Circular voice orb providing phase-based ambient feedback.
+ * Pulse / glow / rotation are intentional ambient animations, not silence bugs.
  */
 @Composable
 fun VoiceOrb(
@@ -109,201 +101,179 @@ fun VoiceOrb(
         ConversationPhase.RESPONDING -> AuraResponding
         ConversationPhase.ERROR -> AuraError
     }
-    
+
     val infiniteTransition = rememberInfiniteTransition(label = "orb")
-    
-    // Pulse animation for active states
+
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = if (phase != ConversationPhase.IDLE) 1.15f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(800, easing = EaseInOutSine),
-            repeatMode = RepeatMode.Reverse
+            repeatMode = RepeatMode.Reverse,
         ),
-        label = "pulse"
+        label = "pulse",
     )
-    
-    // Rotation for processing state
+
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            repeatMode = RepeatMode.Restart,
         ),
-        label = "rotation"
+        label = "rotation",
     )
-    
-    // Breathing glow animation
+
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.6f,
         animationSpec = infiniteRepeatable(
             animation = tween(1200, easing = EaseInOutSine),
-            repeatMode = RepeatMode.Reverse
+            repeatMode = RepeatMode.Reverse,
         ),
-        label = "glow"
+        label = "glow",
     )
 
     Canvas(modifier = modifier.size(200.dp)) {
-        val centerX = size.width / 2
-        val centerY = size.height / 2
-        val maxRadius = size.minDimension / 2
-        
-        // Outer glow rings
+        val cx = size.width / 2
+        val cy = size.height / 2
+        val maxR = size.minDimension / 2
+
         for (i in 3 downTo 1) {
-            val ringRadius = maxRadius * (0.5f + i * 0.15f) * pulseScale
-            val ringAlpha = glowAlpha * (1f - i * 0.2f)
-            
             drawCircle(
-                color = color.copy(alpha = ringAlpha),
-                radius = ringRadius,
-                center = Offset(centerX, centerY)
+                color = color.copy(alpha = glowAlpha * (1f - i * 0.2f)),
+                radius = maxR * (0.5f + i * 0.15f) * pulseScale,
+                center = Offset(cx, cy),
             )
         }
-        
-        // Main orb with gradient
+
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(
-                    color.copy(alpha = 0.8f),
-                    color.copy(alpha = 0.4f),
-                    Color.Transparent
-                ),
-                center = Offset(centerX, centerY),
-                radius = maxRadius * 0.6f * pulseScale
+                colors = listOf(color.copy(alpha = 0.8f), color.copy(alpha = 0.4f), Color.Transparent),
+                center = Offset(cx, cy),
+                radius = maxR * 0.6f * pulseScale,
             ),
-            radius = maxRadius * 0.5f * pulseScale,
-            center = Offset(centerX, centerY)
+            radius = maxR * 0.5f * pulseScale,
+            center = Offset(cx, cy),
         )
-        
-        // Inner bright core
+
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.9f),
-                    color.copy(alpha = 0.6f),
-                    Color.Transparent
-                ),
-                center = Offset(centerX, centerY),
-                radius = maxRadius * 0.25f
+                colors = listOf(Color.White.copy(alpha = 0.9f), color.copy(alpha = 0.6f), Color.Transparent),
+                center = Offset(cx, cy),
+                radius = maxR * 0.25f,
             ),
-            radius = maxRadius * 0.2f,
-            center = Offset(centerX, centerY)
+            radius = maxR * 0.2f,
+            center = Offset(cx, cy),
         )
-        
-        // Rotating arc for processing state
+
         if (phase == ConversationPhase.THINKING) {
-            val arcRadius = maxRadius * 0.7f
+            val arcR = maxR * 0.7f
             drawArc(
                 color = color,
                 startAngle = rotation,
                 sweepAngle = 90f,
                 useCenter = false,
-                topLeft = Offset(centerX - arcRadius, centerY - arcRadius),
-                size = Size(arcRadius * 2, arcRadius * 2),
-                style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                topLeft = Offset(cx - arcR, cy - arcR),
+                size = Size(arcR * 2, arcR * 2),
+                style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
             )
         }
-        
-        // Amplitude-reactive wave pattern for listening
+
         if (phase == ConversationPhase.LISTENING && amplitude > 0.1f) {
-            val waveRadius = maxRadius * 0.65f + (amplitude * 20)
             drawCircle(
                 color = color.copy(alpha = amplitude * 0.5f),
-                radius = waveRadius,
-                center = Offset(centerX, centerY),
-                style = Stroke(width = 2.dp.toPx())
+                radius = maxR * 0.65f + amplitude * 20,
+                center = Offset(cx, cy),
+                style = Stroke(width = 2.dp.toPx()),
             )
         }
     }
 }
 
 /**
- * Soundwave visualization showing audio activity
+ * Sinusoidal soundwave visualization.
+ *
+ * **Bug fix:** the travelling-wave [phase] advances ONLY when [isActive] is
+ * true AND [amplitude] exceeds [SILENCE_THRESHOLD].  Previously the phase
+ * used `infiniteRepeatable` which ran unconditionally, making the wave drift
+ * even during silence.
+ *
+ * Two mechanisms together enforce true silence behaviour:
+ * 1. [smoothAmplitude] collapses to 0 via [animateFloatAsState] → wave height → 0.
+ * 2. The `LaunchedEffect` loop skips phase advancement below threshold → wave freezes.
  */
 @Composable
 fun SoundWaveVisualization(
     modifier: Modifier = Modifier,
     isActive: Boolean = false,
-    amplitude: Float = 0.5f,
+    amplitude: Float = 0f,
     waveColor: Color = MaterialTheme.colorScheme.primary,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "soundwave")
-    
-    val phase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 2 * PI.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "wave_phase"
+    val smoothAmplitude by animateFloatAsState(
+        targetValue = if (isActive && amplitude > SILENCE_THRESHOLD) amplitude.coerceIn(0f, 1f) else 0f,
+        animationSpec = tween(durationMillis = 180),
+        label = "smooth_amp",
     )
 
+    var phase by remember { mutableStateOf(0f) }
+    val latestIsActive = rememberUpdatedState(isActive)
+    val latestAmplitude = rememberUpdatedState(amplitude)
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            if (latestIsActive.value && latestAmplitude.value > SILENCE_THRESHOLD) {
+                phase = (phase + 0.08f) % (2f * PI.toFloat())
+            }
+            delay(16L) // ~60 fps
+        }
+    }
+
     Canvas(modifier = modifier.fillMaxWidth().height(60.dp)) {
-        if (!isActive) {
-            // Draw flat line when inactive
+        val amp = smoothAmplitude
+
+        if (amp < 0.01f) {
             drawLine(
-                color = waveColor.copy(alpha = 0.3f),
+                color = waveColor.copy(alpha = 0.15f),
                 start = Offset(0f, size.height / 2),
                 end = Offset(size.width, size.height / 2),
-                strokeWidth = 2.dp.toPx(),
-                cap = StrokeCap.Round
+                strokeWidth = 1.5.dp.toPx(),
+                cap = StrokeCap.Round,
             )
             return@Canvas
         }
-        
+
+        val waveHeight = size.height * 0.42f * amp
+        val cy = size.height / 2f
+
         val path = Path()
-        val waveHeight = size.height * 0.4f * amplitude
-        val centerY = size.height / 2
-        
-        path.moveTo(0f, centerY)
-        
+        path.moveTo(0f, cy)
         for (x in 0..size.width.toInt() step 4) {
-            val normalizedX = x / size.width
-            val y = centerY + sin(normalizedX * 4 * PI + phase) * waveHeight * 
-                    (0.5f + 0.5f * sin(normalizedX * 2 * PI + phase * 0.5f))
-            path.lineTo(x.toFloat(), y.toFloat())
+            val nx = x / size.width
+            val y = cy + sin(nx * 4f * PI + phase).toFloat() * waveHeight *
+                (0.5f + 0.5f * sin(nx * 2f * PI + phase * 0.5f).toFloat())
+            path.lineTo(x.toFloat(), y)
         }
-        
-        drawPath(
-            path = path,
-            color = waveColor,
-            style = Stroke(
-                width = 3.dp.toPx(),
-                cap = StrokeCap.Round
-            )
-        )
-        
-        // Secondary wave with offset
+        drawPath(path, waveColor, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
+
         val path2 = Path()
-        path2.moveTo(0f, centerY)
-        
+        path2.moveTo(0f, cy)
         for (x in 0..size.width.toInt() step 4) {
-            val normalizedX = x / size.width
-            val y = centerY + sin(normalizedX * 3 * PI + phase + PI / 4) * waveHeight * 0.6f
-            path2.lineTo(x.toFloat(), y.toFloat())
+            val nx = x / size.width
+            val y = cy + sin(nx * 3f * PI + phase + PI.toFloat() / 4f).toFloat() * waveHeight * 0.55f
+            path2.lineTo(x.toFloat(), y)
         }
-        
-        drawPath(
-            path = path2,
-            color = waveColor.copy(alpha = 0.5f),
-            style = Stroke(
-                width = 2.dp.toPx(),
-                cap = StrokeCap.Round
-            )
-        )
+        drawPath(path2, waveColor.copy(alpha = 0.45f), style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round))
     }
 }
 
 /**
- * Compact audio level indicator bars
+ * Compact audio level indicator bars.
  */
 @Composable
 fun AudioLevelIndicator(
     modifier: Modifier = Modifier,
-    level: Float = 0f, // 0-1 range
+    level: Float = 0f,
     barCount: Int = 8,
     activeColor: Color = AuraListening,
     inactiveColor: Color = AuraNeutral300,
@@ -311,21 +281,19 @@ fun AudioLevelIndicator(
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.Bottom,
     ) {
         repeat(barCount) { index ->
             val threshold = (index + 1f) / barCount
             val isActive = level >= threshold
             val barHeight = (8 + index * 4).dp
-            
+
             Box(
                 modifier = Modifier
                     .width(4.dp)
                     .height(barHeight)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(
-                        if (isActive) activeColor else inactiveColor.copy(alpha = 0.3f)
-                    )
+                    .background(if (isActive) activeColor else inactiveColor.copy(alpha = 0.3f)),
             )
         }
     }

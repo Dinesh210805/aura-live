@@ -61,11 +61,8 @@ def _extract_features_from_list(
     - NAV_BAR zone (85-100%): weight 0.2 — bottom nav rarely changes
     Elements with weight < 0.5 are excluded from the signature.
     """
-    features = {
-        "element_count": len(elements),
-        "elements": []
-    }
-    
+    included_elements = []
+
     for elem in elements[:max_elements]:
         if not isinstance(elem, dict):
             continue
@@ -78,7 +75,7 @@ def _extract_features_from_list(
             weight = _ZONE_WEIGHTS.get(zone, 1.0)
             if weight < 0.5:
                 continue
-        
+
         elem_features = {
             "class": _get_short_class(elem.get("className", "")),
             "text": _truncate(elem.get("text", ""), 50),
@@ -92,9 +89,12 @@ def _extract_features_from_list(
         if bounds:
             elem_features["bounds"] = _quantize_bounds(bounds)
         
-        features["elements"].append(elem_features)
-    
-    return features
+        included_elements.append(elem_features)
+
+    return {
+        "element_count": len(included_elements),
+        "elements": included_elements,
+    }
 
 
 def _get_bounds_from_element(elem: dict) -> Optional[dict]:
@@ -203,6 +203,55 @@ def signatures_differ(sig1: str, sig2: str) -> bool:
     if not sig1 or not sig2:
         return True  # Treat missing signatures as different
     return sig1 != sig2
+
+
+def compute_content_signature(elements: Optional[List[dict]]) -> str:
+    """
+    Content-aware signature that hashes the *text values* of every
+    display/input element regardless of position in the element list.
+
+    Complements ``compute_ui_signature`` which only inspects the first
+    20 elements for structural features.  Use-cases where the structural
+    signature stays identical but this one changes:
+
+    - Calculator display: "1" → "1+" → "1+1"  (text of a single TextView)
+    - Search results count: "24 results" → "12 results"
+    - Form validation message appearing below a field
+    - Any EditText whose content changes after a type action
+
+    Only captures elements whose ``className`` suggests they carry visible
+    text (TextView, EditText, TextInputEditText, CheckedTextView, etc.).
+    Pure layout containers are excluded to keep the hash stable against
+    irrelevant hierarchy shifts.
+
+    Returns:
+        16-char hex digest, or empty string if no text-bearing elements.
+    """
+    if not elements:
+        return ""
+
+    _TEXT_CLASS_FRAGMENTS = {
+        "textview", "edittext", "textinput", "checkedtext",
+        "button",  # buttons often show dynamic labels (e.g. "Add to cart" → "Added")
+        "chip", "radiobutton", "checkbox", "switch",
+        "autocomplete",
+    }
+
+    tokens: list = []
+    for el in elements:
+        class_name = (el.get("className") or "").lower()
+        if not any(frag in class_name for frag in _TEXT_CLASS_FRAGMENTS):
+            continue
+        text = (el.get("text") or "").strip()
+        desc = (el.get("contentDescription") or "").strip()
+        label = text or desc
+        if label:
+            tokens.append(label[:80])   # cap per-element to avoid runaway input
+
+    if not tokens:
+        return ""
+
+    return hashlib.md5("|".join(tokens).encode()).hexdigest()[:16]
 
 
 def compute_lightweight_signature(ui_data: Optional[Union[dict, List[dict]]]) -> str:

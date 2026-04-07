@@ -48,9 +48,6 @@ android {
         compose = true
         viewBinding = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -117,6 +114,14 @@ dependencies {
     
     // Data Storage
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Room Database
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
+
+    // Double Metaphone phonetic matching (Apache Commons Codec)
+    implementation("commons-codec:commons-codec:1.16.1")
     
     // Permissions
     implementation("com.guolindev.permissionx:permissionx:1.7.1")

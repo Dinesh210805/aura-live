@@ -395,6 +395,36 @@ def compile_aura_graph(checkpointer: Any = None) -> Any:
         else:
             app = graph.compile(store=store)
 
+        # --- Agent Registry wiring (feature-gated) ---
+        # Register all 9 agents as adapters so they can be invoked via
+        # AuraContext.spawn_agent() and AuraQueryEngine. Non-fatal: a failure
+        # here must not prevent the graph from running in legacy mode.
+        try:
+            from aura.registry.agent_registry import get_agent_registry
+            from agents.adapters import (
+                CommanderAdapter,
+                PerceiverAdapter,
+                CoordinatorAdapter,
+                PlannerAdapter,
+                ActorAdapter,
+                ResponderAdapter,
+                VerifierAdapter,
+            )
+
+            registry = get_agent_registry()
+            registry.register(CommanderAdapter(commander_agent))
+            registry.register(PerceiverAdapter(perceiver_agent))
+            registry.register(CoordinatorAdapter(coordinator))
+            registry.register(PlannerAdapter(planner_agent))
+            registry.register(ActorAdapter(actor_agent))
+            registry.register(ResponderAdapter(responder_agent))
+            registry.register(VerifierAdapter(verifier_agent))
+            logger.info(
+                f"[AgentRegistry] Registered {len(registry)} agents: {registry.names()}"
+            )
+        except Exception as reg_err:
+            logger.warning(f"Agent registry wiring failed (non-fatal): {reg_err}")
+
         logger.info("Graph compiled successfully (parallel architecture enabled)")
         return app
 

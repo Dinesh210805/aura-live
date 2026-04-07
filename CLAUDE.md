@@ -1,4 +1,30 @@
+
+
+## Wiki Brain
+
+All persistent, living knowledge about Aura lives in the wiki.
+Wiki location: `aura brain vault/Aura brain/wiki/`
+
+### ALWAYS start every session by:
+1. Reading `aura brain vault/Aura brain/wiki/index.md`
+2. Reading pages relevant to the current task
+
+### Wiki structure
+- `wiki/overview.md`              → big picture and data flow
+- `wiki/agents/`                  → each of the 9 agents documented
+- `wiki/aura_graph/`              → LangGraph orchestration deep dive
+- `wiki/perception/`              → perception pipeline details
+- `wiki/api/`                     → routes, handlers, WebSocket endpoints
+- `wiki/services/`                → LLM, VLM, TTS, STT, safety services
+- `wiki/backlog.md`               → P1-P3 items from self-reflection
+- `wiki/decisions.md`             → why things were built the way they were
+- `wiki/index.md`                 → table of contents
+- `wiki/log.md`                   → history of all changes
+
+### After EVERY task — without being asked:
+Run the wiki-update skill. Update relevant pages. Append to log.md.
 # CLAUDE.md
+---
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

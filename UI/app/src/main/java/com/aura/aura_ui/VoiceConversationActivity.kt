@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.aura.aura_ui.audio.AuraTTSManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -34,11 +35,13 @@ import java.util.UUID
 class VoiceConversationActivity : AppCompatActivity() {
     private lateinit var micButton: Button
     private lateinit var endButton: Button
-    private lateinit var transcriptText: TextView
     private lateinit var statusText: TextView
     private lateinit var conversationRecycler: RecyclerView
 
     private var webSocket: WebSocket? = null
+
+    // On-device TTS — synthesises server feedback text locally (~200 ms vs ~1.4 s server-side)
+    private val auraTtsManager: AuraTTSManager by lazy { AuraTTSManager(this) }
 
     @Volatile
     private var isRecording = false
@@ -64,7 +67,6 @@ class VoiceConversationActivity : AppCompatActivity() {
 
         micButton = findViewById(R.id.micButton)
         endButton = findViewById(R.id.endButton)
-        transcriptText = findViewById(R.id.transcriptText)
         statusText = findViewById(R.id.statusText)
         conversationRecycler = findViewById(R.id.conversationRecycler)
 
@@ -174,7 +176,6 @@ class VoiceConversationActivity : AppCompatActivity() {
                 "transcript" -> {
                     val transcript = json.getString("text")
                     runOnUiThread {
-                        transcriptText.text = transcript
                         addMessage(transcript, isUser = true)
                     }
                 }
@@ -270,11 +271,39 @@ class VoiceConversationActivity : AppCompatActivity() {
                     val totalTasks = json.optInt("total_tasks", 0)
                     val isComplete = json.optBoolean("is_complete", false)
                     val isAborted = json.optBoolean("is_aborted", false)
-                    
+
                     Log.i(TAG, "📋 Task progress: $currentTask/$totalTasks - $goal")
                     handleTaskProgress(goal, tasks, currentTask, totalTasks, isComplete, isAborted)
                 }
-                
+
+                "task_result" -> {
+                    // Primary result message from /ws/audio pipeline.
+                    // tts_response carries {text, voice, format} for on-device synthesis;
+                    // spoken_response is the plain-text fallback for UI display.
+                    val spokenResponse = json.optString("spoken_response", "")
+                    val ttsPayload = json.optJSONObject("tts_response")
+
+                    runOnUiThread {
+                        if (spokenResponse.isNotEmpty()) {
+                            addMessage(spokenResponse, isUser = false)
+                        }
+                        statusText.text = "Done"
+                    }
+
+                    if (ttsPayload != null) {
+                        val ttsText  = ttsPayload.optString("text", "")
+                        val ttsVoice = ttsPayload.optString("voice", "en-US-AriaNeural")
+                        if (ttsText.isNotEmpty()) {
+                            Log.i(TAG, "🔊 Android TTS: ${ttsText.take(60)}… (voice=$ttsVoice)")
+                            auraTtsManager.speak(ttsText, ttsVoice) {
+                                runOnUiThread { statusText.text = "Ready to talk" }
+                            }
+                        }
+                    } else {
+                        Log.w(TAG, "task_result had no tts_response payload")
+                    }
+                }
+
                 else -> {
                     Log.w(TAG, "⚠️ Unknown message type: $type")
                 }
@@ -907,6 +936,7 @@ class VoiceConversationActivity : AppCompatActivity() {
         }
         webSocket?.close(1000, "Activity destroyed")
         webSocket = null
+        auraTtsManager.release()
     }
 
     override fun onRequestPermissionsResult(

@@ -51,6 +51,7 @@ logs
 code helpers
 D:\PROJECTS\Gemini Live Hackathon\aura-live\code helpers
 openclaw-main
+coding agent
 # Claude Code session transcript logs
 *.txt
 !requirements*.txt

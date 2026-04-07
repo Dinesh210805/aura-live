@@ -1,7 +1,10 @@
 package com.aura.aura_ui.presentation.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,10 +19,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -58,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AuraWelcomeScreen(
@@ -108,9 +114,7 @@ fun AuraWelcomeScreen(
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            FeatureCarousel(
-                visible = cardsVisible,
-            )
+            FeatureCarousel(visible = cardsVisible)
 
             Spacer(modifier = Modifier.height(60.dp))
 
@@ -124,60 +128,71 @@ fun AuraWelcomeScreen(
     }
 }
 
+/**
+ * Animated ambient backdrop — three radial gradient orbs that independently
+ * breathe (scale in/out) at different tempos and phases, giving the background
+ * a living, depth-layered feel without distracting motion.
+ */
 @Composable
 private fun WelcomeBackdrop() {
     val primaryColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
     val secondaryColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f)
     val tertiaryColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.14f)
 
-    Box(
-        modifier =
-            Modifier
-                .fillMaxSize(),
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
+    // Each circle has its own breathing scale Animatable
+    val scale1 = remember { Animatable(1f) }
+    val scale2 = remember { Animatable(1f) }
+    val scale3 = remember { Animatable(1f) }
 
-            drawCircle(
-                brush =
-                    Brush.radialGradient(
-                        colors =
-                            listOf(
-                                primaryColor,
-                                Color.Transparent,
-                            ),
-                    ),
-                radius = width * 0.6f,
-                center = Offset(width * 0.25f, height * 0.25f),
-            )
+    val breathEasing = CubicBezierEasing(0.45f, 0f, 0.55f, 1f)
 
-            drawCircle(
-                brush =
-                    Brush.radialGradient(
-                        colors =
-                            listOf(
-                                secondaryColor,
-                                Color.Transparent,
-                            ),
-                    ),
-                radius = width * 0.5f,
-                center = Offset(width * 0.8f, height * 0.4f),
-            )
-
-            drawCircle(
-                brush =
-                    Brush.radialGradient(
-                        colors =
-                            listOf(
-                                tertiaryColor,
-                                Color.Transparent,
-                            ),
-                    ),
-                radius = width * 0.55f,
-                center = Offset(width * 0.5f, height * 0.85f),
-            )
+    LaunchedEffect(Unit) {
+        // Circle 1 — top-left, 3.2 s period
+        launch {
+            while (true) {
+                scale1.animateTo(1.09f, tween(3200, easing = breathEasing))
+                scale1.animateTo(1.00f, tween(3200, easing = breathEasing))
+            }
         }
+        // Circle 2 — right, 4 s period, offset 1.2 s so peaks don't align
+        launch {
+            delay(1200)
+            while (true) {
+                scale2.animateTo(1.12f, tween(4000, easing = breathEasing))
+                scale2.animateTo(1.00f, tween(4000, easing = breathEasing))
+            }
+        }
+        // Circle 3 — bottom, 3.8 s period, offset 700 ms
+        launch {
+            delay(700)
+            while (true) {
+                scale3.animateTo(1.07f, tween(3800, easing = breathEasing))
+                scale3.animateTo(1.00f, tween(3800, easing = breathEasing))
+            }
+        }
+    }
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+
+        drawCircle(
+            brush = Brush.radialGradient(colors = listOf(primaryColor, Color.Transparent)),
+            radius = w * 0.6f * scale1.value,
+            center = Offset(w * 0.25f, h * 0.25f),
+        )
+
+        drawCircle(
+            brush = Brush.radialGradient(colors = listOf(secondaryColor, Color.Transparent)),
+            radius = w * 0.5f * scale2.value,
+            center = Offset(w * 0.8f, h * 0.4f),
+        )
+
+        drawCircle(
+            brush = Brush.radialGradient(colors = listOf(tertiaryColor, Color.Transparent)),
+            radius = w * 0.55f * scale3.value,
+            center = Offset(w * 0.5f, h * 0.85f),
+        )
     }
 }
 
@@ -202,9 +217,7 @@ private fun HeroSection(
                     slideInVertically(initialOffsetY = { it / 2 }, animationSpec = tween(600)),
         ) {
             Surface(
-                modifier =
-                    Modifier
-                        .size(80.dp),
+                modifier = Modifier.size(80.dp),
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
                 shadowElevation = 12.dp,
@@ -244,20 +257,8 @@ private fun HeroSection(
             }
         }
 
-        AnimatedVisibility(
-            visible = titleVisible,
-            enter = fadeIn(tween(600)) + slideInVertically(initialOffsetY = { it / 3 }, animationSpec = tween(600)),
-        ) {
-            Text(
-                text = "AURA",
-                style =
-                    MaterialTheme.typography.displayMedium.copy(
-                        fontWeight = FontWeight.Light,
-                        letterSpacing = 8.sp,
-                    ),
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-        }
+        // Letter-by-letter stagger replaces the single AnimatedVisibility block
+        AnimatedAuraTitle(visible = titleVisible)
 
         AnimatedVisibility(
             visible = taglineVisible,
@@ -268,6 +269,60 @@ private fun HeroSection(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
                 textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+/**
+ * Renders "AURA" with a per-letter entrance: each letter fades in and slides up
+ * from 16 dp, staggered by 85 ms, with a spring-physics settle.
+ *
+ * All letters always occupy horizontal layout space so no reflow occurs during
+ * the reveal — only alpha and Y-offset animate.
+ */
+@Composable
+private fun AnimatedAuraTitle(visible: Boolean) {
+    val letters = "AURA"
+    val alphas = remember { List(letters.length) { Animatable(0f) } }
+    val slideYs = remember { List(letters.length) { Animatable(16f) } }
+
+    LaunchedEffect(visible) {
+        if (visible) {
+            letters.indices.forEach { i ->
+                launch {
+                    delay(i * 85L)
+                    launch { alphas[i].animateTo(1f, tween(280)) }
+                    slideYs[i].animateTo(
+                        targetValue = 0f,
+                        animationSpec = spring(
+                            dampingRatio = 0.65f,
+                            stiffness = Spring.StiffnessMediumLow,
+                        ),
+                    )
+                }
+            }
+        } else {
+            letters.indices.forEach { i ->
+                alphas[i].snapTo(0f)
+                slideYs[i].snapTo(16f)
+            }
+        }
+    }
+
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        letters.forEachIndexed { i, letter ->
+            Text(
+                text = letter.toString(),
+                style = MaterialTheme.typography.displayMedium.copy(
+                    fontWeight = FontWeight.Light,
+                    letterSpacing = 8.sp,
+                ),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = alphas[i].value),
+                modifier = Modifier.offset(y = slideYs[i].value.dp),
             )
         }
     }

@@ -326,7 +326,7 @@ Lazy initialization — `set_compiled_graph(app)` must be called from `main.py` 
 Enabled when `GEMINI_LIVE_ENABLED=true`. Registers `/ws/live` in `main.py`.
 
 **Features**:
-- Full Voice Activity Detection (`prefix_padding_ms=100`, `silence_duration_ms=400`)
+- Full Voice Activity Detection (`prefix_padding_ms=160`, `silence_duration_ms=650`, high start/end sensitivity)
 - Barge-in support (`START_OF_ACTIVITY_INTERRUPTS`)
 - Thinking content filter — strips `**Bold**` reasoning headers from model output
 - Transcript accumulation across sub-turns until `turn_complete`

@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/actor_agent.py]
+status: current
+---
+
 # Agent: Actor
 
 **File**: `agents/actor_agent.py`

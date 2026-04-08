@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [services/vlm.py]
+status: current
+---
+
 # VLM Service
 
 **File:** `services/vlm.py`

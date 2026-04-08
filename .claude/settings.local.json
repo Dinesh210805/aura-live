@@ -31,7 +31,8 @@
       "Bash(pip install:*)",
       "Bash(grep -E \"\\\\.py$\")",
       "Bash(grep -n \"return \"\"execute\"\"\\\\|return ''execute''\" aura_graph/edges.py)",
-      "Bash(grep -rn \"draw_set_of_marks\\\\|annotate_elements\\\\|badge\\\\|PIL\\\\|ImageDraw\" 'd:\\\\PROJECTS\\\\Gemini Live Hackathon\\\\aura-live' --include=*.py -l)"
+      "Bash(grep -rn \"draw_set_of_marks\\\\|annotate_elements\\\\|badge\\\\|PIL\\\\|ImageDraw\" 'd:\\\\PROJECTS\\\\Gemini Live Hackathon\\\\aura-live' --include=*.py -l)",
+      "Bash(venv/Scripts/python scripts/wiki_lint.py)"
     ]
   },
   "outputStyle": "Explanatory"

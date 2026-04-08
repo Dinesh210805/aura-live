@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [aura_graph/graph.py]
+status: current
+---
+
 # LangGraph — Graph Assembly & Entry Points
 
 **File**: `aura_graph/graph.py`

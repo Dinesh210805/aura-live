@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [perception/vlm_selector.py]
+status: current
+---
+
 # Agent: Visual Locator (VLM Selector)
 
 **File**: `perception/vlm_selector.py`

@@ -7,9 +7,10 @@ Handles WebSocket connections for streaming audio transcription and task executi
 import asyncio
 import base64
 import json
+import secrets
 import time
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
 from services.conversation_manager import ConversationManager
 from utils.logger import get_logger
@@ -17,6 +18,19 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["WebSocket Streaming"])
+
+
+def _check_ws_auth(api_key: str) -> bool:
+    """Return True if the request is authorised to open a WebSocket session."""
+    from config.settings import get_settings
+    s = get_settings()
+    if not s.require_api_key:
+        return True
+    if not s.device_api_key:
+        logger.warning("DEVICE_API_KEY not configured — WebSocket auth cannot be enforced")
+        return True
+    return secrets.compare_digest(api_key, s.device_api_key)
+
 
 # Global conversation manager instance
 conversation_manager = ConversationManager(max_turns=5)
@@ -566,7 +580,7 @@ class AudioBuffer:
 
 
 @router.websocket("/ws/audio-stream")
-async def websocket_audio_stream(websocket: WebSocket):
+async def websocket_audio_stream(websocket: WebSocket, api_key: str = Query(default="")):
     """
     WebSocket endpoint for real-time audio streaming and STT processing.
 
@@ -580,6 +594,9 @@ async def websocket_audio_stream(websocket: WebSocket):
     Supported languages: en, ta, hi, es, fr, de, ja, ko, zh, ar, ru, and 90+ more
     If no language specified, Whisper will automatically detect it.
     """
+    if not _check_ws_auth(api_key):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     logger.info("WebSocket audio stream connection established")
 
@@ -710,7 +727,7 @@ async def websocket_audio_stream(websocket: WebSocket):
 
 
 @router.websocket("/ws/audio-stream-final")
-async def websocket_audio_stream_final(websocket: WebSocket):
+async def websocket_audio_stream_final(websocket: WebSocket, api_key: str = Query(default="")):
     """
     WebSocket endpoint for final audio processing and task execution.
 
@@ -723,6 +740,9 @@ async def websocket_audio_stream_final(websocket: WebSocket):
 
     Supports all languages that Whisper supports (90+), including Tamil, English, Hindi, etc.
     """
+    if not _check_ws_auth(api_key):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     logger.info("WebSocket final audio stream connection established")
 
@@ -885,7 +905,7 @@ async def websocket_audio_stream_final(websocket: WebSocket):
 
 
 @router.websocket("/ws/conversation")
-async def websocket_conversation(websocket: WebSocket):
+async def websocket_conversation(websocket: WebSocket, api_key: str = Query(default="")):
     """
     WebSocket endpoint for continuous conversation mode (like Siri/Alexa).
 
@@ -905,6 +925,9 @@ async def websocket_conversation(websocket: WebSocket):
 
     Auto-connects device on WebSocket connection for seamless operation.
     """
+    if not _check_ws_auth(api_key):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     logger.info("Conversation WebSocket established")
 
@@ -1631,7 +1654,7 @@ async def websocket_conversation(websocket: WebSocket):
 
 
 @router.websocket("/ws/screen-mirror")
-async def websocket_screen_mirror(websocket: WebSocket):
+async def websocket_screen_mirror(websocket: WebSocket, api_key: str = Query(default="")):
     """
     WebSocket endpoint for real-time ADB screen mirroring.
 
@@ -1644,6 +1667,9 @@ async def websocket_screen_mirror(websocket: WebSocket):
     3. Client can send: {"type": "ping"} for keepalive
     4. Server responds: {"type": "pong", "timestamp": 123.45}
     """
+    if not _check_ws_auth(api_key):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     logger.info("🖼️  Screen mirror WebSocket connected")
 

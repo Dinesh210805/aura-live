@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [api_handlers/websocket_router.py]
+status: current
+---
+
 # API Handlers
 
 **Primary file:** `api_handlers/websocket_router.py`

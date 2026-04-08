@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [adk_agent.py, adk_streaming_server.py, gcs_log_uploader.py]
+status: current
+---
+
 # Google Cloud / ADK Layer
 
 Hackathon additions connecting AURA to Google Cloud infrastructure.
@@ -65,6 +71,9 @@ Previously, `execute_aura_task` could be called before `set_compiled_graph()` ra
 - **Full VAD config** via `RealtimeInputConfig` — server-side voice activity detection
 - **Transcript accumulation** — partial transcripts merged until end-of-turn detected
 - **Barge-in support** — user can interrupt AURA's response
+- **Explicit end-turn bridging** — `/ws/live` now maps client `end_turn` to ADK queue end signals when available (`send_audio_stream_end` or `send_activity_end`) to avoid waiting on delayed VAD closure
+- **Latency telemetry** — per-turn metrics logged (`audio_first`, `input_transcription`, `first_model_audio`, `turn_complete`) for pinpointing wait-time sources
+- **Reduced upstream overhead** — Android live client no longer sends `ui_tree` frames in Gemini Live mode because backend intentionally ignores them
 - Forwards transcribed commands to `execute_aura_task_from_text()` same as audio WebSocket
 
 ### Activation

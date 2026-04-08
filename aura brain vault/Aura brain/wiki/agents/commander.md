@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/commander.py]
+status: current
+---
+
 # Agent: Commander
 
 **File**: `agents/commander.py`

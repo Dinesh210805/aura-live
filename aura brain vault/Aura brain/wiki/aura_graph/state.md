@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [aura_graph/state.py, aura_graph/agent_state.py]
+status: current
+---
+
 # LangGraph — TaskState & Models
 
 **Files**: `aura_graph/state.py`, `aura_graph/agent_state.py`
@@ -33,6 +39,8 @@ The single shared state object that flows through every LangGraph node. All node
 | `log_url` | `str` | GCS public URL of execution log |
 | `token_usage` | `dict` | Accumulated token counts |
 | `phase_timings` | `dict` | Per-phase start/end timestamps (G10 fix) |
+
+| `web_search_result` | `Optional[str]` | Result from a mid-task `web_search` action — injected into next RSG call's context |
 
 ### Deprecated Fields (do not use)
 - `ui_screenshot` → replaced by `perception_bundle`

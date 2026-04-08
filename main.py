@@ -189,9 +189,11 @@ except Exception as e:
 setup_rate_limiting(app)
 
 # CORS - enforce safe defaults in production
-allowed_origins = getattr(settings, "cors_origins", ["*"])
+allowed_origins = settings.cors_origins
 if _is_production and "*" in allowed_origins:
-    logger.warning("⚠️ Overriding wildcard CORS origins in production to localhost only")
+    logger.warning(
+        "⚠️  Wildcard CORS in production — set CORS_ORIGINS=https://your-domain.com to fix"
+    )
     allowed_origins = ["http://localhost:3000", "http://localhost:8080"]
 
 # allow_credentials=True is incompatible with allow_origins=["*"] per CORS spec
@@ -208,7 +210,7 @@ app.add_middleware(
 # Add trusted host middleware for production
 if settings.environment == "production":
     app.add_middleware(
-        TrustedHostMiddleware, allowed_hosts=getattr(settings, "allowed_hosts", ["*"])
+        TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts
     )
 
 # Request ID middleware
@@ -221,7 +223,8 @@ app.include_router(tasks.router, prefix=API_PREFIX, tags=["Tasks"])
 app.include_router(device.router, prefix=API_PREFIX, tags=["Device"])
 app.include_router(config_api.router, prefix=API_PREFIX, tags=["Config"])
 app.include_router(workflow.router)  # Already has prefix
-app.include_router(demo.router)  # /demo judging dashboard
+if not _is_production:
+    app.include_router(demo.router)  # /demo judging dashboard (dev/judging only)
 app.include_router(websocket.router, tags=["WebSocket"])
 
 # Debug router — only available in development (exposes internal state)

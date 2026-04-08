@@ -106,7 +106,8 @@ class AIIntentClassifier:
         # Initialize Groq
         if GROQ_AVAILABLE:
             try:
-                groq_key = os.getenv("GROQ_API_KEY")
+                from config.settings import get_settings as _get_settings
+                groq_key = _get_settings().groq_api_key
                 if groq_key:
                     self.groq_client = Groq(api_key=groq_key)
                     logger.info("Groq client initialized successfully")
@@ -116,7 +117,8 @@ class AIIntentClassifier:
         # Initialize Gemini as fallback
         if GEMINI_AVAILABLE:
             try:
-                gemini_key = os.getenv("GEMINI_API_KEY")
+                from config.settings import get_settings as _get_settings
+                gemini_key = _get_settings().gemini_api_key
                 if gemini_key:
                     genai.configure(api_key=gemini_key)
                     self.gemini_model = genai.GenerativeModel("gemini-2.0-flash-lite")

@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: []
+status: current
+---
+
 # AURA Wiki — Index
 
 > Living knowledge base for the AURA (Autonomous User-Responsive Agent) system.

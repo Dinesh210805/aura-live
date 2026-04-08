@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [main.py, aura_graph/graph.py, agents/coordinator.py]
+status: current
+---
+
 # AURA — System Overview
 
 ## What AURA Does

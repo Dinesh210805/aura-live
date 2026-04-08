@@ -6,7 +6,6 @@ Supports LLM, vision (base64 images), and reasoning with thinking toggle.
 """
 
 import base64
-import os
 from typing import Any, Dict, List, Optional, Union
 
 from openai import OpenAI
@@ -26,7 +25,10 @@ def get_nvidia_client(api_key: Optional[str] = None) -> Optional[OpenAI]:
     if _nvidia_client is not None:
         return _nvidia_client
 
-    key = api_key or os.environ.get("NVIDIA_API_KEY")
+    key = api_key
+    if not key:
+        from config.settings import get_settings as _get_settings
+        key = _get_settings().nvidia_api_key or ""
     if not key:
         logger.warning("NVIDIA_API_KEY not set — NVIDIA NIM provider unavailable")
         return None

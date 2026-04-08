@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [services/hitl_service.py]
+status: current
+---
+
 # HITL Service
 
 **File:** `services/hitl_service.py`

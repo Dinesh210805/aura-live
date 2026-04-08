@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/coordinator.py, agents/commander.py, agents/planner_agent.py, agents/actor_agent.py, agents/responder.py, agents/validator.py, agents/verifier_agent.py, agents/perceiver_agent.py]
+status: current
+---
+
 # Agents — Overview & Interaction Map
 
 **Directory**: `agents/`

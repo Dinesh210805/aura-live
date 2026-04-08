@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [config/settings.py]
+status: current
+---
+
 # Configuration
 
 **File:** `config/settings.py` (498 lines)  

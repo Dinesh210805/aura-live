@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: []
+status: current
+---
+
 # Backlog
 
 Active improvement items from self-reflection (2026-03-29). P0 items already fixed. P1–P3 pending.

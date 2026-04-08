@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/responder.py]
+status: current
+---
+
 # Agent: Responder
 
 **File**: `agents/responder.py`

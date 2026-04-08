@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/perceiver_agent.py]
+status: current
+---
+
 # Agent: Perceiver
 
 **File**: `agents/perceiver_agent.py`

@@ -317,6 +317,33 @@ GESTURE_REGISTRY: Dict[str, GestureTool] = {
         description="Signal that the agent cannot proceed after exhausting all retries",
         prompt_description="signal irrecoverable failure after all retries exhausted",
     ),
+
+    # ── Mid-task web lookup ───────────────────────────────────────────────────
+    #
+    # The coordinator intercepts this action before it reaches the actor.
+    # Result is injected into running_screen_context so the next RSG call has
+    # real-time information (addresses, step-by-step guides, current data).
+    # Use SPARINGLY — only when the required fact is NOT on screen.
+
+    "web_search": GestureTool(
+        name="web_search",
+        description=(
+            "Look up real-time facts, addresses, how-to guides, or current data "
+            "from the web when the information is not visible on screen. "
+            "target = the search query string. "
+            "Result is injected as context for the next step — no screen gesture is executed."
+        ),
+        prompt_description=(
+            "look up info from the web — target is the search query. "
+            "Use ONLY when a fact, address, or how-to guide is needed that is NOT on screen."
+        ),
+        needs_target=False, needs_coords=False, needs_perception=False,
+        examples=[
+            "web_search 'Domino's Pizza Koramangala address'",
+            "web_search 'how to enable dark mode in Instagram'",
+            "web_search 'current weather Bangalore'",
+        ],
+    ),
 }
 
 

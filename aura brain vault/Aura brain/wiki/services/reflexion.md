@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [services/reflexion_service.py]
+status: current
+---
+
 # Reflexion Service
 
 **File:** `services/reflexion_service.py`

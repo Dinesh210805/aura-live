@@ -5,9 +5,25 @@
 All persistent, living knowledge about Aura lives in the wiki.
 Wiki location: `aura brain vault/Aura brain/wiki/`
 
-### ALWAYS start every session by:
-1. Reading `aura brain vault/Aura brain/wiki/index.md`
-2. Reading pages relevant to the current task
+### MANDATORY — Do this BEFORE touching any code:
+1. Read `aura brain vault/Aura brain/wiki/index.md`
+2. Read every page listed under the areas you will work in
+3. If you skip this step, you are flying blind — the wiki is your memory across sessions
+
+> **Why this matters**: Each session starts cold. The wiki is the only persistent
+> record of architectural decisions, known pitfalls, and what has already been built.
+> Reading it first saves you from re-discovering things, breaking invariants, or
+> duplicating work. It also saves tokens — understanding from the wiki is cheaper
+> than re-reading raw source files.
+
+### MANDATORY — Do this AFTER every task, without being asked:
+1. Update every wiki page that is now stale because of your changes
+2. Append an entry to `wiki/log.md` describing what changed and why
+3. Run the wiki-update skill if available
+
+> **No exceptions.** Even a one-line change to coordinator.py should update
+> `wiki/agents/coordinator.md` and `wiki/log.md`. The wiki only stays useful
+> if it is updated consistently after every change.
 
 ### Wiki structure
 - `wiki/overview.md`              → big picture and data flow
@@ -21,8 +37,51 @@ Wiki location: `aura brain vault/Aura brain/wiki/`
 - `wiki/index.md`                 → table of contents
 - `wiki/log.md`                   → history of all changes
 
-### After EVERY task — without being asked:
-Run the wiki-update skill. Update relevant pages. Append to log.md.
+---
+
+### Three wiki operations — follow these every session
+
+#### Operation 1: Query (BEFORE touching code)
+1. Read `wiki/index.md` — identify which pages cover your work area
+2. Read only those pages (not the full wiki — be targeted)
+3. Check each page's `last_verified` frontmatter field
+4. Run: `git log --since="<last_verified date>" --name-only -- <source_files>` for each page
+5. If any source file changed after `last_verified` → re-read that source file and update the wiki page before proceeding
+
+#### Operation 2: Ingest (AFTER every code change)
+Triggered automatically whenever you modify source files:
+1. Identify wiki pages whose `source_files` frontmatter includes the modified file
+2. Re-read the modified source and update the wiki page content
+3. Bump `last_verified` to today's date (`YYYY-MM-DD`)
+4. Set `status: current`
+5. Append to `wiki/log.md`
+
+#### Operation 3: Lint (run `/wiki-lint` when wiki health is uncertain)
+Run at session start when you suspect staleness, or after major refactors:
+1. Check each page's `source_files` still exist on disk → flag ORPHAN if missing
+2. Check `last_verified` vs. `git log` for each source file → flag STALE if source changed
+3. Check `wiki/index.md` lists all `.md` files in `wiki/` → flag UNLISTED if any missing
+4. Output a PASS / STALE / ORPHAN report before proceeding
+
+> Run: `python scripts/wiki_lint.py` for automated lint output
+
+---
+
+### Wiki page schema (frontmatter required on every page)
+
+```yaml
+---
+last_verified: YYYY-MM-DD
+source_files: [relative/path/to/file.py]
+status: current | stale | orphan
+---
+```
+
+- `last_verified`: date this page was last checked against its source files
+- `source_files`: files this page documents. Use `[]` for meta pages (index, log, decisions, backlog)
+- `status`: `current` = verified, `stale` = source changed since last_verified, `orphan` = source file deleted
+
+**When to update `last_verified`**: any time you read the source file and confirm the wiki page is accurate, even if you make no changes.
 # CLAUDE.md
 ---
 

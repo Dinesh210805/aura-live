@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/verifier_agent.py]
+status: current
+---
+
 # Agent: Verifier
 
 **File**: `agents/verifier_agent.py`

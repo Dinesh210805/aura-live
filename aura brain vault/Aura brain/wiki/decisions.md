@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: []
+status: current
+---
+
 # Architectural Decisions
 
 > Inferred from codebase analysis. Each decision captures *why* it was built this way, not just *what* was built.

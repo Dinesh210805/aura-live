@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [services/prompt_guard.py, services/policy_engine.py]
+status: current
+---
+
 # Safety Services
 
 Two independent safety layers protect AURA: **PromptGuard** (input screening) and **PolicyEngine** (gesture gating).

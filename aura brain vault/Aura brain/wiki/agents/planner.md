@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/planner_agent.py]
+status: current
+---
+
 # Agent: Planner
 
 **File**: `agents/planner_agent.py`

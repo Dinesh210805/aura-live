@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [aura_graph/core_nodes.py, aura_graph/nodes/]
+status: current
+---
+
 # LangGraph — Node Implementations
 
 **Files**: `aura_graph/core_nodes.py`, `aura_graph/nodes/`

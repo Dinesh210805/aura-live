@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [aura_graph/edges.py]
+status: current
+---
+
 # LangGraph — Conditional Routing (Edges)
 
 **File**: `aura_graph/edges.py`

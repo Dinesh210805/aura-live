@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [agents/coordinator.py]
+status: current
+---
+
 # Agent: Coordinator
 
 **File**: `agents/coordinator.py`  
@@ -99,6 +105,43 @@ Now:
 3. Suspends the task loop via `asyncio.Event`
 4. The WebSocket router checks HITL before dispatching new tasks (barge-in support)
 5. When user responds, `register_voice_answer()` resolves the pending event
+
+---
+
+## Mid-Task Web Search (`web_search` action)
+
+The RSG can emit `action_type: "web_search"` with `target` = the search query. The coordinator intercepts this **before it reaches `ActorAgent`** — no gesture is executed.
+
+### When RSG uses it
+When the required fact, address, or step-by-step guide is **not visible on screen** and the agent needs it to proceed. Examples:
+- `web_search 'Domino's Pizza Koramangala address'` → then type the address into Maps
+- `web_search 'how to enable dark mode in Instagram'` → use the guide for next steps
+- `web_search 'current weather Bangalore'` → answer the user's question
+
+### Dispatch flow
+```
+RSG output → action_type == "web_search"
+    → coordinator intercepts (before ActorAgent)
+    → calls WebSearchService.search(target)  [8 s timeout]
+    → appends to step_memory as StepMemory(action_type="web_search", ...)
+    → injects result into running_screen_context (truncated to 2000 chars)
+    → marks subgoal completed, advances to next subgoal
+    → next RSG call sees the result as part of screen context
+```
+
+### Registry registration
+- `config/gesture_tools.py` — `GESTURE_REGISTRY["web_search"]`: `needs_target=False`, `needs_coords=False`, `needs_perception=False`
+- Automatically included in `get_no_target_actions()` → coordinator skips perception step
+- Automatically included in `get_rsg_actions_prompt()` → RSG sees it in AVAILABLE ACTIONS block
+
+### Error handling
+- **Timeout** (8 s): injects `"[web search timed out]"` — task continues without crashing
+- **Service unavailable** (`TAVILY_API_KEY` not set): injects `"[web search unavailable — TAVILY_API_KEY not set]"`
+- **Exception**: injects `"[web search failed: <error>]"` and logs at ERROR level
+
+### Distinction from planning-time web hints
+- `_web_hints` (planning time): calls `WebSearchService.search_for_guide()` silently before `PlannerAgent.create_plan()`. Silent, not user-visible, injected into skeleton planning context only.
+- `web_search` (mid-task): RSG-driven, injects result into `running_screen_context` for use in subsequent reactive steps.
 
 ---
 

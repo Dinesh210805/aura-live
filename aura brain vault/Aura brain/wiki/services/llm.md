@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [services/llm.py]
+status: current
+---
+
 # LLM Service
 
 **File:** `services/llm.py` (596 lines)

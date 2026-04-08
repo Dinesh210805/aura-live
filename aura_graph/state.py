@@ -241,3 +241,6 @@ class TaskState(TypedDict):
 
     goal_summary: Optional[str]
     """Human-readable summary of the full goal (for context-aware responses)."""
+
+    web_search_result: Optional[str]
+    """Result from a mid-task web_search action, injected into the next RSG call's context."""

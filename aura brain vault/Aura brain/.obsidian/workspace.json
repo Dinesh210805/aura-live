@@ -24,11 +24,11 @@
         ]
       },
       {
-        "id": "11e2a93e80f13637",
+        "id": "2ad745559926108c",
         "type": "tabs",
         "children": [
           {
-            "id": "b2e2a96af2b130ec",
+            "id": "822a98147ca6a272",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -197,10 +197,20 @@
       "bases:Create new base": false
     }
   },
-  "active": "b2e2a96af2b130ec",
+  "active": "822a98147ca6a272",
   "lastOpenFiles": [
-    "wiki/adk.md",
+    "wiki/services/reflexion.md.tmp.21600.1775654934026",
+    "wiki/aura_graph/nodes.md.tmp.21600.1775654920907",
+    "wiki/agents/responder.md.tmp.21600.1775654774973",
+    "wiki/agents/planner.md.tmp.21600.1775654771913",
+    "wiki/agents/actor.md.tmp.21600.1775654765633",
+    "wiki/adk.md.tmp.21600.1775654754251",
+    "wiki/backlog.md.tmp.21600.1775654735295",
+    "wiki/decisions.md.tmp.21600.1775654732939",
+    "wiki/overview.md.tmp.21600.1775654731117",
     "wiki/index.md",
+    "wiki/aura_graph/state.md",
+    "wiki/adk.md",
     "Untitled.canvas",
     "Welcome.md",
     "wiki/backlog.md",
@@ -217,23 +227,14 @@
     "wiki/api/handlers.md",
     "wiki/api/handlers.md.tmp.9140.1775537507663",
     "wiki/api/routes.md.tmp.9140.1775537489913",
-    "wiki/services/config.md.tmp.9140.1775537468342",
-    "wiki/services/hitl.md.tmp.9140.1775537449289",
     "wiki/services/reflexion.md",
-    "wiki/services/reflexion.md.tmp.9140.1775537430453",
-    "wiki/services/safety.md.tmp.9140.1775537409977",
     "wiki/services/vlm.md",
-    "wiki/services/vlm.md.tmp.9140.1775537387997",
-    "wiki/services/llm.md.tmp.9140.1775537373340",
-    "wiki/perception/pipeline.md.tmp.9140.1775537351005",
     "wiki/agents/visual_locator.md",
-    "wiki/agents/visual_locator.md.tmp.9140.1775537049875",
     "wiki/agents/verifier.md",
     "wiki/agents/validator.md",
     "wiki/agents/responder.md",
     "wiki/agents/planner.md",
     "wiki/agents/commander.md",
-    "wiki/agents/actor.md",
-    "wiki/agents/perceiver.md"
+    "wiki/agents/actor.md"
   ]
 }

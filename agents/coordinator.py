@@ -579,6 +579,21 @@ class Coordinator:
                 # Inject the generated step into the subgoal list.
                 goal._reactive_retries = 0
 
+                # Bug 1 fix: RSG signals goal completion via __goal_complete__ — honour it
+                # immediately by marking the goal done and breaking out of the loop.
+                # Use .get() (not .pop()) so the flag remains in subgoal.parameters for
+                # the loop-detection guard at line 1607 to find if we ever reach that path.
+                if next_step.parameters.get("__goal_complete__"):
+                    goal.completed = True
+                    _cmd_logger.log_agent_decision("GOAL_COMPLETE_RSG", {
+                        "source": "primary_rsg",
+                        "phase": goal.current_phase.description if goal.current_phase else "?",
+                        "step": next_step.description,
+                    }, agent_name="Coordinator")
+                    logger.info("Coordinator: RSG (primary) flagged __goal_complete__ — terminating")
+                    self._broadcast_step(session_id, success=True)
+                    break
+
                 # Update running_screen_context from the VLM's screen_context
                 # output — this replaces the old separate describe_screen call.
                 _reactive_ctx = next_step.parameters.get("__screen_context__", "")
@@ -752,6 +767,56 @@ class Coordinator:
                 subgoal.completed = True
                 goal.advance_subgoal()
                 replan_count = 0  # G5: fresh replan budget for each new subgoal
+                continue
+
+            # --- Mid-task web_search interception (never reaches the actor) ---
+            if action_type == "web_search":
+                _query = subgoal.target or subgoal.description or goal.description
+                logger.info(f"Coordinator: mid-task web_search — query='{_query[:80]}'")
+                _cmd_logger.log_agent_decision(
+                    "WEB_SEARCH",
+                    {"query": _query, "subgoal": subgoal.description},
+                    agent_name="Coordinator",
+                )
+                self.task_progress.emit_agent_status("Search", f"Searching: {_query[:50]}")
+                _search_result = ""
+                try:
+                    from services.web_search import get_web_search_service
+                    _ws_svc = get_web_search_service()
+                    if _ws_svc.available:
+                        _search_result = await asyncio.wait_for(
+                            _ws_svc.search(_query), timeout=8.0
+                        )
+                        logger.info(f"Coordinator: web_search returned {len(_search_result)} chars")
+                    else:
+                        _search_result = "[web search unavailable — TAVILY_API_KEY not set]"
+                        logger.warning("Coordinator: web_search skipped — service not available")
+                except asyncio.TimeoutError:
+                    _search_result = "[web search timed out]"
+                    logger.warning("Coordinator: web_search timed out (8 s)")
+                except Exception as _ws_exc:
+                    _search_result = f"[web search failed: {_ws_exc}]"
+                    logger.error(f"Coordinator: web_search error — {_ws_exc}")
+
+                # Inject result into step_memory and running_screen_context so
+                # the next RSG call can use the information.
+                step_memory.append(StepMemory(
+                    subgoal_description=f"[web_search] {_query}",
+                    action_type="web_search",
+                    target=_query,
+                    result=_search_result[:500],
+                    screen_type="unknown",
+                    screen_before="",
+                    screen_after="",
+                ))
+                running_screen_context = (
+                    f"{running_screen_context}\n"
+                    f"[Web search result for '{_query}': {_search_result[:400]}]"
+                )[-2000:]
+
+                subgoal.completed = True
+                goal.advance_subgoal()
+                replan_count = 0
                 continue
 
             _has_preresolved = (
@@ -1753,7 +1818,13 @@ class Coordinator:
                 _reactive_ctx = next_step.parameters.get("__screen_context__", "")
                 if _reactive_ctx:
                     running_screen_context = str(_reactive_ctx)[:2000]
-            elif not action_result.success:
+                # Bug 1 fix: check __goal_complete__ from post-action RSG.
+                # .get() (not .pop()) keeps the flag in next_step.parameters so the
+                # loop-detection guard at the screen-hash block can still see it.
+                _post_rsg_goal_complete = next_step.parameters.get("__goal_complete__", False)
+            else:
+                _post_rsg_goal_complete = False
+            if not next_step and not action_result.success:
                 verification_passed = False
                 verification_reason = f"Action execution failed: {action_result.error}"
 

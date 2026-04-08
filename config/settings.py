@@ -7,7 +7,7 @@ validating and loading environment variables.
 
 from typing import List, Literal, Optional
 
-from pydantic import Field
+from pydantic import Field, validator
 from pydantic_settings import BaseSettings
 
 
@@ -327,6 +327,11 @@ class Settings(BaseSettings):
         env="CORS_ORIGINS",
         description="Allowed CORS origins",
     )
+    allowed_hosts: List[str] = Field(
+        default_factory=lambda: ["*"],
+        env="ALLOWED_HOSTS",
+        description="Trusted hosts for TrustedHostMiddleware (production: set to your domain)",
+    )
 
     # Security settings
     require_api_key: bool = Field(
@@ -471,6 +476,12 @@ class Settings(BaseSettings):
         env="STEP_HISTORY_WINDOW",
         description="Number of recent steps to show in full; older steps are summarized",
     )
+
+    @validator("google_api_key")
+    def validate_google_api_key(cls, v: str, values: dict) -> str:
+        if values.get("gcs_logs_enabled") and not v:
+            raise ValueError("GOOGLE_API_KEY is required when GCS_LOGS_ENABLED=true")
+        return v
 
     class Config:
         """Pydantic configuration."""

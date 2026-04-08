@@ -460,7 +460,7 @@
           "package_name": "org.telegram.messenger",
           "app_name": "Telegram",
           "is_system_app": false,
-          "version_name": "12.6.2",
+          "version_name": "12.6.4",
           "deep_links": [],
           "intent_filters": [
             {
@@ -669,7 +669,7 @@
           "package_name": "com.myairtelapp",
           "app_name": "Airtel",
           "is_system_app": false,
-          "version_name": "4.139.3",
+          "version_name": "4.140.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -826,7 +826,7 @@
           "package_name": "com.google.android.apps.docs.editors.sheets",
           "app_name": "Sheets",
           "is_system_app": false,
-          "version_name": "1.26.131.00.90",
+          "version_name": "1.26.141.00.90",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1060,7 +1060,7 @@
           "package_name": "com.openai.chatgpt",
           "app_name": "ChatGPT",
           "is_system_app": false,
-          "version_name": "1.2026.083",
+          "version_name": "1.2026.090",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1413,7 +1413,7 @@
           "package_name": "com.google.ar.core",
           "app_name": "Google Play Services for AR",
           "is_system_app": true,
-          "version_name": "1.53.260340193",
+          "version_name": "1.53.260340593",
           "deep_links": [],
           "intent_filters": []
         },
@@ -1452,7 +1452,7 @@
           "package_name": "com.android.vending",
           "app_name": "Google Play Store",
           "is_system_app": true,
-          "version_name": "50.7.24-31 [0] [PR] 888136775",
+          "version_name": "50.8.18-31 [0] [PR] 892472617",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1569,7 +1569,7 @@
           "package_name": "com.flipkart.android",
           "app_name": "Flipkart",
           "is_system_app": false,
-          "version_name": "9.1",
+          "version_name": "9.2",
           "deep_links": [
             "flipkart"
           ],
@@ -1664,7 +1664,7 @@
           "package_name": "com.brave.browser",
           "app_name": "Brave",
           "is_system_app": false,
-          "version_name": "1.88.136",
+          "version_name": "1.88.138",
           "deep_links": [
             "http",
             "https"
@@ -1837,7 +1837,7 @@
           "package_name": "com.olx.southasia",
           "app_name": "OLX India",
           "is_system_app": false,
-          "version_name": "19.88.009",
+          "version_name": "19.88.010",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2315,7 +2315,7 @@
           "package_name": "com.facebook.services",
           "app_name": "Meta Services",
           "is_system_app": true,
-          "version_name": "159.0.36",
+          "version_name": "160.0.36",
           "deep_links": [],
           "intent_filters": []
         },
@@ -2713,7 +2713,7 @@
           "package_name": "com.zoho.accounts.oneauth",
           "app_name": "OneAuth",
           "is_system_app": false,
-          "version_name": "4.2.4",
+          "version_name": "4.2.5",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2751,7 +2751,7 @@
           "package_name": "com.twitter.android",
           "app_name": "X",
           "is_system_app": false,
-          "version_name": "11.78.0-release.0",
+          "version_name": "11.79.0-release.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2992,7 +2992,7 @@
           "package_name": "com.lenskart.app",
           "app_name": "Lenskart",
           "is_system_app": false,
-          "version_name": "5.5.5",
+          "version_name": "5.5.6",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3031,7 +3031,7 @@
           "package_name": "com.google.android.webview",
           "app_name": "Android System WebView",
           "is_system_app": true,
-          "version_name": "146.0.7680.164",
+          "version_name": "146.0.7680.177",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3101,7 +3101,7 @@
           "package_name": "com.google.android.contactkeys",
           "app_name": "Android System Key Verifier",
           "is_system_app": false,
-          "version_name": "1.339.884950673",
+          "version_name": "1.339.893117679",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3117,7 +3117,7 @@
           "package_name": "com.google.android.contacts",
           "app_name": "Contacts",
           "is_system_app": true,
-          "version_name": "4.75.27.882333999",
+          "version_name": "4.76.28.892006051",
           "deep_links": [
             "tel"
           ],
@@ -3181,7 +3181,7 @@
           "package_name": "com.suntv.sunnxt",
           "app_name": "Sun NXT",
           "is_system_app": false,
-          "version_name": "4.1.79",
+          "version_name": "4.1.81",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3288,7 +3288,7 @@
           "package_name": "com.google.android.gms",
           "app_name": "Google Play services",
           "is_system_app": true,
-          "version_name": "26.11.33 (260400-887465546)",
+          "version_name": "26.12.33 (260400-892550550)",
           "deep_links": [],
           "intent_filters": []
         },
@@ -3549,7 +3549,7 @@
           "package_name": "com.granturismo.gcamator",
           "app_name": "GCamator",
           "is_system_app": false,
-          "version_name": "5.4.282",
+          "version_name": "5.4.294",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3660,7 +3660,7 @@
           "package_name": "tv.accedo.airtel.wynk",
           "app_name": "Airtel Xstream Play",
           "is_system_app": false,
-          "version_name": "1.115.2",
+          "version_name": "1.115.3",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3908,7 +3908,7 @@
           "package_name": "com.amazon.avod.thirdpartyclient",
           "app_name": "Prime Video",
           "is_system_app": false,
-          "version_name": "3.0.447.1047",
+          "version_name": "3.0.447.1147",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3977,7 +3977,7 @@
           "package_name": "com.oplus.games",
           "app_name": "Game Assistant",
           "is_system_app": true,
-          "version_name": "10.29.3",
+          "version_name": "10.29.4",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4311,7 +4311,7 @@
           "package_name": "com.adobe.psmobile",
           "app_name": "Adobe Photoshop Express",
           "is_system_app": false,
-          "version_name": "17.9.22",
+          "version_name": "18.0.25",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4342,7 +4342,7 @@
           "package_name": "com.gpsmapcamera.geotagginglocationonphoto",
           "app_name": "GPS Map Camera",
           "is_system_app": false,
-          "version_name": "1.9.11",
+          "version_name": "1.9.12",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4427,7 +4427,7 @@
           "package_name": "com.google.android.apps.nbu.paisa.user",
           "app_name": "GPay",
           "is_system_app": true,
-          "version_name": "324.1.1 (arm64-v8a_release_flutter)",
+          "version_name": "325.1.2 (arm64-v8a_release_flutter)",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4598,7 +4598,7 @@
           "package_name": "com.google.android.apps.chromecast.app",
           "app_name": "Home",
           "is_system_app": false,
-          "version_name": "4.12.52.1",
+          "version_name": "4.13.52.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4713,7 +4713,7 @@
           "package_name": "com.rapido.passenger",
           "app_name": "Rapido",
           "is_system_app": false,
-          "version_name": "8.101.0",
+          "version_name": "8.102.1",
           "deep_links": [
             "geo"
           ],
@@ -4893,7 +4893,7 @@
           "package_name": "com.google.android.keep",
           "app_name": "Keep notes",
           "is_system_app": false,
-          "version_name": "5.26.121.00.90",
+          "version_name": "5.26.131.01.90",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5105,7 +5105,7 @@
           "package_name": "com.oppo.quicksearchbox",
           "app_name": "Global Search",
           "is_system_app": true,
-          "version_name": "16.9.0",
+          "version_name": "16.9.50",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5113,7 +5113,7 @@
           "package_name": "in.swiggy.android",
           "app_name": "Swiggy",
           "is_system_app": false,
-          "version_name": "4.105.2",
+          "version_name": "4.106.1",
           "deep_links": [
             "swiggy"
           ],
@@ -5427,7 +5427,7 @@
           "package_name": "notion.id",
           "app_name": "Notion",
           "is_system_app": false,
-          "version_name": "0.6.3760",
+          "version_name": "0.6.3772",
           "deep_links": [
             "notion"
           ],
@@ -5632,7 +5632,7 @@
           "package_name": "com.microsoft.teams",
           "app_name": "Teams",
           "is_system_app": false,
-          "version_name": "1416/1.0.0.2026044202",
+          "version_name": "1416/1.0.0.2026062402",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5647,7 +5647,7 @@
           "package_name": "com.microsoft.todos",
           "app_name": "To Do",
           "is_system_app": false,
-          "version_name": "2.146.965.02",
+          "version_name": "2.168.995.02",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5729,11 +5729,11 @@
           ]
         }
       ],
-      "last_updated": 1775533673850,
+      "last_updated": 1775655226011,
       "app_count": 540
     }
   },
   "_metadata": {
-    "last_updated": 1775533673850
+    "last_updated": 1775655226011
   }
 }

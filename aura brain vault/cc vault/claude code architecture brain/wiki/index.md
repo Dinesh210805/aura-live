@@ -29,5 +29,9 @@
 ### Architecture Controls
 - [feature-flags.md](feature-flags.md) - Bun feature gates, runtime env flags, and dead-code-elimination boundaries
 
+### Full Coverage
+- [coverage.md](coverage.md) - Full file-by-file scan coverage and generated artifacts
+- [catalog/index.md](catalog/index.md) - Directory-level catalogs for all scanned source files
+
 ### Maintenance
 - [log.md](log.md) - Append-only history of wiki updates and architecture discoveries

@@ -39,6 +39,8 @@ Out of scope:
 8. `wiki/permissions-and-safety.md`
 9. `wiki/services-and-integrations.md`
 10. `wiki/feature-flags.md`
+11. `wiki/coverage.md`
+12. `wiki/catalog/index.md`
 
 ## Source Map
 
@@ -54,3 +56,5 @@ Out of scope:
 - `state/` — store, selectors, and UI state
 - `services/` — API, analytics, MCP, policy limits, OAuth, and integrations
 - `utils/permissions/` — permission model and safety checks
+- `all-files.txt` — canonical scanned file manifest
+- `generate_catalog.ps1` — reproducible file-by-file catalog generator

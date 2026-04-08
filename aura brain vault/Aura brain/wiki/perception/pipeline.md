@@ -1,3 +1,9 @@
+---
+last_verified: 2026-04-08
+source_files: [perception/perception_pipeline.py, services/perception_controller.py]
+status: current
+---
+
 # Perception Pipeline
 
 **File:** `perception/perception_pipeline.py` (699 lines)  

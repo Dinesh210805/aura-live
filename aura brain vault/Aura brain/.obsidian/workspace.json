@@ -199,6 +199,7 @@
   },
   "active": "822a98147ca6a272",
   "lastOpenFiles": [
+    "wiki/log.md",
     "wiki/services/reflexion.md.tmp.21600.1775654934026",
     "wiki/aura_graph/nodes.md.tmp.21600.1775654920907",
     "wiki/agents/responder.md.tmp.21600.1775654774973",
@@ -214,7 +215,6 @@
     "Untitled.canvas",
     "Welcome.md",
     "wiki/backlog.md",
-    "wiki/log.md",
     "wiki/overview.md",
     "wiki/decisions.md",
     "wiki/perception/pipeline.md",
@@ -226,7 +226,6 @@
     "wiki/api/routes.md",
     "wiki/api/handlers.md",
     "wiki/api/handlers.md.tmp.9140.1775537507663",
-    "wiki/api/routes.md.tmp.9140.1775537489913",
     "wiki/services/reflexion.md",
     "wiki/services/vlm.md",
     "wiki/agents/visual_locator.md",

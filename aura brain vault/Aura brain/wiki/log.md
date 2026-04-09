@@ -1,5 +1,5 @@
 ---
-last_verified: 2026-04-08
+last_verified: 2026-04-09
 source_files: []
 status: current
 ---
@@ -158,3 +158,55 @@ Pages covered: all meta pages (index, log, overview, decisions, backlog, adk), a
 
 ### Why
 The wiki existed but had no freshness metadata — no way to know at session start whether a page was trustworthy or stale. The Karpathy pattern adds `last_verified` + `git log` checks so Claude can verify wiki accuracy in seconds instead of re-reading source files from scratch. This saves tokens and prevents acting on stale documentation.
+
+---
+
+## 2026-04-09 — MCP Architecture & Open-Source Strategy Planning
+
+**Session**: Advisory Q&A on how to scale AURA for public open-source release  
+**Branch**: main  
+**Author**: Claude Code (Sonnet 4.6)
+
+### What changed
+
+**New wiki page: `wiki/mcp_architecture.md`**
+Full planning document covering the strategic pivot from hackathon demo to open-source
+Android automation platform with multi-agent MCP support.
+
+**`wiki/index.md`** — added MCP & Open-Source Strategy section pointing to new page.
+
+### Decisions documented (M1–M8)
+
+| # | Decision |
+|---|----------|
+| M1 | Keep Groq/Gemini for voice path — latency-sensitive, Claude unavailable on phone |
+| M2 | Claude as brain for MCP path (Style B granular tools) — best reasoner, no extra cost |
+| M3 | Expose both MCP styles simultaneously — Style A for universal compat, Style B for power |
+| M4 | Event bus broadcasts all actions to all subscribers — collaborative human+AI loop |
+| M5 | Single task queue, voice commands get priority — one device, one task at a time |
+| M6 | REST fallback alongside MCP — reaches agents without MCP protocol support |
+| M7 | Build Phase 1 (MCP granular tools) first — voice already works, MCP is the new value |
+| M8 | SoM perception pipeline unchanged — it's the architectural moat, LLMs change around it |
+
+### Architecture summary
+
+Two input paths converge on one execution pipeline:
+- **Voice path** (phone → /ws/audio): Groq handles all reasoning. Target < 2s latency.
+- **MCP path** (Claude Code / agents): Claude handles all reasoning via granular tools.
+  Your server becomes a pure device bridge. Zero Groq costs for this path.
+- **HTTP path** (other agents): Groq handles execution, calling agent handles outer reasoning.
+
+Commands are NOT sent via ADB — they go over WebSocket to the Android companion app (/ws/device).
+
+### Key insight recorded
+
+AURA's moat is the Set-of-Marks pipeline (YOLO detection → element labels → agent picks label).
+This makes any LLM reliable at UI selection because it never predicts raw coordinates.
+The MCP architecture leaves this pipeline intact and unchanged regardless of which brain is used.
+
+### Build phases
+
+1. MCP granular tools (perceive_screen, execute_gesture, validate_action, watch_device_events)
+2. Event broadcast layer (shared event bus, result router)
+3. Black box tool + REST fallback (execute_android_task, /api/v1/execute)
+4. Open-source packaging (setup.sh, quickstart.md, demo GIF, README refactor)

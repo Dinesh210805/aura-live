@@ -1,5 +1,5 @@
 ---
-last_verified: 2026-04-08
+last_verified: 2026-04-09
 source_files: []
 status: current
 ---
@@ -51,6 +51,9 @@ status: current
 
 ### Google Cloud / ADK
 - [adk.md](adk.md) — ADK root agent, Gemini Live bidi, GCS log uploader
+
+### MCP & Open-Source Strategy
+- [mcp_architecture.md](mcp_architecture.md) — Full MCP architecture plan, dual-brain design, two-way pipeline, build phases, open-source positioning
 
 ### Meta
 - [backlog.md](backlog.md) — P1–P3 improvement backlog

@@ -21,12 +21,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import com.aura.aura_ui.network.ConnectionManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -215,27 +217,47 @@ object AppModule {
     }
 
     /**
-     * Provides HTTP client with logging for development debugging.
-     * Follows AURA's diagnostic and monitoring principles.
+     * Short-timeout HTTP client for health checks and configuration endpoints.
+     * Keeps quick calls from blocking on an unreachable server.
+     */
+    @Provides
+    @Singleton
+    @Named("health")
+    fun provideHealthOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
+
+    /**
+     * Long-timeout HTTP client for AURA task execution.
+     *
+     * AURA tasks run LLM planning + multi-step gestures and routinely take
+     * 60–120 s end-to-end. The readTimeout must be longer than the worst-case
+     * task duration; 180 s is conservative headroom without waiting forever.
+     * connectTimeout stays short — if the server isn't reachable in 10 s it
+     * genuinely isn't available.
      */
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        val builder =
-            OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-
-        // Add logging interceptor for development
-        val loggingInterceptor =
-            HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-        builder.addInterceptor(loggingInterceptor)
-
-        return builder.build()
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.HEADERS // BODY is too verbose for large screenshots
+        }
+        return OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(180, TimeUnit.SECONDS)  // AURA tasks can take 60-120 s
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .addInterceptor(loggingInterceptor)
+            .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideConnectionManager(): ConnectionManager = ConnectionManager()
 
     /**
      * Provides Retrofit instance with dynamic network configuration.
@@ -263,9 +285,10 @@ object AppModule {
     @Singleton
     fun provideAssistantRepository(
         auraApiService: AuraApiService,
+        connectionManager: ConnectionManager,
         logger: Logger,
     ): AssistantRepository {
-        return AssistantRepositoryImpl(auraApiService, logger)
+        return AssistantRepositoryImpl(auraApiService, connectionManager, logger)
     }
 
     @Provides

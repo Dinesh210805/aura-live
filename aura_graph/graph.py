@@ -217,6 +217,14 @@ async def _finalize_and_upload(cmd_logger: Any, status: str, task_id: str, resul
         logger.error(f"Failed to finalize command log: {finalize_err}")
 
     try:
+        log_path = cmd_logger.get_log_file_path()
+        if log_path:
+            result["local_log_path"] = str(log_path)
+            logger.info(f"Execution log saved: {log_path}")
+    except Exception as path_err:
+        logger.warning(f"Could not retrieve log file path: {path_err}")
+
+    try:
         from gcs_log_uploader import upload_log_to_gcs_async
         log_path = cmd_logger.get_log_file_path()
         log_url = await upload_log_to_gcs_async(log_path, task_id)

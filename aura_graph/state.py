@@ -244,3 +244,9 @@ class TaskState(TypedDict):
 
     web_search_result: Optional[str]
     """Result from a mid-task web_search action, injected into the next RSG call's context."""
+
+    command_source: Optional[str]
+    """Input source that triggered this task: 'voice' | 'mcp' | 'api'. Used for response routing."""
+
+    client_id: Optional[str]
+    """Connection ID to route the response back to the correct client."""

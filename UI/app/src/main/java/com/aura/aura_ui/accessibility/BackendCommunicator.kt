@@ -25,9 +25,10 @@ class BackendCommunicator(
 
     private val httpClient =
         OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)   // UI tree + screenshot can be large
+            .writeTimeout(60, TimeUnit.SECONDS)  // Registration payload includes all installed apps
+            .retryOnConnectionFailure(true)
             .build()
 
     fun updateBackendUrl(url: String) {

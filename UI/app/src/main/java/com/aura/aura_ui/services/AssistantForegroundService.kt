@@ -3,6 +3,7 @@ package com.aura.aura_ui.services
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -10,6 +11,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.aura.aura_ui.R
 import com.aura.aura_ui.data.audio.AudioCaptureManager
+import com.aura.aura_ui.network.ConnectionManager
 import com.aura.aura_ui.presentation.overlay.OverlayManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -25,9 +27,22 @@ class AssistantForegroundService : LifecycleService() {
     @Inject
     lateinit var audioManager: AudioCaptureManager
 
+    @Inject
+    lateinit var connectionManager: ConnectionManager
+
     private var overlayManager: OverlayManager? = null
     private val notificationId = 1001
     private val channelId = "AuraAssistantChannel"
+
+    /** Watches for server URL changes in SharedPreferences and reconnects immediately. */
+    private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        if (key == "server_url") {
+            val newUrl = prefs.getString("server_url", "http://10.193.156.197:8000")
+                ?: "http://10.193.156.197:8000"
+            Log.i("AssistantService", "Server URL changed → $newUrl — reconnecting WebSocket")
+            connectionManager.updateServerUrl(newUrl)
+        }
+    }
 
     companion object {
         const val ACTION_START_OVERLAY = "com.aura.aura_ui.START_OVERLAY"
@@ -116,6 +131,9 @@ class AssistantForegroundService : LifecycleService() {
     override fun onDestroy() {
         overlayManager?.hide()
         overlayManager = null
+        connectionManager.stop()
+        getSharedPreferences("aura_prefs", Context.MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(prefListener)
         super.onDestroy()
     }
 
@@ -239,6 +257,13 @@ class AssistantForegroundService : LifecycleService() {
 
             overlayManager?.initialize()
             Log.d("AssistantService", "OverlayManager.initialize() completed")
+
+            // Start the persistent WebSocket connection now that the overlay is live.
+            // Also register a listener so a URL change in Settings reconnects immediately.
+            val prefs = getSharedPreferences("aura_prefs", Context.MODE_PRIVATE)
+            prefs.registerOnSharedPreferenceChangeListener(prefListener)
+            connectionManager.start(getServerUrl(), lifecycleScope)
+            Log.i("AssistantService", "ConnectionManager started → ${getServerUrl()}")
 
             overlayManager?.show()
             Log.d("AssistantService", "OverlayManager.show() completed")

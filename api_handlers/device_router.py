@@ -6,6 +6,7 @@ Handles device registration, UI data upload, and gesture execution.
 
 import json
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -353,6 +354,88 @@ async def get_device_status(request: Request) -> Dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Device status check failed: {str(e)}",
+        )
+
+
+@router.get("/ui-tree")
+async def get_ui_tree(request: Request) -> Dict[str, Any]:
+    """
+    Get the raw unfiltered accessibility UI tree from the connected device.
+
+    Unlike /ui-snapshot (cached) or perceive_screen (full perception pipeline),
+    this sends a live request_ui_tree WebSocket message to the device and returns
+    the full element tree with all fields including resourceId, hierarchy, and actions.
+
+    Returns 422 with validation_failed=true for apps that block accessibility
+    (games, media players with DRM).
+    """
+    try:
+        from services.real_accessibility import real_accessibility_service
+        from services.ui_tree_service import get_ui_tree_service
+
+        if not real_accessibility_service.is_device_connected():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No device connected",
+            )
+
+        ui_tree_service = get_ui_tree_service()
+        request_id = str(uuid.uuid4())
+        payload = await ui_tree_service.request_ui_tree(request_id, reason="mcp_api")
+
+        if payload is None:
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="UI tree request timed out — device did not respond within 15s",
+            )
+
+        elements_out = []
+        for elem in payload.elements:
+            elements_out.append(
+                {
+                    "nodeId": elem.nodeId if hasattr(elem, "nodeId") else None,
+                    "resourceId": elem.resourceId if hasattr(elem, "resourceId") else None,
+                    "className": elem.className,
+                    "text": elem.text,
+                    "contentDescription": elem.contentDescription,
+                    "bounds": elem.bounds if hasattr(elem, "bounds") else None,
+                    "clickable": elem.clickable if hasattr(elem, "clickable") else False,
+                    "scrollable": elem.scrollable if hasattr(elem, "scrollable") else False,
+                    "editable": elem.editable if hasattr(elem, "editable") else False,
+                    "focused": elem.focused if hasattr(elem, "focused") else False,
+                    "enabled": elem.enabled if hasattr(elem, "enabled") else True,
+                    "actions": elem.actions if hasattr(elem, "actions") else [],
+                    "packageName": elem.packageName if hasattr(elem, "packageName") else None,
+                }
+            )
+
+        return {
+            "status": "success",
+            "validation_failed": False,
+            "elements": elements_out,
+            "element_count": len(elements_out),
+            "screen_width": payload.screen_width,
+            "screen_height": payload.screen_height,
+            "orientation": payload.orientation,
+            "timestamp": payload.timestamp,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = str(e)
+        if "validation_failed" in error_msg.lower() or "accessibility" in error_msg.lower():
+            return {
+                "status": "validation_failed",
+                "validation_failed": True,
+                "message": "App blocks accessibility tree access (game/DRM/media). Use get_screenshot() instead.",
+                "elements": [],
+                "element_count": 0,
+            }
+        logger.error(f"❌ UI tree fetch failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"UI tree fetch failed: {str(e)}",
         )
 
 

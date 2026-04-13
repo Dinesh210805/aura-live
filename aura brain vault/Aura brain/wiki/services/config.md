@@ -1,5 +1,5 @@
 ---
-last_verified: 2026-04-08
+last_verified: 2026-04-10
 source_files: [config/settings.py]
 status: current
 ---
@@ -13,9 +13,11 @@ status: current
 
 ## Rule
 
-> Never read `os.environ` directly. Always use `from config.settings import settings`.
+> Never read `os.environ` directly. Always use `from config.settings import settings` or `get_settings()`.
 
 All environment variables flow through a single Pydantic `Settings` class. This ensures type validation, default enforcement, and a single source of truth.
+
+`config/settings.py` now exports a backward-compatible lazy proxy `settings` object (not eager singleton construction), so imports remain stable without forcing config initialization at module import time.
 
 ---
 

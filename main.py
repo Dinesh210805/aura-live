@@ -21,7 +21,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from api import config_api, demo, device, graph, health, tasks, websocket, workflow  # noqa: E402
+from api import config_api, demo, device, execute, graph, health, tasks, websocket, workflow  # noqa: E402
 from config.settings import get_settings  # noqa: E402
 from constants import API_PREFIX, REQUEST_ID_HEADER  # noqa: E402
 from exceptions.handlers import register_exception_handlers  # noqa: E402
@@ -222,6 +222,7 @@ app.include_router(graph.router, prefix=API_PREFIX, tags=["Graph"])
 app.include_router(tasks.router, prefix=API_PREFIX, tags=["Tasks"])
 app.include_router(device.router, prefix=API_PREFIX, tags=["Device"])
 app.include_router(config_api.router, prefix=API_PREFIX, tags=["Config"])
+app.include_router(execute.router, prefix=API_PREFIX, tags=["Execute"])
 app.include_router(workflow.router)  # Already has prefix
 if not _is_production:
     app.include_router(demo.router)  # /demo judging dashboard (dev/judging only)
@@ -274,15 +275,20 @@ try:
     app.include_router(
         accessibility_router, prefix="/accessibility", tags=["Real Accessibility"]
     )
-    # Also register with API prefix for new standard
-    app.include_router(
-        accessibility_router,
-        prefix=f"{API_PREFIX}/accessibility",
-        tags=["Real Accessibility (Versioned)"],
-    )
-    logger.info(" Real Accessibility API routes registered (legacy + versioned)")
+    logger.info(" Real Accessibility API routes registered")
 except ImportError as e:
     logger.warning(f"Could not register Real Accessibility API routes: {e}")
+
+# Register Perception API routes (OmniParser detection endpoint)
+try:
+    from api_handlers.perception_api import router as perception_router  # noqa: E402
+
+    app.include_router(
+        perception_router, prefix="/perception", tags=["Perception"]
+    )
+    logger.info(" Perception API routes registered")
+except ImportError as e:
+    logger.warning(f"Could not register Perception API routes: {e}")
 
 # Register exception handlers
 register_exception_handlers(app)

@@ -10,9 +10,9 @@ status: current
 
 ---
 
-## The 9 Agents
+## The 8 Agents
 
-AURA's automation pipeline is split into exactly 9 single-responsibility agents. The `Coordinator` is the only orchestrator — all others are workers that it calls.
+AURA's automation pipeline is split into exactly 8 single-responsibility agents. The `Coordinator` is the only orchestrator — all others are workers that it calls.
 
 | # | Agent | File | LLM Calls | Role |
 |---|-------|------|-----------|------|
@@ -24,7 +24,8 @@ AURA's automation pipeline is split into exactly 9 single-responsibility agents.
 | 6 | `Responder` | `agents/responder.py` | Yes | Natural language response |
 | 7 | `Validator` | `agents/validator.py` | **None** | Pre-execution validation |
 | 8 | `Verifier` | `agents/verifier_agent.py` | Yes | Post-action verification |
-| 9 | `VisualLocator` | `perception/vlm_selector.py` | Yes (VLM) | SoM element selection |
+
+> **`VLMSelector`** (`perception/vlm_selector.py`) is NOT an agent — it is Layer 3 of the perception pipeline, called internally by `PerceiverAgent` via `PerceptionController`. Documented in [`perception/vlm_selector.md`](../perception/vlm_selector.md).
 
 ---
 
@@ -48,7 +49,7 @@ AURA's automation pipeline is split into exactly 9 single-responsibility agents.
                               (zero LLM calls)
                                     │
                                     ▼
-                                 Verifier ──► VisualLocator
+                                 Verifier
                                     │
                                     ▼
                                 Responder ──► TTS
@@ -105,4 +106,5 @@ coordinator = CoordinatorAgent(
 - [responder.md](responder.md)
 - [validator.md](validator.md)
 - [verifier.md](verifier.md)
-- [visual_locator.md](visual_locator.md)
+
+> `VLMSelector` is a perception component — see [`../perception/vlm_selector.md`](../perception/vlm_selector.md)

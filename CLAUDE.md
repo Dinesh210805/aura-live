@@ -27,7 +27,7 @@ Wiki location: `aura brain vault/Aura brain/wiki/`
 
 ### Wiki structure
 - `wiki/overview.md`              → big picture and data flow
-- `wiki/agents/`                  → each of the 9 agents documented
+- `wiki/agents/`                  → each of the 8 agents documented
 - `wiki/aura_graph/`              → LangGraph orchestration deep dive
 - `wiki/perception/`              → perception pipeline details
 - `wiki/api/`                     → routes, handlers, WebSocket endpoints
@@ -87,6 +87,24 @@ status: current | stale | orphan
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Active Development: MCP Server
+
+**Current branch**: `feature/mcp-server`
+
+If you are working on the MCP server, read this document first:
+
+> `aura brain vault/Aura brain/wiki/mcp_build_plan.md`
+
+That document contains:
+- Session resumption protocol (how to pick up exactly where the last session left off)
+- All task statuses (TODO / IN_PROGRESS / DONE)
+- Interface contracts grounded in real source files
+- Pre-empted failure modes and their fixes
+
+Do NOT start coding MCP without reading it — you will re-derive what's already been figured out.
+
+---
+
 ## Project Overview
 
 **AURA (Autonomous User-Responsive Agent)** is a production-grade Android UI automation system controlled via voice. Users speak commands; AURA captures a screenshot, parses the UI tree, plans steps, executes gestures on the Android device, and responds in natural language.
@@ -133,11 +151,11 @@ python scripts/dead_code_scanner.py
 3. Intent classified by `utils/fuzzy_classifier.py` → complexity tier (conversational / simple / medium / complex)
 4. Safety screening via `services/prompt_guard.py` (Llama Prompt Guard 2)
 5. Task dispatched to `aura_graph/graph.py` → `run_aura_task()`
-6. LangGraph state machine drives 9 agents through perceive→decide→act→verify loop
+6. LangGraph state machine drives 8 agents through perceive→decide→act→verify loop
 7. Gesture executed via `services/gesture_executor.py` after OPA policy check
 8. Response spoken via `services/tts.py` (Edge-TTS)
 
-### The 9 agents (`agents/`)
+### The 8 agents (`agents/`)
 Each is single-responsibility — do not merge or expand scope:
 - `perceiver_agent.py` — wraps PerceptionController
 - `commander.py` — parses intent
@@ -147,7 +165,8 @@ Each is single-responsibility — do not merge or expand scope:
 - `responder.py` — natural language responses
 - `validator.py` — rule-based validation
 - `verifier_agent.py` — post-action verification
-- `visual_locator.py` — ScreenVLM with Set-of-Marks
+
+> Note: `VLMSelector` (`perception/vlm_selector.py`) is part of the perception pipeline, not an agent. It is called internally by `PerceiverAgent` via `PerceptionController`.
 
 ### LangGraph orchestration (`aura_graph/`)
 - `state.py` — `TaskState` TypedDict (~40 fields), `Goal`/`Subgoal`/`RetryStrategy` models
@@ -195,7 +214,7 @@ OPA Rego policies gate every gesture execution. Prompt Guard 2 screens all voice
 4. **All new actions** must be registered in `config/action_types.py` ACTION_REGISTRY
 5. **All service functions** must be `async def`
 6. **All API keys** must go through `config/settings.py` (Pydantic Settings), not raw env reads
-7. **9 agents stay single-responsibility** — no merging or scope creep
+7. **8 agents stay single-responsibility** — no merging or scope creep
 
 ---
 

@@ -142,7 +142,7 @@ async def execute_android_task(utterance: str) -> dict:
 
 Works with: Claude Code, GitHub Copilot, Cursor, Codex, Windsurf, any HTTP client.
 
-### Style B — Granular Tools (Claude as brain)
+### Style B — Granular Tools (Agent-Piloted Mode)
 
 ```python
 @server.tool()
@@ -347,7 +347,7 @@ Powered by Set-of-Marks perception — agents never guess coordinates.
 | # | Decision | Rationale |
 |---|----------|-----------|
 | M1 | Keep Groq for voice path | Latency-sensitive; Claude unavailable on phone |
-| M2 | Claude as brain for MCP path (Style B) | Best reasoner; user already paying; no extra API cost |
+| M2 | Agent-Piloted Mode for MCP path (Style B) | Any vision-capable agent (Claude, GPT-4o, Gemini) can drive AURA granularly |
 | M3 | Expose both MCP styles | Style A for compatibility; Style B for power |
 | M4 | Event bus broadcast to all clients | Enables collaborative human+AI control loop |
 | M5 | Single task queue, voice priority | One device can only run one task at a time |

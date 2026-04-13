@@ -168,6 +168,44 @@ class RealAccessibilityService:
         )
         return connected
 
+    async def request_fresh_screenshot(self) -> bool:
+        """
+        Request a fresh screenshot + UI tree from the connected Android device.
+
+        Delegates to ScreenshotService (which handles WebSocket send + await) and
+        UITreeService so that both last_screenshot and last_ui_analysis are refreshed.
+
+        Returns:
+            True if at least the screenshot was received, False on timeout/error.
+        """
+        try:
+            import uuid
+            from services.screenshot_service import get_screenshot_service
+            from services.ui_tree_service import get_ui_tree_service
+
+            request_id = str(uuid.uuid4())[:8]
+
+            screenshot_service = get_screenshot_service()
+            ui_tree_service = get_ui_tree_service()
+
+            # Request both in parallel — Android processes them independently
+            screenshot_result, _ = await asyncio.gather(
+                screenshot_service.request_screenshot(request_id, "manual_request"),
+                ui_tree_service.request_ui_tree(request_id, "manual_request"),
+                return_exceptions=True,
+            )
+
+            if screenshot_result and not isinstance(screenshot_result, Exception):
+                logger.info("📸 Fresh screenshot + UI tree captured successfully")
+                return True
+
+            logger.warning("⚠️ request_fresh_screenshot: screenshot not received")
+            return False
+
+        except Exception as e:
+            logger.error(f"❌ request_fresh_screenshot failed: {e}")
+            return False
+
     def update_ui_data(self, ui_data: Dict[str, Any]) -> bool:
         """
         Update stored UI data from Android accessibility service.
@@ -382,7 +420,13 @@ class RealAccessibilityService:
             else:
                 payload[key] = value
 
-        # No transformation needed - Navigator already outputs standard x1/y1/x2/y2 format
+        # Normalize swipe: REST API sends x/y but Android expects x1/y1 for swipe start
+        if action == "swipe":
+            if "x" in payload and "x1" not in payload:
+                payload["x1"] = payload.pop("x")
+            if "y" in payload and "y1" not in payload:
+                payload["y1"] = payload.pop("y")
+
         payload.setdefault("timestamp", time.time())
         return payload
 
@@ -420,9 +464,10 @@ class RealAccessibilityService:
                     }
 
             if action == "swipe":
-                coords = self._validate_coordinates(
-                    gesture_payload.get("x1", -1), gesture_payload.get("y1", -1)
-                ) and self._validate_coordinates(
+                # Accept both x1/y1 (GestureExecutor format) and x/y (REST API format)
+                start_x = gesture_payload.get("x1", gesture_payload.get("x", -1))
+                start_y = gesture_payload.get("y1", gesture_payload.get("y", -1))
+                coords = self._validate_coordinates(start_x, start_y) and self._validate_coordinates(
                     gesture_payload.get("x2", -1), gesture_payload.get("y2", -1)
                 )
                 if not coords:

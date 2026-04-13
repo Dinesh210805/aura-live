@@ -107,7 +107,7 @@
           "package_name": "com.google.android.youtube",
           "app_name": "YouTube",
           "is_system_app": true,
-          "version_name": "21.13.163",
+          "version_name": "21.14.484",
           "deep_links": [],
           "intent_filters": [
             {
@@ -130,7 +130,7 @@
           "package_name": "com.google.android.apps.labs.language.tailwind",
           "app_name": "NotebookLM",
           "is_system_app": false,
-          "version_name": "1.32.7.889108720",
+          "version_name": "1.33.7.892797851",
           "deep_links": [],
           "intent_filters": [
             {
@@ -239,7 +239,7 @@
           "package_name": "com.truecaller",
           "app_name": "Truecaller",
           "is_system_app": false,
-          "version_name": "26.12.6",
+          "version_name": "26.13.7",
           "deep_links": [
             "mms",
             "mmsto",
@@ -303,7 +303,7 @@
           "package_name": "com.google.android.googlequicksearchbox",
           "app_name": "Google",
           "is_system_app": true,
-          "version_name": "17.12.51.ve.arm64",
+          "version_name": "17.13.62.ve.arm64",
           "deep_links": [
             "android-app",
             "content",
@@ -692,7 +692,7 @@
           "package_name": "com.google.android.apps.paidtasks",
           "app_name": "Google Opinion Rewards",
           "is_system_app": false,
-          "version_name": "2026030900",
+          "version_name": "2026032300",
           "deep_links": [],
           "intent_filters": [
             {
@@ -762,7 +762,7 @@
           "package_name": "com.whatsapp",
           "app_name": "WhatsApp",
           "is_system_app": false,
-          "version_name": "2.26.12.72",
+          "version_name": "2.26.13.73",
           "deep_links": [
             "sms",
             "smsto"
@@ -920,7 +920,7 @@
           "package_name": "com.google.android.apps.messaging",
           "app_name": "Messages",
           "is_system_app": true,
-          "version_name": "messages.android_20260324_00_RC00.phone_dynamic",
+          "version_name": "messages.android_20260327_00_RC00.phone_dynamic",
           "deep_links": [
             "content",
             "mms",
@@ -1358,7 +1358,7 @@
           "package_name": "com.github.android",
           "app_name": "GitHub",
           "is_system_app": false,
-          "version_name": "1.252.0",
+          "version_name": "1.253.1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1507,7 +1507,7 @@
           "package_name": "com.microsoft.skydrive",
           "app_name": "OneDrive",
           "is_system_app": false,
-          "version_name": "7.51.1",
+          "version_name": "7.52",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1633,7 +1633,7 @@
           "package_name": "com.reddit.frontpage",
           "app_name": "Reddit",
           "is_system_app": false,
-          "version_name": "2026.13.0",
+          "version_name": "2026.14.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1837,7 +1837,7 @@
           "package_name": "com.olx.southasia",
           "app_name": "OLX India",
           "is_system_app": false,
-          "version_name": "19.88.010",
+          "version_name": "19.89.000",
           "deep_links": [],
           "intent_filters": [
             {
@@ -1956,7 +1956,7 @@
           "package_name": "com.instagram.android",
           "app_name": "Instagram",
           "is_system_app": false,
-          "version_name": "423.0.0.47.66",
+          "version_name": "424.0.0.49.64",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2009,7 +2009,7 @@
           "package_name": "com.pinterest",
           "app_name": "Pinterest",
           "is_system_app": false,
-          "version_name": "14.12.0",
+          "version_name": "14.13.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2024,7 +2024,7 @@
           "package_name": "org.coursera.android",
           "app_name": "Coursera",
           "is_system_app": false,
-          "version_name": "5.51.0",
+          "version_name": "6.0.1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2086,7 +2086,7 @@
           "package_name": "com.google.android.gm",
           "app_name": "Gmail",
           "is_system_app": true,
-          "version_name": "2026.03.23.889563172.Release",
+          "version_name": "2026.03.30.892466532.Release",
           "deep_links": [
             "mailto"
           ],
@@ -2126,7 +2126,7 @@
           "package_name": "com.google.android.apps.tachyon",
           "app_name": "Meet",
           "is_system_app": true,
-          "version_name": "351.0.888843116.duo.android_20260316.01_p6",
+          "version_name": "353.0.892461176.duo.android_20260330.01_p1",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2519,7 +2519,7 @@
           "package_name": "com.instagram.barcelona",
           "app_name": "Threads",
           "is_system_app": false,
-          "version_name": "423.3.0.54.66",
+          "version_name": "424.0.0.48.68",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2542,7 +2542,7 @@
           "package_name": "com.google.android.dialer",
           "app_name": "Phone",
           "is_system_app": true,
-          "version_name": "215.0.888983929",
+          "version_name": "216.0.893561076",
           "deep_links": [
             "tel"
           ],
@@ -2751,7 +2751,7 @@
           "package_name": "com.twitter.android",
           "app_name": "X",
           "is_system_app": false,
-          "version_name": "11.79.0-release.0",
+          "version_name": "11.81.0-release.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2836,7 +2836,7 @@
           "package_name": "com.google.android.apps.docs",
           "app_name": "Drive",
           "is_system_app": false,
-          "version_name": "2.26.127.4.all.alldpi",
+          "version_name": "2.26.137.1.all.alldpi",
           "deep_links": [],
           "intent_filters": [
             {
@@ -2851,7 +2851,7 @@
           "package_name": "com.google.android.apps.maps",
           "app_name": "Maps",
           "is_system_app": true,
-          "version_name": "26.13.06.887680004",
+          "version_name": "26.14.09.891313448",
           "deep_links": [
             "geo",
             "google.navigation"
@@ -2907,7 +2907,7 @@
           "package_name": "free.vpn.unblock.proxy.turbovpn",
           "app_name": "Turbo VPN",
           "is_system_app": false,
-          "version_name": "4.2.9.8",
+          "version_name": "4.2.9.9",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3047,7 +3047,7 @@
           "package_name": "com.opera.browser",
           "app_name": "Opera",
           "is_system_app": false,
-          "version_name": "96.3.5010.87899",
+          "version_name": "97.0.5038.88005",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3204,7 +3204,7 @@
           "package_name": "com.android.chrome",
           "app_name": "Chrome",
           "is_system_app": true,
-          "version_name": "146.0.7680.177",
+          "version_name": "147.0.7727.49",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3470,7 +3470,7 @@
           "package_name": "ai.x.grok",
           "app_name": "Grok",
           "is_system_app": false,
-          "version_name": "1.1.49-release.00",
+          "version_name": "1.1.51-release.01",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3683,7 +3683,7 @@
           "package_name": "com.jio.myjio",
           "app_name": "MyJio",
           "is_system_app": false,
-          "version_name": "8.0.27",
+          "version_name": "8.0.28",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3714,7 +3714,7 @@
           "package_name": "com.google.android.apps.photos",
           "app_name": "Photos",
           "is_system_app": true,
-          "version_name": "7.69.0.890655694",
+          "version_name": "7.70.0.893169212",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3729,7 +3729,7 @@
           "package_name": "com.google.android.calendar",
           "app_name": "Calendar",
           "is_system_app": true,
-          "version_name": "2026.12.1-892294696-release",
+          "version_name": "2026.13.1-892826793-release",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3760,7 +3760,7 @@
           "package_name": "com.spotify.music",
           "app_name": "Spotify",
           "is_system_app": false,
-          "version_name": "9.1.34.2060",
+          "version_name": "9.1.36.1948",
           "deep_links": [
             "spotify"
           ],
@@ -3830,7 +3830,7 @@
           "package_name": "ai.perplexity.app.android",
           "app_name": "Perplexity",
           "is_system_app": false,
-          "version_name": "2.80.0",
+          "version_name": "2.81.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -3884,7 +3884,7 @@
           "package_name": "com.facebook.katana",
           "app_name": "Facebook",
           "is_system_app": false,
-          "version_name": "555.0.0.49.59",
+          "version_name": "556.0.0.60.64",
           "deep_links": [
             "fb"
           ],
@@ -4227,7 +4227,7 @@
           "package_name": "com.microsoft.copilot",
           "app_name": "Copilot",
           "is_system_app": false,
-          "version_name": "30.0.440331002",
+          "version_name": "30.0.440408001",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4242,7 +4242,7 @@
           "package_name": "com.chess",
           "app_name": "Chess",
           "is_system_app": false,
-          "version_name": "4.9.31-googleplay",
+          "version_name": "4.9.32-googleplay",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4265,7 +4265,7 @@
           "package_name": "org.mozilla.firefox",
           "app_name": "Firefox",
           "is_system_app": false,
-          "version_name": "149.0.1",
+          "version_name": "149.0.2",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4373,7 +4373,7 @@
           "package_name": "com.linkedin.android",
           "app_name": "LinkedIn",
           "is_system_app": false,
-          "version_name": "4.1.1188",
+          "version_name": "4.1.1191",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4427,7 +4427,7 @@
           "package_name": "com.google.android.apps.nbu.paisa.user",
           "app_name": "GPay",
           "is_system_app": true,
-          "version_name": "325.1.2 (arm64-v8a_release_flutter)",
+          "version_name": "326.1.2 (arm64-v8a_release_flutter)",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4567,7 +4567,7 @@
           "package_name": "com.anthropic.claude",
           "app_name": "Claude",
           "is_system_app": false,
-          "version_name": "1.260330.27",
+          "version_name": "1.260402.20",
           "deep_links": [],
           "intent_filters": [
             {
@@ -4713,7 +4713,7 @@
           "package_name": "com.rapido.passenger",
           "app_name": "Rapido",
           "is_system_app": false,
-          "version_name": "8.102.1",
+          "version_name": "8.103.0",
           "deep_links": [
             "geo"
           ],
@@ -4893,7 +4893,7 @@
           "package_name": "com.google.android.keep",
           "app_name": "Keep notes",
           "is_system_app": false,
-          "version_name": "5.26.131.01.90",
+          "version_name": "5.26.141.01.90",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5020,7 +5020,7 @@
           "package_name": "com.google.android.apps.work.clouddpc",
           "app_name": "Device Policy",
           "is_system_app": true,
-          "version_name": "153.41.3 (10619160)",
+          "version_name": "154.28.2 (10638420)",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5380,7 +5380,7 @@
           "package_name": "com.heytap.htms",
           "app_name": "Mobile Services",
           "is_system_app": true,
-          "version_name": "2.3.7_4ee2ef8_260312_OS15Oversea_sea",
+          "version_name": "2.3.10_cdd72be_260407_OS15Oversea_sea",
           "deep_links": [],
           "intent_filters": []
         },
@@ -5617,7 +5617,7 @@
           "package_name": "com.canva.editor",
           "app_name": "Canva",
           "is_system_app": false,
-          "version_name": "2.355.0",
+          "version_name": "2.356.0",
           "deep_links": [],
           "intent_filters": [
             {
@@ -5685,7 +5685,7 @@
           "package_name": "com.snapchat.android",
           "app_name": "Snapchat",
           "is_system_app": false,
-          "version_name": "13.86.1.0",
+          "version_name": "13.87.0.52",
           "deep_links": [
             "snapchat"
           ],
@@ -5729,11 +5729,11 @@
           ]
         }
       ],
-      "last_updated": 1775655226011,
+      "last_updated": 1776079717006,
       "app_count": 540
     }
   },
   "_metadata": {
-    "last_updated": 1775655226011
+    "last_updated": 1776079717006
   }
 }

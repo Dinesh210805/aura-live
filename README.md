@@ -53,6 +53,7 @@ Built as a submission to the **Gemini Live Agent Challenge**, AURA integrates Go
 - [Android Companion App](#android-companion-app)
 - [WebSocket Endpoints](#websocket-endpoints)
 - [REST API](#rest-api)
+- [MCP Integration](#mcp-integration)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running](#running)
@@ -422,9 +423,63 @@ Manages conversation state as `StateFlow`:
 | `GET /health` | GET | Health check (legacy) |
 | `GET /api/v1/health` | GET | Health check (versioned) |
 | `POST /api/v1/graph/execute` | POST | Execute task from text |
+| `POST /api/v1/execute` | POST | Natural-language command (REST fallback for non-MCP agents) |
 | `GET /api/v1/device/screenshot` | GET | Live screenshot |
 | `GET /demo` | GET | Judge dashboard (live screenshot, recent commands, GCS log links) |
 | `GET /docs` | GET | OpenAPI docs (development only) |
+
+---
+
+## MCP Integration
+
+AURA exposes an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server for any AI coding agent to control an Android device directly.
+
+### Start the MCP Server
+
+```bash
+python aura_mcp_server.py
+```
+
+### Configure Claude Code
+
+Add to `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "aura": {
+      "command": "python",
+      "args": ["/absolute/path/to/aura-live/aura_mcp_server.py"],
+      "env": {}
+    }
+  }
+}
+```
+
+### MCP Tools
+
+| Tool | Style | Description |
+|---|---|---|
+| `execute_android_task(utterance)` | Black-box | Run any natural-language command through the full AURA pipeline |
+| `perceive_screen()` | Granular | Capture screenshot + SoM-labeled UI elements |
+| `execute_gesture(type, target, params)` | Granular | Tap, swipe, type, scroll on a specific element |
+| `validate_action(type, target)` | Granular | Check OPA safety policy before executing |
+| `watch_device_events(timeout)` | Streaming | Subscribe to gesture/task/screenshot events |
+
+**Style A** (black-box) — one tool, full pipeline. Use with any agent that supports MCP.  
+**Style B** (granular) — Claude sees the screen, reasons, picks elements by SoM label. Best with vision-capable models.
+
+### Agent Compatibility
+
+| Agent | MCP Support | Style A | Style B |
+|---|---|---|---|
+| **Claude Code** | Native | Yes | Yes (best — native vision) |
+| **GitHub Copilot** | Yes (2025) | Yes | Model-dependent |
+| **Cursor** | Yes | Yes | Model-dependent |
+| **Windsurf** | Yes | Yes | Model-dependent |
+| **Any HTTP client** | Via REST | `POST /api/v1/execute` | — |
+
+See [quickstart.md](quickstart.md) for the full setup walkthrough.
 
 ---
 

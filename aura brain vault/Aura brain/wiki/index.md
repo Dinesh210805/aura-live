@@ -32,10 +32,10 @@ status: current
 - [agents/responder.md](agents/responder.md) — Natural language response generation
 - [agents/validator.md](agents/validator.md) — Rule-based pre-execution validation
 - [agents/verifier.md](agents/verifier.md) — Post-action verification, settle delays
-- [agents/visual_locator.md](agents/visual_locator.md) — Set-of-Marks VLM selection
 
 ### Perception Pipeline (`perception/`)
 - [perception/pipeline.md](perception/pipeline.md) — Three-layer hybrid: UI tree → CV → VLM
+- [perception/vlm_selector.md](perception/vlm_selector.md) — VLMSelector: SoM element selection, SelectionResult, fallback logic
 
 ### Services (`services/`)
 - [services/llm.md](services/llm.md) — Tri-provider LLM (Groq/Gemini/NVIDIA)
@@ -54,6 +54,7 @@ status: current
 
 ### MCP & Open-Source Strategy
 - [mcp_architecture.md](mcp_architecture.md) — Full MCP architecture plan, dual-brain design, two-way pipeline, build phases, open-source positioning
+- [mcp_build_plan.md](mcp_build_plan.md) — **ACTIVE BUILD PLAN** — task-by-task implementation guide with interface contracts, session resumption protocol, and status tracking. READ THIS before working on MCP.
 
 ### Meta
 - [backlog.md](backlog.md) — P1–P3 improvement backlog

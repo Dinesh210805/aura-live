@@ -5,7 +5,7 @@ This module provides centralized configuration management using Pydantic for
 validating and loading environment variables.
 """
 
-from typing import List, Literal, Optional
+from typing import Any, List, Literal, Optional
 
 from pydantic import Field, validator
 from pydantic_settings import BaseSettings
@@ -477,6 +477,18 @@ class Settings(BaseSettings):
         description="Number of recent steps to show in full; older steps are summarized",
     )
 
+    # MCP Server
+    mcp_enabled: bool = Field(
+        default=True,
+        env="MCP_ENABLED",
+        description="Enable MCP server (run separately: python aura_mcp_server.py)",
+    )
+    mcp_server_name: str = Field(
+        default="aura",
+        env="MCP_SERVER_NAME",
+        description="MCP server name as registered with Claude Code / agent clients",
+    )
+
     @validator("google_api_key")
     def validate_google_api_key(cls, v: str, values: dict) -> str:
         if values.get("gcs_logs_enabled") and not v:
@@ -506,3 +518,14 @@ def get_settings() -> Settings:
     if _settings is None:
         _settings = Settings()
     return _settings
+
+
+class _LazySettingsProxy:
+    """Lazy proxy preserving `from config.settings import settings` compatibility."""
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(get_settings(), name)
+
+
+# Backward-compatible module-level settings object without eager initialization.
+settings = _LazySettingsProxy()

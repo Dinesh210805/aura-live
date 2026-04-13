@@ -45,12 +45,13 @@ class UIDataRequest(BaseModel):
 class GestureExecutionRequest(BaseModel):
     """Gesture execution request."""
 
-    action: str = Field(..., description="Gesture action (tap, swipe, long_press)")
+    action: str = Field(..., description="Gesture action (tap, swipe, long_press, type)")
     x: Optional[int] = Field(None, description="X coordinate")
     y: Optional[int] = Field(None, description="Y coordinate")
     x2: Optional[int] = Field(None, description="Second X coordinate for swipe")
     y2: Optional[int] = Field(None, description="Second Y coordinate for swipe")
     duration: int = Field(300, description="Gesture duration in milliseconds")
+    text: Optional[str] = Field(None, description="Text to type (for action='type')")
 
 
 class UIAnalysisResponse(BaseModel):
@@ -233,6 +234,9 @@ async def execute_gesture(gesture_request: GestureExecutionRequest):
             )
 
         # Execute the gesture
+        extra_params = {}
+        if gesture_request.text is not None:
+            extra_params["text"] = gesture_request.text
         success = await real_accessibility_service.execute_real_gesture(
             action=gesture_request.action,
             x=gesture_request.x,
@@ -240,6 +244,7 @@ async def execute_gesture(gesture_request: GestureExecutionRequest):
             x2=gesture_request.x2,
             y2=gesture_request.y2,
             duration=gesture_request.duration,
+            **extra_params,
         )
 
         if success:
@@ -385,3 +390,41 @@ async def get_device_info():
     except Exception as e:
         logger.error(f"Failed to get device info: {e}")
         raise HTTPException(status_code=500, detail="Device info retrieval failed")
+
+
+class LaunchAppRequest(BaseModel):
+    """App launch request via Android intent."""
+
+    package_name: str = Field(..., description="Android package name to launch")
+    deep_link_uri: Optional[str] = Field(None, description="Optional deep link URI")
+
+
+@router.post("/launch-app")
+async def launch_app(request: LaunchAppRequest):
+    """
+    Launch an Android app by package name via WebSocket intent.
+
+    Faster than searching/navigating — goes directly to the app.
+    """
+    try:
+        result = await real_accessibility_service.launch_app_via_intent(
+            package_name=request.package_name,
+            deep_link_uri=request.deep_link_uri,
+        )
+        if result.get("success"):
+            logger.info(f"App launched: {request.package_name}")
+            return {
+                "status": "launched",
+                "package_name": request.package_name,
+                "success": True,
+            }
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=result.get("error", "App launch failed"),
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"App launch error: {e}")
+        raise HTTPException(status_code=500, detail="App launch failed")

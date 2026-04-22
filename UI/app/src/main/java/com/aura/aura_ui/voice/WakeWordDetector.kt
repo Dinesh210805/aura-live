@@ -109,7 +109,7 @@ interface WakeWordDetector {
         }
         
         // Default access key for development - replace in production with secure storage
-        private const val DEFAULT_ACCESS_KEY = "T2XyZapZtAamzt2dvZVIJsLl52Q9CKaZt98XYWAFbsqReHkLGu3qNw=="
+        private const val DEFAULT_ACCESS_KEY = "your_api_key_here"
     }
 }
 
